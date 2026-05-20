@@ -375,7 +375,7 @@ actual public API:
 | `README.md`                   | Project overview                              |
 | `CHANGELOG.md`                | Session-by-session change log                 |
 | `HANDOFF.md`                  | Original Claude Code handoff context          |
-| `docs/project-plan.md`        | Full phase-by-phase build plan                |
+| `docs/plan/`                  | Phase-by-phase build plan (one file per phase) |
 | `docs/operating-guide.md`     | This file — practical how-to                  |
 | `docs/wiring.md`              | Current physical wiring state                 |
 | `docs/circuit-diagram.md`     | Mermaid diagrams of full system               |
