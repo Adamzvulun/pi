@@ -66,13 +66,22 @@ Then open the crontab editor:
 crontab -e
 ```
 
-Add this line at the bottom (select nano if it asks for an editor):
+If it asks you to choose an editor, type `1` and press Enter to pick nano.
+
+You'll land inside nano looking at the crontab file. There are probably some comment lines starting with `#`. You need to get to the very bottom of the file and add one new line. Here's how:
+
+1. Press `Ctrl+End` to jump to the last line (or just press the down arrow key until you can't go further).
+2. Press `End` to make sure your cursor is at the end of that last line.
+3. Press `Enter` once to start a new blank line.
+4. Now type (or paste) the cron line. To paste in most SSH terminals, right-click in the terminal window — that pastes whatever is in your clipboard. If right-click doesn't work, try `Shift+Insert`. If you're in Windows Terminal, `Ctrl+Shift+V` also works.
+
+The line to add:
 
 ```
 * * * * * cd /home/adam/pi && /usr/bin/git pull --rebase --autostash >> /home/adam/pi/logs/autopull.log 2>&1
 ```
 
-Save and exit (in nano: Ctrl+O, Enter, Ctrl+X).
+Once the line is in, save and exit nano: press `Ctrl+O`, then `Enter` to confirm the filename, then `Ctrl+X` to close.
 
 Then make sure the cron service is running:
 
