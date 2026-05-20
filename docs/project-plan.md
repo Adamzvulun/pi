@@ -24,9 +24,47 @@ Work through phases in order. Do not skip ahead. Every phase produces something 
 
 ---
 
-## Phase 3 — Servo Control
+## Phase 3 — Servo Control ✅ COMPLETE
 
-### Task 3.1 — Wire the Pi to the breadboard
+**Summary of what happened (deviations from original plan):**
+
+- **Problem 001 (MB102 underpowered for DS3225) was discovered and resolved
+  mid-phase.** The MB102 was removed from the circuit entirely. Servo V+ now
+  comes from an **LM2596 buck converter** fed by the 12V PSU. Pi GPIO 5V
+  (pin 2) supplies PCA9685 VCC directly. Breadboard removed from the rig.
+  See `problems/001-servo-power.md`.
+- **Pan-tilt bracket required reassembly.** Pre-assembly manual gear rotation
+  had left electrical 135° badly mismatched with physical center on pan
+  (~170° off). Software re-centering could not absorb a mismatch this large.
+  Resolution: drove both servos to electrical 135° via `calibrate_servo.py`
+  (`=135` + `s` + `s` + `done`), then unscrewed both horns, manually centered
+  the bracket arms, and remounted the horns at visual center. The procedure
+  is documented in `docs/operating-guide.md`.
+- **`test_servo.py` and `calibrate_servo.py` ended up more cautious than the
+  original plan.** Neither auto-centers on startup (because we don't know
+  where the servos physically are), neither auto-centers on Ctrl+C, and both
+  rely on user-eyeballed starting estimates. All moves ramp in 2° steps with
+  50ms sleeps for smooth motion.
+- **Final calibrated limits:** `PAN_MIN=50`, `PAN_MAX=220`, `TILT_MIN=115`,
+  `TILT_MAX=205`. Recorded in `servo.py` and `docs/calibration.md`.
+
+The task descriptions below were written before this work happened — they
+remain useful as background, but for the actual procedures we use now, see
+`docs/operating-guide.md`.
+
+---
+
+### Task 3.1 — Wire the Pi to the breadboard ✅ DONE (with deviations)
+
+**What we actually wired:** Pi GPIO 5V (pin 2), SDA (pin 3), SCL (pin 5),
+GND (pin 6) directly to the PCA9685 — no breadboard in the path. The
+MB102 / breadboard rig was bypassed once problem 001 was identified.
+See `docs/wiring.md` for the current state.
+
+The original task description (below) is preserved for reference but does
+not reflect the current wiring.
+
+---
 
 **Do this with the Pi powered off. Unplug the USB-C cable first.**
 
@@ -77,7 +115,16 @@ You should see a grid of dashes with `40` appearing somewhere in it. That `40` i
 
 ---
 
-### Task 3.2 — Write test_servo.py
+### Task 3.2 — Write test_servo.py ✅ DONE (differs from spec below)
+
+**What was actually built:** `test_servo.py` does NOT auto-center on startup
+(would be unsafe with unknown bracket limits) and instead asks the user to
+eyeball-estimate the current angle. After confirming, it sends the estimate
+to both channels, then ramps pan ±10° from there. Tilt is held throughout.
+All moves ramp in 2° steps with 50ms sleeps. Ctrl+C does not auto-move
+servos. The original task description below is preserved for reference.
+
+---
 
 This is the first real code. It moves the servos so you can confirm the whole chain works: laptop → GitHub → Pi auto-pull → Python → I2C → PCA9685 → servo physically moves.
 
@@ -118,7 +165,26 @@ python3 test_servo.py
 
 ---
 
-### Task 3.3 — Write calibrate_servo.py
+### Task 3.3 — Write calibrate_servo.py ✅ DONE (differs from spec below)
+
+**What was actually built:** `calibrate_servo.py` uses relative-move commands
+(`+5`, `-5`, `+`, `-`) rather than absolute-angle entry, plus `=N` for
+direct jumps when needed, and `step N` to change the default step size. The
+script:
+
+- Asks the user to pre-position the bracket and provide eyeball estimates
+- Does NOT auto-center on startup or on Ctrl+C
+- Ramps every move in 2° steps for smoothness
+- Tracks internal "current angle" because PCA9685 has no readback
+- Calculates min/max from any number of `s` (mark) presses per servo
+- Used not only for edge calibration but also for the bracket-reassembly
+  procedure (driving servos to specific angles via `=N` while remounting horns)
+
+Full command reference and procedures: `docs/operating-guide.md` section 3.
+
+The original task description below is preserved for reference.
+
+---
 
 The DS3225 is rated for 270° of rotation, but your pan-tilt bracket has physical stops — the mechanical limits where the bracket hits itself and can't go further. Those limits are the actual safe range for your system. You need to find them before writing any tracking code, because commanding a servo past its physical stop can damage it or burn out the motor.
 
@@ -150,7 +216,24 @@ The four values you end up with — `pan_min`, `pan_max`, `tilt_min`, `tilt_max`
 
 ---
 
-### Task 3.4 — Write servo.py
+### Task 3.4 — Write servo.py ✅ DONE
+
+**Final public API:**
+- `init() → ServoKit` — configures channels, centers servos (snaps because no readback)
+- `move_pan(kit, angle) → float` — clamped move; returns actual angle commanded
+- `move_tilt(kit, angle) → float` — same for tilt
+- `center(kit)` — smooth ramp to PAN_CENTER/TILT_CENTER
+- `cleanup(kit)` — centers and leaves servos holding; exception-safe
+- `current_pan() → Optional[float]` — read last commanded pan angle
+- `current_tilt() → Optional[float]` — read last commanded tilt angle
+
+Module-level state (`_pan_current`, `_tilt_current`) tracks the last
+commanded angle for each servo so `_ramp()` can smooth-move from the
+current position to a new target.
+
+The original task description below is preserved for reference.
+
+---
 
 This is the servo module that all other code will import. It's the only place in the entire codebase that knows about servo hardware details. Everything else just calls `move_pan(angle)` and `move_tilt(angle)` without worrying about I2C, pulse widths, or limits.
 
@@ -436,9 +519,18 @@ Only add I if there's a persistent offset:
 
 ## Phase 6 — Laser Integration
 
+> **Note (updated after Phase 3):** the MB102 is no longer in the circuit
+> and the breadboard was removed. Before starting Phase 6, the breadboard
+> needs to be reintroduced for the MOSFET driver circuit. Power options
+> for the laser: tap 5V from the LM2596 output (already on the PCA9685 V+
+> terminal) or from a Pi GPIO 5V pin. See `docs/wiring.md` for the
+> current rig and `problems/001-servo-power.md` for the power story.
+> Original task wording below still applies conceptually, just substitute
+> "5V rail" for "MB102 rail".
+
 ### Task 6.1 — Verify laser voltage before wiring anything
 
-The laser module is rated at 3V. The MB102 rail is 5V. Do not connect the laser directly to 5V — it will likely burn out.
+The laser module is rated at 3V. The 5V rail (LM2596 output, or Pi GPIO 5V) is 5V. Do not connect the laser directly to 5V — it will likely burn out.
 
 **Before wiring, look at the laser module PCB.** Many laser modules (especially ones sold as "KY-008" or similar 3-pin breakout boards) already have a small resistor on the PCB that limits the current. Look for any component soldered onto the module board — if you see a resistor (a small rectangular component with colored bands or markings), the module already has protection built in and can likely accept 3–5V directly.
 
@@ -455,9 +547,17 @@ When we reach this task, we'll pick the exact resistor value based on your modul
 
 **Do this with everything powered off.**
 
-Two connections to make:
-1. Pi GPIO18 (pin 12) → breadboard row 50 (this is the MOSFET gate stub — the wire from row 50 already has the 220Ω resistor going to the gate at c45)
+> **Note (updated after Phase 3):** the original breadboard MOSFET circuit
+> was disconnected when the breadboard was removed. This task now includes
+> rebuilding the gate/drain/source wiring on the breadboard. Component
+> placement (rows c45/c46/c47/row 50) is preserved as a reference layout
+> but the breadboard itself is currently unplugged.
+
+Connections to make:
+1. Pi GPIO18 (pin 12) → breadboard row 50 (this is the MOSFET gate stub — the wire from row 50 has the 220Ω resistor going to the gate at c45)
 2. Laser (+) → 5V rail (with series resistor if needed, see Task 6.1) and laser (−) → MOSFET drain (c46)
+3. 5V source to the breadboard rail (LM2596 output via tap, or Pi GPIO 5V via jumper)
+4. Common GND between breadboard, Pi, and PCA9685
 
 Finding GPIO18: it's Pin 12, in the top row, sixth from the left.
 
@@ -523,7 +623,11 @@ Things to aim for:
 - Cable routed so it doesn't bind or pull when the bracket moves through its full range
 - Secure enough that the camera doesn't wobble
 
-After mounting: run `test_servo.py` again and verify the servos can still move through their full safe range without the cable snagging.
+After mounting: run `calibrate_servo.py` and sweep pan from PAN_MIN to PAN_MAX
+(50° to 220°) and tilt from TILT_MIN to TILT_MAX (115° to 205°) to verify
+the new cable routing doesn't snag anywhere. If a cable does bind within
+the previously calibrated range, the safe limits may need to be reduced —
+update `servo.py` and `docs/calibration.md` accordingly.
 
 ---
 
@@ -638,11 +742,13 @@ Once the system is working end-to-end:
 
 **Update `README.md`** to reflect the finished project — the "How to run" section should describe what `main.py` actually does now, not the placeholder.
 
-**Create `docs/calibration.md`** — record the actual values from your calibration runs:
-- Safe servo angle limits (pan_min, pan_max, tilt_min, tilt_max)
-- Tuned HSV range for your target
-- Tuned PID gains
-- Boresight offset values
+**Update `docs/calibration.md`** — already exists (created during Phase 3
+to record the servo limits early). Fill in the remaining placeholder
+sections with the values measured during this project:
+- ~~Safe servo angle limits~~ — recorded already (Phase 3)
+- Tuned HSV range for your target (Phase 4)
+- Tuned PID gains (Phase 5)
+- Boresight offset values (Phase 7)
 
 This document is important if you ever need to recalibrate or rebuild from scratch.
 
@@ -653,28 +759,36 @@ This document is important if you ever need to recalibrate or rebuild from scrat
 ```
 pi/
 ├── main.py                  the full tracking loop
-├── servo.py                 servo init, safe limits, move functions
+├── servo.py                 ✅ servo init, safe limits, move functions
 ├── camera.py                picamera2 capture
 ├── detector.py              HSV color detection, returns target (x,y)
 ├── tracker.py               PID loop: pixel error → servo correction
 ├── laser.py                 GPIO18 control with safety defaults
 ├── config.py                tuned constants: HSV range, PID gains, boresight offset
-├── test_servo.py            servo movement test (keep for debugging)
-├── calibrate_servo.py       interactive servo limit finder
+├── test_servo.py            ✅ servo movement test
+├── calibrate_servo.py       ✅ interactive servo control + limit finder
 ├── tune_detector.py         live HSV tuning tool
 ├── test_tracking.py         tracking loop without laser (for PID tuning)
 ├── test_laser.py            laser test in isolation
 ├── boresight.py             camera-laser offset calibration tool
-├── requirements.txt         pip packages (simple-pid already included)
-├── CLAUDE.md                project context for Claude Code
-├── CHANGELOG.md             session log
-├── README.md                project overview
-└── docs/
-    ├── setup-pi.md          Pi setup instructions
-    ├── wiring.md            wiring reference
-    ├── project-plan.md      this file
-    └── calibration.md       recorded calibration values
+├── requirements.txt         ✅ pip packages
+├── CLAUDE.md                ✅ project context for Claude Code
+├── CHANGELOG.md             ✅ session log
+├── HANDOFF.md               ✅ original handoff doc (kept for history)
+├── README.md                ✅ project overview
+├── docs/
+│   ├── setup-pi.md          ✅ Pi setup instructions
+│   ├── wiring.md            ✅ current physical wiring state
+│   ├── project-plan.md      ✅ this file
+│   ├── operating-guide.md   ✅ practical reference (commands, procedures, troubleshooting)
+│   ├── circuit-diagram.md   ✅ Mermaid system diagrams
+│   ├── calibration.md       ✅ recorded tuned values
+│   └── parts.docx           ✅ parts list (uploaded by Adam)
+└── problems/                ✅ one Markdown per problem encountered
+    └── 001-servo-power.md   ✅ MB102 underpowered → LM2596 buck (resolved)
 ```
+
+✅ = already exists as of end of Phase 3.
 
 ---
 
