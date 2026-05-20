@@ -2,7 +2,13 @@
 
 This file is read by Claude Code at the start of every session. Read it fully before writing any code.
 
-**Also read `docs/project-plan.md`** — it has the full phase-by-phase implementation plan with detailed tasks, code descriptions, and test procedures. This file (CLAUDE.md) gives you the hardware and architecture context; project-plan.md tells you what to build next.
+**Also read these companion docs:**
+- **`docs/project-plan.md`** — full phase-by-phase build plan with task descriptions and test procedures. Tells you what to build next.
+- **`docs/operating-guide.md`** — practical reference: daily commands, scripts and how to use them, troubleshooting, procedures we developed (bracket reassembly, edge calibration, LM2596 voltage setup, etc.). Read this when something stops working or before re-running anything.
+- **`docs/calibration.md`** — recorded tuned values (servo limits now; HSV/PID/boresight later).
+- **`problems/`** — one file per problem encountered, with diagnosis and fix.
+
+CLAUDE.md gives you the hardware and architecture context; the docs above tell you what to build and how to actually run things.
 
 ---
 
