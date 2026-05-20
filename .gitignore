@@ -1,0 +1,28 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Compiled Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# IDE folders
+.vscode/
+.idea/
+*.swp
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.pem
+*.key
