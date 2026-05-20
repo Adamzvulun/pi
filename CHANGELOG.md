@@ -23,8 +23,19 @@
 - `CLAUDE.md` — hardware constraints table (LM2596, Pi-VCC direct) and current project state.
 - `docs/project-plan.md` — "Where we are right now" reflects post-Phase-3.2/3.3 state.
 
-### What's next
-- Record the four calibrated angle limits and proceed to **Task 3.4** — write `servo.py`.
+### Edge calibration results
+- `PAN_MIN = 50.0`, `PAN_MAX = 220.0` (170° of pan travel, centered at 135°)
+- `TILT_MIN = 115.0`, `TILT_MAX = 205.0` (90° of tilt travel, centered at 160° — asymmetric due to spline mesh granularity)
+- Full record in `docs/calibration.md`.
+
+### Task 3.4 — servo.py
+- `servo.py` written as the single owner module for ServoKit/PCA9685.
+- Public API: `init()`, `move_pan(kit, angle)`, `move_tilt(kit, angle)`, `center(kit)`, `cleanup(kit)`, `current_pan()`, `current_tilt()`.
+- All `move_*` calls clamped to the calibrated limits — this is the single safety enforcement against hard stops.
+- Module-level state tracks last commanded angle for each servo so subsequent moves can ramp smoothly (PCA9685 has no position readback).
+
+### Phase 3 status
+✅ Complete. Next session begins Phase 4 (camera + target detection).
 
 ## [Setup] - 2026-05-20
 

@@ -15,8 +15,10 @@ Work through phases in order. Do not skip ahead. Every phase produces something 
 - ✅ **Pan-tilt bracket reassembled** with electrical 135° = physical center on both axes.
 - ✅ **Task 3.1 (i2cdetect) verified** — PCA9685 responds at 0x40.
 - ✅ **Task 3.2 (test_servo.py) written and verified** — full chain Pi → I2C → PCA9685 → DS3225 works.
-- ✅ **Task 3.3 (calibrate_servo.py) written and used** to find safe physical limits (`PAN_MIN/MAX`, `TILT_MIN/MAX`).
-- ⏳ **Next task: 3.4** — write `servo.py` hardcoding the calibrated limits as safety clamps.
+- ✅ **Task 3.3 (calibrate_servo.py) edge calibration complete**: `PAN_MIN=50`, `PAN_MAX=220`, `TILT_MIN=115`, `TILT_MAX=205` (see `docs/calibration.md`).
+- ✅ **Task 3.4 (servo.py) written** with calibrated limits as the safety clamps.
+- ✅ **Phase 3 COMPLETE.**
+- ⏳ **Next: Phase 4** — connect Pi Camera (Task 4.1), write camera.py (Task 4.2), tune HSV detector (Task 4.3/4.4), write detector.py (Task 4.6).
 
 (Phase 6 laser circuit was temporarily disconnected when the breadboard was removed; it will be rebuilt in Phase 6 work.)
 
