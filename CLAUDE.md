@@ -63,7 +63,8 @@ Code is NEVER edited directly on the Pi.
 | Laser GPIO | GPIO18 (physical pin 12), active HIGH via MOSFET gate |
 | Laser gate resistor | 220Ω between GPIO18 and MOSFET gate |
 | Laser pulldown | 100kΩ gate-to-GND |
-| Servo supply voltage | 5V from MB102 rail (spec is 4.8–6.8V; running at lower end — may brown out under load) |
+| Servo supply voltage | 5V regulated from LM2596 buck converter fed by 12V 5A PSU — provides up to ~3A, isolated from Pi rail (see `problems/001-servo-power.md`) |
+| PCA9685 VCC source | Pi GPIO 5V (pin 2) directly — MB102 no longer in the circuit |
 
 ## Safety rules (always follow these)
 
@@ -128,7 +129,28 @@ These were explicitly decided — do not change them without asking:
 
 Update this section at the end of every session.
 
-- ✅ Phase 1–2: OS, libraries, breadboard hardware all complete
-- ✅ Phase 3 prep: repo skeleton, cron auto-pull, all libraries installed (including simple-pid), system packages up to date
-- ⏳ **Next task: 3.1** — wire three jumpers from Pi GPIO to breadboard, run `i2cdetect -y 1`, confirm `40` appears
+- ✅ Phase 1–2: OS, libraries installed
+- ✅ Phase 3 prep: repo skeleton, cron auto-pull, all libraries installed
+- ✅ **Problem 001 resolved**: MB102 removed from circuit. LM2596 buck converter now supplies servo V+ rail at 5V from the 12V PSU. Pi GPIO 5V powers PCA9685 VCC directly. See `problems/001-servo-power.md`.
+- ✅ **Pan-tilt bracket reassembled** with both servos held at electrical 135° during mounting → electrical center now corresponds to physical center on both axes.
+- ✅ **Task 3.2 (test_servo.py) verified end-to-end**: I2C → PCA9685 → both DS3225 servos respond, external 5V PSU sustains load.
+- ✅ **Task 3.3 (calibrate_servo.py) used to center the kit**. Edge limits (`PAN_MIN/MAX`, `TILT_MIN/MAX`) — see end-of-session notes.
+- ⏳ **Next task: 3.4** — write `servo.py` once the four calibrated angle limits are recorded.
 - ⏸ Phase 4 (camera), Phase 5 (PID), Phase 6 (laser), Phase 7 (mounting), Phase 8 (integration) — not started
+
+### Current wiring snapshot (post problem-001 resolution)
+
+```
+12V 5A PSU ─┬─→ LM2596 buck (set to 5.0V) ─→ PCA9685 V+ (green terminal, servo power)
+            └─→ (LM2596 GND) ─→ shared GND
+
+Pi GPIO pin 2  (5V)  ─→ PCA9685 VCC   (logic power)
+Pi GPIO pin 3  (SDA) ─→ PCA9685 SDA   (I2C data)
+Pi GPIO pin 5  (SCL) ─→ PCA9685 SCL   (I2C clock)
+Pi GPIO pin 6  (GND) ─→ PCA9685 GND   (shared with LM2596 GND)
+
+PCA9685 channel 0 ─→ DS3225 pan
+PCA9685 channel 1 ─→ DS3225 tilt
+```
+
+MB102 and the laser MOSFET circuit are not currently wired (Phase 6 work).

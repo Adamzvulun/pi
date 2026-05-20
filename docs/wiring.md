@@ -1,64 +1,121 @@
 # Wiring Reference
 
-## Power architecture
+This file reflects the **current** state of the rig. As phases progress
+(camera, laser, mounting), new sections will be added at the bottom.
 
-MB102 breadboard power module on the breadboard, fed by a 12V 5A PSU via the DC barrel jack.
-Both MB102 jumpers set to 5V. Red rail = +5V, blue rail = GND.
-The Pi has its own USB-C power supply and is NOT connected to the MB102 5V rail.
+For visual diagrams of the full target system, see [`circuit-diagram.md`](circuit-diagram.md).
 
-## Built and verified
+---
 
-### MB102 power module
-- Input: 12V 5A PSU → DC barrel jack on MB102
-- Both voltage selector jumpers: 5V position
-- Output polarity confirmed correct (red = +, blue = −)
+## Current state (Phase 3 — Servo bring-up complete)
 
-### PCA9685 PWM driver
-- GND → blue (−) rail
-- VCC → red (+) rail
-- SDA → breadboard row j14 (stub, not yet connected to Pi)
-- SCL → breadboard row j13 (stub, not yet connected to Pi)
-- Green terminal block wired to red and blue rails (power for servos)
+Both DS3225 servos are powered and verified working. The breadboard is
+temporarily out of the rig; the laser MOSFET circuit will be reassembled
+on it in Phase 6.
 
-### Servos
-- Channel 0: Pan servo (bottom of pan-tilt bracket, left-right motion)
-- Channel 1: Tilt servo (top of pan-tilt bracket, up-down motion)
-- Both plugged into PCA9685 channels, wire colors match
+### Power architecture
 
-### Laser driver circuit
 ```
-Pi GPIO18 (pin 12) ──[220Ω]──┬── MOSFET gate  (c50 → c45 area)
-                              │
-                           [100kΩ]
-                              │
-                             GND
+12V 5A PSU ──► LM2596 buck (output set to 5.0V) ──► PCA9685 V+   (servo power)
+                       │
+                       └─► GND ──► shared GND rail
 
-MOSFET (IRLZ44N):
-  Gate   → c45  (via 220Ω from row 50)
-  Drain  → c46  (laser − terminal connects here when added)
-  Source → c47  (jumper to GND rail)
+Pi USB-C ──► Pi 5V rail ──► GPIO pin 2 ──► PCA9685 VCC           (chip logic)
+                            GPIO pin 6 ──► shared GND
 ```
-Circuit is built and soldered. Laser module itself is not yet attached (cable length TBD during mounting).
 
-## NOT yet wired (do this with Pi powered off)
+**Why two separate 5V sources?** The DS3225 servos can draw 2A+ each at
+stall; the PCA9685 chip itself draws only ~50mA. Splitting the rails
+ensures servo current spikes can never affect the Pi's logic. See
+`problems/001-servo-power.md` for the full story.
 
-These four connections must be made before any I2C or laser code will work.
-The first three are needed now. GPIO18 is left until the laser module is physically attached.
+### Pi ↔ PCA9685 (four wires directly, no breadboard)
 
-| Pi pin | Pi signal   | Breadboard destination | Purpose                          |
-|--------|-------------|------------------------|----------------------------------|
-| Pin 3  | GPIO2 (SDA) | j14                    | I2C data to PCA9685              |
-| Pin 5  | GPIO3 (SCL) | j13                    | I2C clock to PCA9685             |
-| Pin 6  | GND         | blue (−) rail          | Common ground                    |
-| Pin 12 | GPIO18      | row 50                 | Laser MOSFET gate (add later)    |
+| Pi pin | Pi signal | PCA9685 pin | Purpose |
+|--------|-----------|-------------|---------|
+| 2      | 5V        | VCC         | Chip logic power |
+| 3      | GPIO2 SDA | SDA         | I2C data |
+| 5      | GPIO3 SCL | SCL         | I2C clock |
+| 6      | GND       | GND         | Shared ground |
 
-To find the right pins: hold the Pi with the USB ports facing away from you. The 40-pin GPIO header is the double row of pins on the top-left. Pin 1 is the corner pin closest to the SD card slot and is marked with a small triangle on the board. Pins are numbered left-to-right, top row first (1, 3, 5 … along the top; 2, 4, 6 … along the bottom).
+### Servo power (LM2596 → PCA9685 green terminal)
 
-Pin 3 (SDA) and Pin 5 (SCL) are in the top row, second and third from the left. Pin 6 (GND) is directly below Pin 5 in the bottom row.
+| LM2596    | PCA9685 V+ terminal | Purpose |
+|-----------|---------------------|---------|
+| OUT+ (5V) | V+ (positive screw) | Servo rail |
+| OUT−      | V− (negative screw) | Servo ground (shared with Pi GND) |
+
+LM2596 input side: IN+ → 12V PSU positive, IN− → 12V PSU negative.
+**Voltage was set with a multimeter on the output terminals BEFORE connecting to the PCA9685.**
+
+### Servos plugged into PCA9685
+
+| Channel | Servo | Mount role |
+|---------|-------|------------|
+| 0 | DS3225 pan | Bottom of bracket — rotates the whole tilt assembly horizontally |
+| 1 | DS3225 tilt | Top of bracket — rotates camera/laser plate vertically |
+
+Wire colors on DS3225: brown=GND, red=V+, orange=PWM signal. Polarity matters.
+
+### Mechanical state
+
+Pan-tilt bracket has been **reassembled with both servos held at electrical 135°**
+during mounting. Electrical center now corresponds to physical center on both
+axes (within one spline tooth, ~15°). The safe edge limits will be hardcoded
+into `servo.py` (Task 3.4) once recorded from `calibrate_servo.py` output.
+
+---
+
+## Removed from the circuit
+
+These were part of the original plan but are no longer wired:
+
+- **MB102 breadboard power module** — replaced by LM2596 for servo power
+  and Pi GPIO 5V for logic power. May return for the laser circuit if
+  convenient.
+- **Breadboard itself** — temporarily out. Will be reintroduced for the
+  laser MOSFET circuit in Phase 6.
+- **Laser MOSFET driver circuit** — was previously built on the breadboard
+  but disconnected when the board was removed. Will be rebuilt in Phase 6.
+
+---
+
+## Not yet wired (later phases)
+
+### Phase 6 — laser
+
+| Pi pin | Pi signal | Destination | Purpose |
+|--------|-----------|-------------|---------|
+| 12     | GPIO18    | MOSFET gate (via 220Ω) | Laser switch control |
+
+Laser circuit components (when rebuilt):
+- IRLZ44N N-channel MOSFET (G/D/S leftmost-to-rightmost with flat face toward you)
+- 220Ω resistor between GPIO18 and MOSFET gate
+- 100kΩ pulldown from MOSFET gate to GND (keeps laser OFF when GPIO floats)
+- Laser (+) to 5V rail, laser (−) to MOSFET drain, source to GND
+
+### Phase 4 — camera
+
+Pi Camera connects via CSI ribbon cable directly to the Pi (not through the breadboard).
+
+---
 
 ## Notes
 
-- Servos are running at 5V (spec allows 4.8–6.8V). This is intentional to save cost.
-  Torque will be reduced and brownouts are possible under heavy load — code handles this gracefully.
-- DS3225 servo pulse range: 500–2500 µs at 50 Hz. Neutral (center) = 1500 µs.
-- PCA9685 I2C address: 0x40 (default, no address bridges soldered).
+- DS3225 servo pulse range: 500–2500 µs at 50 Hz. Neutral (center) = 1500 µs = electrical angle 135°.
+- DS3225 operating voltage spec: 4.8–6.8V. Currently running at 5.0V from the LM2596 (within spec).
+- PCA9685 I2C address: 0x40 (default).
+- Common ground is mandatory across the Pi, LM2596 OUT−, and PCA9685 GND — without it, I2C will fail.
+
+## Finding GPIO pins on the Pi
+
+Hold the Pi with the USB ports facing away from you. The 40-pin GPIO header
+is on the top-left. Pin 1 is the corner closest to the SD card slot
+(triangle marker on the board). **Top row = odd pins, bottom row = even pins,
+both counting left to right.**
+
+- Pin 2 (5V): bottom row, first from left
+- Pin 3 (SDA): top row, second from left
+- Pin 5 (SCL): top row, third from left
+- Pin 6 (GND): bottom row, third from left
+- Pin 12 (GPIO18): bottom row, sixth from left (laser, Phase 6)

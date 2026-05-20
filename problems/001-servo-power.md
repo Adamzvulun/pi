@@ -262,11 +262,31 @@ Top row = odd pins (1, 3, 5…). Bottom row = even pins (2, 4, 6…). Both count
 
 ---
 
-## Status
+## Status — RESOLVED ✅
 
-- [ ] Set LM2596 output to 5.0V with multimeter (before connecting anything)
-- [ ] Wire LM2596 IN+ → 12V PSU, IN- → GND rail
-- [ ] Wire LM2596 OUT+ → PCA9685 V+, OUT- → GND rail
-- [ ] Confirm MB102 5V still connected to PCA9685 VCC
-- [ ] Confirm shared GND: MB102 + LM2596 + Pi GPIO pin 6 → same GND rail
-- [ ] Proceed to Task 3.1: wire I2C jumpers (pins 3/5/6), run `i2cdetect -y 1`
+- [x] LM2596 output set to 5.0V via trimpot, verified with multimeter
+- [x] LM2596 wired to 12V PSU input and PCA9685 V+ output
+- [x] Shared GND across LM2596, Pi, and PCA9685
+- [x] I2C verified (`i2cdetect -y 1` returns `40`)
+- [x] `test_servo.py` runs successfully — both servos respond
+- [x] `calibrate_servo.py` used to drive both axes to electrical 135° while reassembling the pan-tilt bracket (resolved a secondary problem where electrical center was ~170° off from physical center on pan)
+
+## Resolution notes
+
+The final wiring deviates slightly from the original plan: **the MB102 is not in the circuit at all**.
+Instead of MB102 5V → PCA9685 VCC for logic power, we wired Pi GPIO 5V (pin 2) directly into PCA9685 VCC.
+This is fine because:
+
+- PCA9685 logic draws ~50mA — well within the Pi's USB-C adapter headroom
+- One fewer power module = fewer points of failure
+- The Pi's 5V rail is already regulated and clean
+
+So the actual servo-power architecture in production is:
+
+```
+12V PSU ──► LM2596 (5.0V regulated, up to 3A) ──► PCA9685 V+   (servo power)
+Pi USB-C ──► Pi 5V rail ──► Pi GPIO pin 2 ──► PCA9685 VCC      (chip logic)
+Shared GND across all three (Pi, LM2596 OUT-, PCA9685 GND)
+```
+
+The MB102 stays available for the laser MOSFET circuit in Phase 6 if a breadboard rail is convenient.

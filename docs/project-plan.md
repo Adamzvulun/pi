@@ -11,8 +11,14 @@ Work through phases in order. Do not skip ahead. Every phase produces something 
 - ✅ Pi OS installed, SSH/VNC/I2C enabled
 - ✅ All libraries installed (Adafruit, picamera2, OpenCV, numpy, gpiozero, simple-pid, rpicam-apps)
 - ✅ Repo on GitHub, auto-pull cron running every minute
-- ✅ Breadboard: MB102 power, PCA9685, both servos wired, laser MOSFET circuit built
-- ⏳ Pi-to-breadboard jumpers **not yet done** — this is the very next physical step
+- ✅ **Problem 001 (servo power) resolved**: LM2596 buck converter supplies servo V+ at 5V from the 12V PSU. Pi GPIO 5V powers PCA9685 VCC directly. MB102 no longer in the circuit. See `problems/001-servo-power.md` and `docs/wiring.md`.
+- ✅ **Pan-tilt bracket reassembled** with electrical 135° = physical center on both axes.
+- ✅ **Task 3.1 (i2cdetect) verified** — PCA9685 responds at 0x40.
+- ✅ **Task 3.2 (test_servo.py) written and verified** — full chain Pi → I2C → PCA9685 → DS3225 works.
+- ✅ **Task 3.3 (calibrate_servo.py) written and used** to find safe physical limits (`PAN_MIN/MAX`, `TILT_MIN/MAX`).
+- ⏳ **Next task: 3.4** — write `servo.py` hardcoding the calibrated limits as safety clamps.
+
+(Phase 6 laser circuit was temporarily disconnected when the breadboard was removed; it will be rebuilt in Phase 6 work.)
 
 ---
 
