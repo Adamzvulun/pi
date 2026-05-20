@@ -12,7 +12,13 @@ cd ~/pi
 git pull
 ```
 
-Replace `<PI_IP>` with the Pi's current IP address (check your router or run `hostname -I` on the Pi).
+Replace `<PI_IP>` with the Pi's IP address. The easiest way — if you're on the same network — is to use the hostname directly instead of an IP:
+
+```bash
+ssh adam@LaserPi.local
+```
+
+That works without needing to look up the IP address. If it doesn't resolve, fall back to the IP (check your router admin page, or run `hostname -I` on the Pi while physically logged in).
 
 ---
 

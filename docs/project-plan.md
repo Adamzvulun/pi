@@ -32,6 +32,8 @@ Finding the right GPIO pins — hold the Pi so the USB ports face away from you.
 | Pin 5 | GPIO3 — SCL | j13 | I2C clock line to PCA9685 |
 | Pin 6 | GND | blue (−) rail | Common ground |
 
+**What is I2C?** I2C (pronounced "I-squared-C") is a communication protocol — a standard way for the Pi to talk to components like the PCA9685 over just two wires: SDA (data) and SCL (clock). The Pi sends commands down the SDA wire in time with pulses on the SCL wire. Each device on the bus has a unique address (the PCA9685 uses 0x40) so the Pi can target it specifically. That's all it is. You don't need to implement any of this yourself — the Adafruit library handles it. You just need the wires to be physically connected.
+
 Pin 3 and Pin 5 are in the top row, second and third from the left. Pin 6 is directly below Pin 5 in the bottom row.
 
 **Power up sequence:**
@@ -83,11 +85,15 @@ What it does:
 
 **Important — DS3225 pulse width configuration:**
 
-The ServoKit library defaults to a standard servo range of 1000–2000 µs over 180°. The DS3225 uses a wider range: 500–2500 µs over 270°. If you don't configure this, the servos will only use a fraction of their range. When initializing, set:
+A servo is controlled by sending it a PWM pulse of a specific width (measured in microseconds). The width tells the servo what angle to move to. Standard cheap servos use 1000–2000 µs for 0°–180°. The DS3225 is a higher-end servo that covers 270° and uses a wider range: 500–2500 µs.
+
+ServoKit doesn't know you have a DS3225 — it assumes a standard servo by default. If you don't tell it otherwise, it will only ever command pulses between its default range, which means the servo will only move a fraction of its actual range and the angle numbers in your code will be wrong. You must configure it for every channel you use:
 ```python
 kit.servo[channel].set_pulse_width_range(500, 2500)
 kit.servo[channel].actuation_range = 270
 ```
+
+After this, angle 0 = fully one direction, angle 270 = fully the other direction, and angle 135 = center. The center pulse works out to exactly 1500 µs, which is the DS3225's documented neutral point.
 
 After writing the file on the laptop, commit and push. The Pi will auto-pull within 60 seconds. Then SSH to the Pi and run:
 ```bash
@@ -123,14 +129,16 @@ python3 calibrate_servo.py
 ```
 
 **Calibration procedure:**
-1. Start with the pan servo (channel 0)
-2. Move toward 0° in small steps (e.g. 135 → 100 → 70 → 50…) until the bracket hits a stop
-3. The last angle before it hit is your pan_min
-4. Move back to center, then go toward 270° until it hits the other stop
-5. That's your pan_max
-6. Repeat for tilt servo (channel 1)
+1. The script starts both servos at center (135°) and asks which servo to calibrate first — type `0` for pan, `1` for tilt
+2. It will prompt: "Enter angle (0–270):" — type a number and press Enter, the servo moves there
+3. Start with pan (channel 0), moving toward 0° in steps: type `100`, watch, type `70`, watch, type `50`…
+4. Stop **before** you hear or feel the bracket grinding — the servo should stop smoothly at its physical limit, not be forced into it
+5. The last angle where the bracket moved freely (not grinding) is your `pan_min` — write it down
+6. Type `135` to return to center, then move toward 270° the same way to find `pan_max`
+7. Type `done` when finished with one servo — the script will print the safe limits for that servo
+8. Repeat for tilt (channel 1)
 
-Write the four values down. They will be constants in servo.py.
+The four values you end up with — `pan_min`, `pan_max`, `tilt_min`, `tilt_max` — go into `servo.py` as constants. Write them down somewhere physical too (a sticky note is fine) in case you need to reference them later.
 
 ---
 
@@ -230,7 +238,9 @@ By thresholding on Hue only (or Hue + a loose range on S and V), you can find a 
 **Choose your target object now.** It should be:
 - A single solid color that doesn't appear anywhere else in the scene
 - Bright and saturated (avoid pastel colors, they're hard to threshold)
-- Good options: an orange traffic cone, a bright green tennis ball, a solid red cup
+- Good options: a bright orange object, a tennis ball (yellow-green), a bright blue tape mark
+
+**Avoid red as your target color.** Red is the one color that wraps around in OpenCV's HSV space — it appears near H=0 AND near H=179, so a single `inRange` call can't capture it cleanly. You'd need two separate masks and combine them. Every other color is straightforward. Pick something orange, yellow, green, or blue instead.
 
 ---
 
@@ -249,23 +259,23 @@ What it does:
 
 **How to run it:**
 
-Because this opens windows (a GUI), you need to either:
-- Be physically at the Pi with a monitor, or
-- SSH with X forwarding: `ssh -X adam@LaserPi.local` and the windows will appear on your laptop
+This script opens GUI windows, so you need to see the Pi's display. The easiest way on Windows is **VNC** — it's already enabled on your Pi. Open your VNC viewer, connect to `LaserPi.local`, and you'll see the Pi's desktop. Open a terminal there and run the script. The windows will appear on the Pi's virtual desktop in front of you.
 
-Run:
+(There is another method called SSH X forwarding — `ssh -X` — but on Windows it requires installing a separate X server program like VcXsrv. VNC is already set up, so use that.)
+
 ```bash
 python3 tune_detector.py
 ```
 
 **Tuning procedure:**
-1. Point the camera at your target object
-2. Start with wide ranges (H: 0–179, S: 50–255, V: 50–255) and look at the mask
-3. Narrow the H range until only your target color is white
-4. Tighten S_min upward to remove grey/washed-out areas
-5. When only the target is showing as white, press 's'
+1. Point the camera at your target object with typical lighting (the lighting you'll actually use when tracking)
+2. The sliders start at wide ranges (H: 0–179, S: 50–255, V: 50–255) — the mask will show a lot of white at first
+3. Narrow H_max down from 179 and raise H_min up from 0 until only your target color is white in the mask
+4. Raise S_min to remove grey and washed-out patches
+5. Adjust V_min and V_max to handle the brightness of your lighting
+6. When the mask shows your target as a clean solid white blob and everything else is black, press 's'
 
-The saved values go into `config.py` where `detector.py` will read them.
+When you press 's', the script prints the six values to the terminal. Copy them into `config.py` manually — update the `HSV_LOWER` and `HSV_UPPER` lines. This is intentional: auto-writing Python files is fragile, and manually copying three numbers takes five seconds.
 
 ---
 
@@ -295,10 +305,11 @@ What it contains:
 - `detect(frame)` — takes a BGR frame, returns `(x, y)` pixel coordinates of the target center, or `None` if not found
 
 What the function does step by step:
-1. Convert BGR frame to HSV
-2. Create a mask using `cv2.inRange(hsv, HSV_LOWER, HSV_UPPER)` — white where the target color is, black everywhere else
-3. Apply a small blur to the mask to remove noise (`cv2.GaussianBlur`)
-4. Find contours in the mask (`cv2.findContours`)
+1. Apply a small Gaussian blur to the original BGR frame before converting — this smooths out pixel noise in the camera sensor so the color detection is less jittery (`cv2.GaussianBlur` with a 5×5 kernel)
+2. Convert the blurred frame from BGR to HSV
+3. Create a mask using `cv2.inRange(hsv, HSV_LOWER, HSV_UPPER)` — white (255) where the target color is, black (0) everywhere else
+4. Clean up the mask with morphological operations: `cv2.erode` (shrinks white regions, removes tiny specks of noise) followed by `cv2.dilate` (grows them back, fills small holes). This is better than blurring a black-and-white image, which just creates grey edges.
+5. Find contours in the mask (`cv2.findContours`)
 5. If no contours found, return None
 6. Find the largest contour by area (this is most likely the target)
 7. If the largest contour is too small (below a minimum area threshold), return None — this filters out noise
@@ -336,6 +347,8 @@ A PID controller takes that error as input and outputs a correction. For pan: if
 
 The **proportional gain (Kp)** is the main tuning knob. A higher Kp means larger corrections for the same error — the servo moves faster. Too high and it overshoots and oscillates. Too low and it tracks slowly.
 
+**A note on the wide-angle lens:** your camera has a 220° field of view — that's a fisheye lens. It creates barrel distortion, meaning objects near the edges of the frame appear stretched and displaced. The math above (pixel error → servo angle) assumes a flat undistorted image. Near the center of the frame the distortion is small and the approximation works fine. Near the edges it gets worse. For this project that's acceptable — the tracker will keep the target near the center anyway. Don't be surprised if tracking feels slightly less precise when the target first enters the frame from the edge.
+
 ---
 
 ### Task 5.2 — Write tracker.py
@@ -347,9 +360,9 @@ What it contains:
 - `update(pan_pid, tilt_pid, kit, target_pos)` — the main function called every frame:
   - If `target_pos` is None, don't move (hold position)
   - Compute pan_error and tilt_error from target_pos and frame center
-  - Run `pan_pid(pan_error)` — returns a correction in pixels-ish units
-  - Scale the correction to degrees (a scaling factor you'll tune)
-  - Add correction to current pan angle, clamp to safe limits, move the servo
+  - Run `pan_pid(pan_error)` — returns a correction value
+  - Add that correction to the current pan angle, clamp to safe limits, move the servo
+  - (Kp is the scaling factor that converts pixels of error into degrees of correction — tuning Kp in Task 5.4 is exactly this)
   - Same for tilt
 - `stop(kit)` — centers servos and cleans up
 
@@ -419,13 +432,14 @@ Only add I if there's a persistent offset:
 
 The laser module is rated at 3V. The MB102 rail is 5V. Do not connect the laser directly to 5V — it will likely burn out.
 
-**Before wiring, figure out whether the laser module has onboard voltage regulation:**
-- Look at the laser module itself — some modules (especially the ones sold as "KY-008" or similar) have a small resistor already on the PCB that limits current. Check the module's PCB for any resistors or regulators.
-- If you have a multimeter: measure the voltage across the laser diode pins directly (don't power it yet, just probe).
+**Before wiring, look at the laser module PCB.** Many laser modules (especially ones sold as "KY-008" or similar 3-pin breakout boards) already have a small resistor on the PCB that limits the current. Look for any component soldered onto the module board — if you see a resistor (a small rectangular component with colored bands or markings), the module already has protection built in and can likely accept 3–5V directly.
 
-**If no onboard regulation:** you need a series resistor between the 5V supply and the laser (+) terminal. A 68Ω resistor will drop approximately 2V at ~30mA, putting about 3V across the laser. We'll calculate the exact value based on your specific module when we get there.
+**Regardless, always wire a series resistor anyway.** A 100Ω resistor in series between the 5V rail and the laser (+) terminal:
+- Protects a module with no internal regulation by dropping about 1V at typical laser currents
+- Does nothing harmful to a module that already has internal regulation — it just drops a tiny bit more voltage
+- Costs you nothing and takes 30 seconds to add
 
-**Do not skip this step.** Burning out a laser module is a common mistake and an easy one to avoid.
+When we reach this task, we'll pick the exact resistor value based on your module. The point is: **never connect the laser directly to 5V without any series resistance.**
 
 ---
 
@@ -439,7 +453,7 @@ Two connections to make:
 
 Finding GPIO18: it's Pin 12, in the top row, sixth from the left.
 
-After wiring, before running any code: double-check that the laser (−) is connected to the MOSFET drain (c46), and the source (c47) has a jumper to the GND rail. When GPIO18 goes HIGH, the MOSFET opens and current flows from the laser through the drain-source path to GND — that's what turns the laser on.
+After wiring, before running any code: double-check that the laser (−) is connected to the MOSFET drain (c46), and the source (c47) has a jumper to the GND rail. When GPIO18 goes HIGH (3.3V from the Pi), the MOSFET turns on and conducts — current flows from the laser (+) supply, through the laser, through the MOSFET drain-to-source, to GND. That's what lights the laser. When GPIO18 goes LOW, the MOSFET turns off and the circuit is broken — laser off.
 
 ---
 
@@ -456,13 +470,15 @@ What it contains:
 
 **Safety pattern to use everywhere laser is involved:**
 ```python
-laser = laser.init()
+laser_dev = laser.init()
 try:
     # ... do things ...
 finally:
-    laser.cleanup(laser)
+    laser.cleanup(laser_dev)
 ```
 This guarantees the laser turns off even if an exception is raised or the script is interrupted.
+
+Note the variable is named `laser_dev`, not `laser`. If you named it `laser`, it would shadow the module — `laser = laser.init()` would work but then `laser.cleanup(...)` would fail because `laser` now refers to the device object, not the module. Always use a different name for the variable.
 
 ---
 
@@ -641,7 +657,7 @@ pi/
 ├── test_tracking.py         tracking loop without laser (for PID tuning)
 ├── test_laser.py            laser test in isolation
 ├── boresight.py             camera-laser offset calibration tool
-├── requirements.txt         pip packages (add simple-pid)
+├── requirements.txt         pip packages (simple-pid already included)
 ├── CLAUDE.md                project context for Claude Code
 ├── CHANGELOG.md             session log
 ├── README.md                project overview
@@ -662,3 +678,4 @@ pi/
 - **Commit often** — after every task that produces working code, commit with a clear message.
 - **Update CHANGELOG.md** at the end of every working session.
 - **If something doesn't work**, diagnose before moving on. Each phase assumes the previous phase's test passed cleanly.
+- **Update `docs/wiring.md`** as you complete physical wiring steps — mark the connections as done so the document stays accurate.
