@@ -97,17 +97,19 @@ To test it: push a small change from the laptop, wait 60 seconds, then check `~/
 
 **Do this with the Pi powered off (unplug the USB-C cable first).**
 
-You need three jumper wires:
+You need three jumper wires. These connect the Pi's I2C bus and ground to the breadboard so it can talk to the PCA9685 servo driver.
 
-| Pi physical pin | Pi signal | Breadboard destination | Why |
-|-----------------|-----------|------------------------|-----|
-| Pin 3           | GPIO2 (SDA) | j14 | I2C data line to PCA9685 |
-| Pin 5           | GPIO3 (SCL) | j13 | I2C clock line to PCA9685 |
-| Pin 6           | GND         | blue (−) rail | Shared ground |
+**Finding the pins:** hold the Pi with the USB ports facing away from you. The GPIO header is the two rows of pins on the top-left. Pin 1 is the corner closest to the SD card slot (tiny triangle on the board). Top row = odd pins (1, 3, 5…), bottom row = even pins (2, 4, 6…), counting left to right.
+
+| Pi physical pin | Pi signal   | Breadboard destination | Why                         |
+|-----------------|-------------|------------------------|-----------------------------|
+| Pin 3           | GPIO2 (SDA) | j14                    | I2C data line to PCA9685    |
+| Pin 5           | GPIO3 (SCL) | j13                    | I2C clock line to PCA9685   |
+| Pin 6           | GND         | blue (−) rail          | Shared ground               |
+
+Pin 3 and Pin 5 are the second and third pins in the top row. Pin 6 is directly below Pin 5.
 
 The GPIO18 laser wire (pin 12 → row 50) is left for later, when the laser module is physically attached.
-
-See [docs/wiring.md](wiring.md) for the full wiring diagram.
 
 ---
 

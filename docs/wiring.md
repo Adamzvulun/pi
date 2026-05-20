@@ -42,16 +42,19 @@ Circuit is built and soldered. Laser module itself is not yet attached (cable le
 
 ## NOT yet wired (do this with Pi powered off)
 
-These four connections must be made before any I2C or laser code will work:
+These four connections must be made before any I2C or laser code will work.
+The first three are needed now. GPIO18 is left until the laser module is physically attached.
 
-| Pi pin | Pi signal | Breadboard destination | Purpose |
-|--------|-----------|------------------------|---------|
-| Pin 3  | GPIO2 (SDA) | j14 | I2C data to PCA9685 |
-| Pin 5  | GPIO3 (SCL) | j13 | I2C clock to PCA9685 |
-| Pin 6  | GND         | blue (−) rail | Common ground |
-| Pin 12 | GPIO18      | row 50        | Laser MOSFET gate (add when laser attached) |
+| Pi pin | Pi signal   | Breadboard destination | Purpose                          |
+|--------|-------------|------------------------|----------------------------------|
+| Pin 3  | GPIO2 (SDA) | j14                    | I2C data to PCA9685              |
+| Pin 5  | GPIO3 (SCL) | j13                    | I2C clock to PCA9685             |
+| Pin 6  | GND         | blue (−) rail          | Common ground                    |
+| Pin 12 | GPIO18      | row 50                 | Laser MOSFET gate (add later)    |
 
-See `docs/setup-pi.md` step 6 for the wiring procedure.
+To find the right pins: hold the Pi with the USB ports facing away from you. The 40-pin GPIO header is the double row of pins on the top-left. Pin 1 is the corner pin closest to the SD card slot and is marked with a small triangle on the board. Pins are numbered left-to-right, top row first (1, 3, 5 … along the top; 2, 4, 6 … along the bottom).
+
+Pin 3 (SDA) and Pin 5 (SCL) are in the top row, second and third from the left. Pin 6 (GND) is directly below Pin 5 in the bottom row.
 
 ## Notes
 
