@@ -7,7 +7,7 @@ Each phase has its own file. Click into one for detail.
 | 1 | [Foundation](phase-1-foundation.md) — OS, libraries, dev workflow | ✅ Complete |
 | 2 | [Initial hardware build](phase-2-hardware.md) — breadboard wiring | ✅ Complete (superseded by Phase 3 rework) |
 | 3 | [Servo control](phase-3-servo-control.md) — `test_servo.py`, `calibrate_servo.py`, `servo.py` | ✅ Complete |
-| 4 | [Camera + detection](phase-4-camera.md) — `camera.py`, `detector.py`, HSV tuning | ⏳ In progress (USB webcam path) |
+| 4 | [Camera + detection](phase-4-camera.md) — `camera.py`, `detector.py`, HSV tuning | ✅ Complete |
 | 5 | [PID tracking](phase-5-pid-tracking.md) — `tracker.py`, PID gain tuning | ⏸ Future (needs Phase 4) |
 | 6 | [Laser integration](phase-6-laser.md) — MOSFET driver circuit, `laser.py` | ⏳ In progress |
 | 7 | [Mounting + boresight](phase-7-mounting.md) — wood base, 3D-printed mounts, alignment | ⏸ Future |
@@ -15,9 +15,9 @@ Each phase has its own file. Click into one for detail.
 
 ## Currently working on
 
-**Phase 4** — camera + detection. USB webcam (Microsoft LifeCam HD-3000) plugged into the Pi, opens cleanly at 640×480 BGR via `cv2.VideoCapture(0)`. `camera.py`, `config.py`, `detector.py`, `tune_detector.py` written; HSV range still needs to be tuned via VNC.
+**Phase 5** — PID closed-loop tracking. Phase 4 just finished; Phase 5 is the natural next step: write `tracker.py` (two `simple_pid` controllers), `test_tracking.py`, then tune Kp/Ki/Kd against the real bracket.
 
-**Phase 6** — laser MOSFET driver circuit on breadboard. Bare-diode laser confirmed (no PCB), 100Ω series resistor mandatory, red = +, black = −. Awaiting hardware build before writing `laser.py`.
+**Phase 6** — laser MOSFET driver circuit on breadboard (can run in parallel with Phase 5). Bare-diode laser confirmed (no PCB), 100Ω series resistor mandatory, red = +, black = −. Awaiting hardware build before writing `laser.py`.
 
 ## Next available work when the current item blocks
 

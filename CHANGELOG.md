@@ -16,11 +16,12 @@
 - `docs/plan/phase-4-camera.md` — rewritten Status section; Tasks 4.1, 4.2, 4.4, 4.5, 4.6 marked done; tuning procedure flagged as the only remaining work in this phase.
 - `README.md`, `CLAUDE.md` — camera entry updated (LifeCam HD-3000 USB, `cv2.VideoCapture`, `picamera2` retained as installed-but-unused).
 
-### Still to do for Phase 4
-- VNC into Pi, run `tune_detector.py`, narrow HSV until target shows as a clean blob.
-- Hand-edit `HSV_LOWER` and `HSV_UPPER` in `config.py`.
-- Record final values, target description, and lighting in `docs/calibration.md`.
-- Smoke-test `detector.detect()` on a captured frame.
+### Phase 4 completed
+- Tuned HSV range against a folded 10×20 cm blue plastic bag under overhead ceiling lighting via `tune_detector.py` on the Pi: `HSV_LOWER = np.array([79, 76, 0])`, `HSV_UPPER = np.array([105, 255, 255])`.
+- Committed those values to `config.py`.
+- Recorded values, target description, lighting, and smoke-test result in `docs/calibration.md`.
+- Smoke-tested `detector.detect()` on the Pi: returned `(385, 288)` with target in frame (inside 640×480 bounds).
+- Updated `docs/plan/phase-4-camera.md` from runbook → completion record (runbook preserved for future re-tuning).
 
 ---
 

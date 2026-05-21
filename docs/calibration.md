@@ -35,9 +35,24 @@ and this file.
 
 ---
 
-## HSV target range — not yet measured
+## HSV target range — 2026-05-22
 
-Will be filled in during Task 4.4 (tune_detector.py).
+Measured with `tune_detector.py` on the Microsoft LifeCam HD-3000 USB webcam.
+
+| Constant     | Value                              |
+|--------------|------------------------------------|
+| `HSV_LOWER`  | `np.array([79, 76, 0])`            |
+| `HSV_UPPER`  | `np.array([105, 255, 255])`        |
+
+**Range covered:** Hue 79–105 (blue band in OpenCV's 0–179 hue space), Saturation 76–255 (floor drops greys / washed-out background), Value 0–255 (full brightness range — no V floor or ceiling needed under this lighting).
+
+**Target object:** folded 10×20 cm blue plastic bag.
+
+**Lighting:** overhead ceiling lighting only (no direct daylight, no desk lamp).
+
+**Smoke-test result:** `detector.detect()` returned `(385, 288)` with the target held in front of the camera — a sensible coordinate inside the 640×480 frame.
+
+Values live in `config.py`. If the target object, lighting, or camera position changes, rerun `tune_detector.py` and update both files.
 
 ## PID gains — not yet tuned
 

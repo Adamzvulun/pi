@@ -27,7 +27,7 @@ See [`docs/wiring.md`](docs/wiring.md) for the current physical wiring, [`docs/c
 
 ## Current state
 
-Phase 3 (servo control) is complete. Phase 4 (camera) is in progress on the USB webcam path — `camera.py`, `detector.py`, `tune_detector.py`, and `config.py` are written; HSV range still needs to be tuned on the Pi via VNC. Phase 6 (laser integration) is in progress — MOSFET driver circuit being rebuilt on the breadboard.
+Phase 3 (servo control) and Phase 4 (camera + detection) are complete — `detector.detect()` returns `(x, y)` pixel coordinates of a blue target captured from the LifeCam HD-3000. Phase 5 (PID tracking) is next. Phase 6 (laser integration) is parallel-actionable — MOSFET driver circuit to be rebuilt on the breadboard.
 
 Calibrated values are in [`docs/calibration.md`](docs/calibration.md). Working servo angle limits: `PAN_MIN=50, PAN_MAX=220, TILT_MIN=115, TILT_MAX=205`.
 

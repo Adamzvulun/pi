@@ -1,32 +1,36 @@
-# Phase 4 — Camera + Target Detection ⏳ IN PROGRESS
+# Phase 4 — Camera + Target Detection ✅ COMPLETE
 
 ## Status
 
-**Unblocked via USB webcam.** A Microsoft LifeCam HD-3000 is plugged into the Pi. `lsusb` shows `045e:0779`, `/dev/video0` exists, `cv2.VideoCapture(0).read()` returns a `(480, 640, 3)` BGR frame. The GStreamer "Cannot query video position" warning at open time is benign — OpenCV's GStreamer backend probes first, then falls back to v4l2.
+**Done as of 2026-05-22.** Camera + detection pipeline runs end-to-end on the Pi: USB webcam → `camera.capture_frame` → `detector.detect` → `(x, y)` pixel coordinates.
 
-The original Pi 5 camera + 22-pin ribbon stay shelved (incompatible with the Pi 4's 15-pin CSI slot). The USB webcam is the project's camera path going forward.
+The path the project ended up on:
+- USB webcam (Microsoft LifeCam HD-3000, `045e:0779`) on `/dev/video0`, accessed via `cv2.VideoCapture(0)`.
+- Original Pi 5 camera + 22-pin ribbon stay shelved (incompatible with the Pi 4's 15-pin CSI slot).
+- HSV range tuned against a folded 10×20 cm blue plastic bag under overhead ceiling lighting. Recorded in `config.py` and [`docs/calibration.md`](../calibration.md).
+- Smoke test passed — `detector.detect()` returned `(385, 288)` with the target in frame, inside the 640×480 bounds.
 
-## What's done and what's left
+## Final state
 
 | Step | Status |
 |------|--------|
 | Camera connected and verified | ✅ |
 | `camera.py` written | ✅ |
-| `config.py` written (placeholder HSV) | ✅ |
+| `config.py` written | ✅ |
 | `detector.py` written | ✅ |
 | `tune_detector.py` written | ✅ |
-| **Run `tune_detector.py` over VNC and tune HSV range** | ⏳ next |
-| **Hand-edit final HSV values into `config.py`** | ⏳ |
-| **Record values + target description in `docs/calibration.md`** | ⏳ |
-| **Smoke-test `detector.detect()` against a real target** | ⏳ |
+| HSV range tuned via VNC | ✅ |
+| HSV values committed to `config.py` | ✅ `np.array([79, 76, 0])` → `np.array([105, 255, 255])` |
+| Values + target + lighting in `docs/calibration.md` | ✅ |
+| Smoke test on Pi | ✅ `(385, 288)` |
 
-Reference details for each of the ✅ items are at the bottom of this file.
+The runbook below is preserved for **re-tuning** — rerun if the target object, lighting, or camera position changes. Reference details for the built modules are at the bottom of the file.
 
 ---
 
-# What to do now — step by step
+# Re-tuning runbook (only when re-calibrating)
 
-This is a follow-along guide. Do the steps in order. Each one says where you do it (laptop vs. Pi vs. VNC).
+The phase is complete — you only need to follow this if the target object, lighting, or camera position changes. The steps below take you through tuning the HSV range from scratch.
 
 ## Step 1 — On the laptop: make sure Phase 4 code is on GitHub
 
