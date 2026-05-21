@@ -31,8 +31,8 @@ FRAME_CENTER_Y: int = FRAME_HEIGHT // 2  # 240
 #
 # After tuning, record the final values and the target object description
 # in docs/calibration.md.
-HSV_LOWER: np.ndarray = np.array([0, 100, 100])   # [H_min, S_min, V_min]
-HSV_UPPER: np.ndarray = np.array([30, 255, 255])  # [H_max, S_max, V_max]
+HSV_LOWER: np.ndarray = np.array([79, 76, 0])     # [H_min, S_min, V_min]
+HSV_UPPER: np.ndarray = np.array([105, 255, 255]) # [H_max, S_max, V_max]
 
 # ---- Detection tuning -----------------------------------------------------
 # Smallest contour area (in pixels) that counts as "the target." Anything
