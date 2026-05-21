@@ -8,14 +8,14 @@ Each phase has its own file. Click into one for detail.
 | 2 | [Initial hardware build](phase-2-hardware.md) — breadboard wiring | ✅ Complete (superseded by Phase 3 rework) |
 | 3 | [Servo control](phase-3-servo-control.md) — `test_servo.py`, `calibrate_servo.py`, `servo.py` | ✅ Complete |
 | 4 | [Camera + detection](phase-4-camera.md) — `camera.py`, `detector.py`, HSV tuning | ✅ Complete |
-| 5 | [PID tracking](phase-5-pid-tracking.md) — `tracker.py`, PID gain tuning | ⏸ Future (needs Phase 4) |
+| 5 | [PID tracking](phase-5-pid-tracking.md) — `tracker.py`, PID gain tuning | ⏳ In progress |
 | 6 | [Laser integration](phase-6-laser.md) — MOSFET driver circuit, `laser.py` | ⏳ In progress |
 | 7 | [Mounting + boresight](phase-7-mounting.md) — wood base, 3D-printed mounts, alignment | ⏸ Future |
 | 8 | [Final integration](phase-8-integration.md) — `main.py`, end-to-end test | ⏸ Future |
 
 ## Currently working on
 
-**Phase 5** — PID closed-loop tracking. Phase 4 just finished; Phase 5 is the natural next step: write `tracker.py` (two `simple_pid` controllers), `test_tracking.py`, then tune Kp/Ki/Kd against the real bracket.
+**Phase 5** — PID closed-loop tracking. `tracker.py`, `test_tracking.py`, and PID constants in `config.py` are written. Camera needs to be temporarily mounted on the tilt plate, then run `test_tracking.py` over VNC, confirm the Kp sign matches the servo mounting, and tune Kp/Kd/Ki empirically. Detailed runbook in [`phase-5-pid-tracking.md`](phase-5-pid-tracking.md).
 
 **Phase 6** — laser MOSFET driver circuit on breadboard (can run in parallel with Phase 5). Bare-diode laser confirmed (no PCB), 100Ω series resistor mandatory, red = +, black = −. Awaiting hardware build before writing `laser.py`.
 

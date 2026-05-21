@@ -45,3 +45,31 @@ MIN_CONTOUR_AREA: int = 200
 # Laser fires only when pixel error is below this threshold on both axes.
 # Prevents firing while the servos are still settling.
 FIRE_PIXEL_THRESHOLD: int = 15
+
+# ---- PID gains (Phase 5) --------------------------------------------------
+# Two independent PID loops — one for pan (left-right), one for tilt (up-down).
+# Input to each loop is pixel error (target_x - 320, target_y - 240).
+# Output is a correction in degrees added to the current servo angle.
+#
+# These starting values are CONSERVATIVE — small Kp, no integral, light damping.
+# Expect to tune them empirically in Task 5.4. The procedure is documented in
+# docs/plan/phase-5-pid-tracking.md.
+#
+# IMPORTANT — sign:
+# The relationship between "increase pan angle" and "camera looks rightward"
+# depends on how the servo is physically mounted on the bracket. If the bracket
+# tracks AWAY from the target instead of toward it, FLIP THE SIGN of the
+# corresponding Kp. The PID library handles negative gains correctly.
+KP_PAN: float = 0.05
+KI_PAN: float = 0.0
+KD_PAN: float = 0.01
+
+KP_TILT: float = 0.05
+KI_TILT: float = 0.0
+KD_TILT: float = 0.01
+
+# Maximum correction in degrees per PID update. Caps the swing if the target
+# suddenly appears at a frame edge — without this, a +320 px error with
+# Kp=0.05 would request a +16° jump on a single frame, which is jarring and
+# risks overshoot.
+PID_OUTPUT_LIMIT: float = 20.0

@@ -1,5 +1,26 @@
 # Changelog
 
+## [Phase 5 — PID tracking scaffolding] - 2026-05-22
+
+### Code added
+- `tracker.py` — owner module for PID control. Public API `init() → (pan_pid, tilt_pid)`, `update(pan_pid, tilt_pid, kit, target_pos)` (per-frame call; holds position when target is None), `stop(kit)`. Two independent `simple_pid.PID` instances with `setpoint=0` and `output_limits=(-PID_OUTPUT_LIMIT, +PID_OUTPUT_LIMIT)`. The ONLY module that uses `simple_pid`.
+- `test_tracking.py` — Phase 5 end-to-end loop test (camera → detector → tracker → servos, no laser). OpenCV window shows red frame-center crosshair, green target circle, and overlay with per-axis pan/tilt angles + pixel error + correction. `q` quits cleanly; `finally` block guarantees servo center + camera release.
+
+### config.py
+- Added `KP_PAN`, `KI_PAN`, `KD_PAN`, `KP_TILT`, `KI_TILT`, `KD_TILT` (placeholders: 0.05 / 0 / 0.01). Documented that Kp sign may need flipping depending on servo mounting orientation.
+- Added `PID_OUTPUT_LIMIT = 20.0` — caps degrees per update per axis to prevent large single-frame swings on far-edge targets.
+
+### Docs
+- `docs/plan/phase-5-pid-tracking.md` rewritten as a step-by-step runbook (mount camera on tilt plate temporarily, sign-check Kp, tune P → D → I, record gains). Reference sections at bottom describe what's built.
+- `docs/plan/README.md`, `CLAUDE.md` reflect Phase 5 in-progress.
+
+### Still to do
+- Temporarily attach LifeCam HD-3000 to the tilt plate (tape / zip-tie / rubber band — Phase 7B's permanent mount comes later).
+- VNC into Pi, run `python3 test_tracking.py`, sign-check by holding target right/below center.
+- Tune Kp, then Kd, then Ki (if needed). Document final values in `docs/calibration.md`.
+
+---
+
 ## [Phase 4 — Camera + detection] - 2026-05-22
 
 ### Hardware

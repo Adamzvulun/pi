@@ -145,7 +145,7 @@ Update this section at the end of every session.
 - ✅ **Task 3.4 (servo.py) written.** Owner module for ServoKit/PCA9685 — public API: `init()`, `move_pan(kit, angle)`, `move_tilt(kit, angle)`, `center(kit)`, `cleanup(kit)`, `current_pan()`, `current_tilt()`. All moves clamped to calibrated limits.
 - ✅ **Phase 3 complete.**
 - ✅ **Phase 4 complete** (USB webcam path). Microsoft LifeCam HD-3000 → `camera.py` (`cv2.VideoCapture`) → `detector.py` (HSV thresholding) returns `(x, y)` of a blue target. HSV range `np.array([79, 76, 0])` to `np.array([105, 255, 255])` tuned against a folded 10×20 cm blue plastic bag under overhead ceiling light. Recorded in `config.py` and `docs/calibration.md`.
-- ⏳ **Phase 5 next** — PID closed-loop tracking. Write `tracker.py`, `test_tracking.py`, tune gains empirically.
+- ⏳ **Phase 5 in progress.** `tracker.py` (PID glue) and `test_tracking.py` (end-to-end loop test, no laser) written. PID gains in `config.py` are placeholders (`Kp=0.05, Ki=0, Kd=0.01`). Still to do: temporarily mount camera on tilt plate, run `test_tracking.py` on Pi via VNC, confirm Kp sign matches servo mounting (flip if bracket tracks AWAY from target), tune empirically, record gains in `docs/calibration.md`.
 - ⏸ Phase 6 (laser — MOSFET breadboard + laser.py), Phase 7 (mounting), Phase 8 (integration) — not started
 
 ### Current wiring snapshot (post problem-001 resolution)

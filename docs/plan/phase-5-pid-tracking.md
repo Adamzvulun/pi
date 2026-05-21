@@ -1,109 +1,223 @@
-# Phase 5 — PID Closed-Loop Tracking ⏸ FUTURE
+# Phase 5 — PID Closed-Loop Tracking ⏳ IN PROGRESS
 
-## Prerequisites
+## Status
 
-- Phase 4 complete: `camera.py` and `detector.py` working, target detection reliable
-- Phase 3 complete: `servo.py` with calibrated limits ✅
+`tracker.py` and `test_tracking.py` are written. PID gains in [config.py](../../config.py) are conservative starting values that almost certainly need empirical tuning — and the sign of `KP_PAN` / `KP_TILT` may need flipping depending on servo mounting (see "sign caveat" below).
 
-## Goal
+This is the first phase where camera, detector, servos, and PID controllers all run together.
 
-Close the loop. Given pixel coordinates of a target from the detector, drive the pan and tilt servos to keep the target centered in the frame. Build `tracker.py` as the PID controller and a `test_tracking.py` standalone test that runs the full loop minus the laser.
+## What's done and what's left
 
----
+| Step | Status |
+|------|--------|
+| `tracker.py` written | ✅ |
+| `test_tracking.py` written | ✅ |
+| PID constants added to `config.py` | ✅ (placeholders — Kp=0.05, Ki=0, Kd=0.01) |
+| **Camera temporarily mounted on tilt plate** | ⏳ |
+| **First run of `test_tracking.py` on Pi via VNC** | ⏳ |
+| **Confirm tracking direction (flip Kp sign if needed)** | ⏳ |
+| **Tune Kp, then Kd, then Ki if needed** | ⏳ |
+| **Record tuned gains in `config.py` and `docs/calibration.md`** | ⏳ |
 
-## Task 5.1 — Understand the tracking math
-
-Camera frame is 640×480 pixels. Center = (320, 240). When target is centered, servos hold position.
-
-**Error** = distance from target to frame center:
-- `pan_error = target_x - 320` (positive = target to the right)
-- `tilt_error = target_y - 240` (positive = target below center)
-
-A PID controller takes the error and outputs a correction (in degrees). For pan: target 50 pixels to the right → PID outputs +N degrees → new pan angle = current + N → moves bracket right → next frame, error is smaller. Loop converges.
-
-**Proportional gain (Kp)** is the main knob. Higher Kp = bigger correction per pixel of error = faster but riskier (overshoot, oscillation). Lower Kp = slower but stable.
-
-**Wide-angle lens caveat:** the Pi 5 camera in the original parts list was a 220° fisheye. Edge distortion meant pixel-error → angle-correction mapping was nonlinear near the edges. Any replacement camera may be narrower; if so, gains may need rescaling. Keep targets near center anyway — the PID will do this naturally.
+Reference details for the built modules are at the bottom of this file.
 
 ---
 
-## Task 5.2 — Write tracker.py
+# What to do now — step by step
 
-**Public API:**
-- `init() → (pan_pid, tilt_pid)` — creates two `simple_pid.PID` instances with initial gains, setpoint 0 (zero error), output limits (-20°, +20°) per update
-- `update(pan_pid, tilt_pid, kit, target_pos)` — main per-frame call:
-  - If `target_pos is None`, hold position (don't update)
-  - Else compute pan_error and tilt_error
-  - Run `pan_pid(pan_error)` → correction
-  - New pan angle = `servo.current_pan() + correction`, pass to `servo.move_pan(kit, new_angle)` (which clamps)
-  - Same for tilt
-- `stop(kit)` — calls `servo.cleanup(kit)`
+## Step 1 — Mount the camera on the tilt plate (temporarily)
 
-**Initial gains:**
-```python
-Kp = 0.05   # gentle start
-Ki = 0.0    # disable integral initially
-Kd = 0.01   # small damping
+The tracking loop only works if the camera moves *with* the bracket. As pan/tilt rotates, the camera view shifts, the target appears in a new pixel location, and PID corrects again. If the camera sits separately on the desk, the target's pixel position never changes when the bracket moves and the loop has nothing to do.
+
+You don't need permanent mounting yet — that's Phase 7B. For Phase 5, attach the LifeCam HD-3000 to the tilt plate with:
+
+- Strong tape (electrical or gaffer's), OR
+- Zip ties through the camera's stand holes, OR
+- Rubber bands looped around the camera and bracket arm
+
+**Things to check after mounting:**
+- Camera lens points roughly forward (same direction the laser will eventually point)
+- USB cable has 10+ cm of slack — when pan reaches its limit, the cable shouldn't tug on the camera
+- Camera doesn't wobble when you nudge the bracket by hand
+- Nothing on the bracket (cable, camera body) intrudes into the camera's field of view
+
+A wobbly camera will give the PID jittery target coordinates and the loop will fight itself. Solid > pretty.
+
+## Step 2 — Confirm the laptop code is on the Pi
+
+From the laptop:
+
+```powershell
+git log -1 --oneline
 ```
 
-**Output limits:** `(-20, 20)` degrees per update. Prevents huge jumps if the target suddenly appears at frame edge.
+Phase 5 scaffolding commit should be at the top. Wait ~60 seconds for the Pi's auto-pull cron, or SSH to the Pi and `cd ~/pi && git pull --rebase --autostash`.
 
----
+## Step 3 — Stay clear of the bracket's sweep arc
 
-## Task 5.3 — Write test_tracking.py
+`servo.init()` snaps both servos to center at script start. If the tilt servo drifted while unplugged (per Adam's note from before), the snap motion may be large and sudden. The servos and PSU can handle it, but you don't want a hand or the USB cable in the way. Keep clear during the first 1–2 seconds after launch.
 
-Standalone tracking test — full loop minus laser. Used for PID tuning.
+## Step 4 — Run test_tracking.py via VNC
 
-**Behavior:**
-1. Init camera, servos (calls `servo.init()` which centers), PIDs
-2. Loop:
-   - Capture frame
-   - `detector.detect(frame)` → target position
-   - `tracker.update(...)`
-   - Optionally save annotated frame for debugging (target marker overlay)
-   - Check for `q` keypress → break
-3. On exit: `servo.cleanup(kit)`, `camera.release(cam)`
+`test_tracking.py` opens an OpenCV window, so use VNC, not plain SSH.
 
-**Run:**
-```bash
-python3 test_tracking.py
-```
+1. VNC into LaserPi.
+2. Open a terminal on the Pi desktop.
+3. Run:
+   ```bash
+   cd ~/pi
+   source venv/bin/activate
+   python3 test_tracking.py
+   ```
 
-Move target slowly in front of camera → bracket follows.
+A window titled `tracking` opens. You'll see:
 
----
+- **Red cross** at the frame center (the target should be driven *here*).
+- **Green circle** at the detected target centroid (only when the detector finds the blue bag).
+- **Overlay text** showing current pan/tilt angles, pixel error, and per-frame PID correction.
 
-## Task 5.4 — Tune the PID gains
+If you don't see all of that, recheck Phase 4's smoke test — the loop depends on detection working.
 
-Iterate. No shortcut. Run, observe, adjust, repeat.
+## Step 5 — First behavior test: which way does it move?
 
-**P-only first** (Ki=0, Kd=0):
-- Too slow → double Kp
-- Oscillates → halve Kp
-- Goal: responsive but not oscillating
+Click on the `tracking` window to give it focus (`waitKey` needs window focus, same as Phase 4).
 
-**Then add D** (~Kp × 0.1):
-- Reduces overshoot, stabilizes
-- Too much → sluggish, ignores fast movements
+Hold the blue target **slightly to the right of center**. Watch what the bracket does:
 
-**Then I if needed** (start at 0.001):
-- Use only if there's a persistent offset (target settles slightly off-center forever)
-- Too much → slow oscillation that grows over time (integral windup)
+- **Bracket pans RIGHT (toward the target)** → sign is correct.
+- **Bracket pans LEFT (away from the target)** → flip `KP_PAN` in [config.py](../../config.py) from `0.05` to `-0.05`.
 
-Record final gains in `config.py` and `docs/calibration.md`.
+Repeat with the target **slightly below center** to test tilt:
 
----
+- **Bracket tilts DOWN (toward the target)** → sign is correct.
+- **Bracket tilts UP (away from the target)** → flip `KP_TILT` from `0.05` to `-0.05`.
 
-## Open questions / known unknowns
+To make sign changes, press `q` to quit, edit `config.py` on the laptop, commit + push, wait for the Pi to pull, then rerun. The bracket will track AWAY indefinitely if the sign is wrong, so don't dwell on the wrong-sign case — quit and flip it.
 
-- **Gains depend on camera frame rate.** Initial values assume ~30 fps at 640×480. If the replacement camera runs at a different rate, gains may need rescaling.
-- **Servo movement latency** (the time from `move_pan` call to bracket actually being at the new angle) interacts with the PID. The 2°-step ramping inside `servo.py` adds latency that the PID will adapt to.
-- **Frame-to-frame target detection jitter** can confuse the D term. May need a low-pass filter on detector output if jitter is bad.
+## Step 6 — Tune Kp (proportional-only)
 
-## Acceptance criteria
+Once the sign is right, the bracket will track but probably either too slowly, too aggressively, or with oscillation. Tune Kp first with Ki=0 and Kd=0.
+
+**Procedure:**
+1. With current Kp (start at 0.05), hold the target stationary near center. Press `q` to quit, then move it, restart, and watch how the bracket converges.
+   - Actually — you don't need to restart between target positions. Just keep the script running and move the target.
+2. **If the bracket converges smoothly with no overshoot** — Kp is roughly right, move to Step 7.
+3. **If the bracket reaches center but oscillates back and forth across it** — Kp is too high. Halve it (0.025) and retest.
+4. **If the bracket reaches target sluggishly or stops short** — Kp is too low. Double it (0.10) and retest.
+5. Repeat until the bracket lands on the target with at most one small overshoot.
+
+Each change requires editing `config.py`, committing, pushing, waiting for the Pi to pull, and rerunning the script. Patience.
+
+**Symptoms key:**
+- *Bracket overshoots and oscillates* → Kp too high.
+- *Bracket settles short of the target and stops* → Kp too low OR servo clamp warnings in the terminal (look for `Pan request X° clamped`).
+- *Bracket lags noticeably behind a moving target* → Kp too low.
+
+## Step 7 — Add Kd (derivative)
+
+Kd damps the response — it reduces overshoot and stabilizes oscillation.
+
+Rule of thumb: start `Kd ≈ Kp × 0.1`. If Kp landed on 0.08, try Kd = 0.008.
+
+- **Too little Kd** → still overshoots.
+- **Too much Kd** → sluggish, ignores fast target movement, jittery (Kd amplifies frame-to-frame detection noise).
+
+## Step 8 — Add Ki only if needed
+
+Ki removes persistent offset — if the bracket consistently settles 5–10 px away from center and never closes the gap, that's where Ki helps.
+
+Start very small (`Ki = 0.001`) and increase by factors of 2.
+
+- **Too little Ki** → persistent offset remains.
+- **Too much Ki** → slow oscillation that grows over time (integral windup). Back off immediately if you see this.
+
+Most setups can leave Ki = 0.
+
+## Step 9 — Record the tuned gains
+
+Once tracking is smooth, lock the values in.
+
+1. Final values stay in `config.py` (you've been editing them all along).
+2. Update [docs/calibration.md](../calibration.md): add a "PID gains" section under the existing HSV section. Include the four numbers (Kp/Ki/Kd for each axis), the date, and a one-line description of how it tracks ("smoothly converges on a slow-moving blue bag with no overshoot").
+3. Commit + push.
+
+## Step 10 — Acceptance criteria
+
+Phase 5 is complete when:
 
 - `test_tracking.py` runs without errors
-- Slowly moving target → bracket follows smoothly
-- Target held stationary in center → error converges to near zero, servos stop
-- Final PID gains recorded in `config.py` and `docs/calibration.md`
-- No oscillation, no runaway tracking, no servo clamp warnings during normal use
+- Slowly moving the target → bracket follows smoothly
+- Holding target still at frame center → error converges to near zero, servos stop
+- No `Pan request X° clamped` warnings under normal use (clamps during recovery from a far-edge target are fine)
+- No runaway behavior, no growing oscillation
+- Final gains recorded in `config.py` and `docs/calibration.md`
+
+---
+
+# Troubleshooting
+
+**Bracket snaps violently on startup** — expected on the very first run after the servos drifted while unplugged. `servo.init()` has no readback so it can't ramp; it just commands `PAN_CENTER` / `TILT_CENTER` directly. The DS3225 + LM2596 handle this. If it's repeatedly violent on every startup, the servos may be drifting between runs — check that the bracket isn't being bumped while powered down.
+
+**Bracket tracks AWAY from target forever** — sign of Kp is wrong for your servo mounting. See Step 5.
+
+**Bracket reaches one limit and sticks there** — usually wrong sign of Kp. Could also be runaway integral if you set Ki too high; reset Ki to 0.
+
+**Bracket oscillates around the target without settling** — Kp too high. Halve it.
+
+**Bracket lags behind a moving target** — Kp too low, or the 2°/50ms ramping inside `servo.py` is adding too much latency. First try increasing Kp. If you hit oscillation before catching up, the ramping is the bottleneck and may need its delay reduced (in `servo.py`).
+
+**`Pan request X° clamped` warnings on every frame** — PID is asking for moves outside the calibrated bracket limits. Either the target is in a position the bracket physically can't reach, or `PID_OUTPUT_LIMIT` is too large combined with high Kp. Reduce `PID_OUTPUT_LIMIT` first.
+
+**Detector loses target while tracking** — bracket motion may be blurring the frame, or the camera's auto-exposure is hunting because lighting changed mid-frame. Move the target more slowly; if persistent, see Phase 4's note on pinning exposure.
+
+**`servo.init() must be called before move_pan()`** — the order in `test_tracking.py` calls `servo.init()` first; if you see this, something else has reset the module state. Restart the script.
+
+---
+
+# Reference: what was already built
+
+### tracker.py ✅
+
+[tracker.py](../../tracker.py). The ONLY module that uses `simple_pid`.
+
+Public API:
+- `init()` → `(pan_pid, tilt_pid)` — two `simple_pid.PID` instances with `setpoint=0` and `output_limits=(-PID_OUTPUT_LIMIT, PID_OUTPUT_LIMIT)`.
+- `update(pan_pid, tilt_pid, kit, target_pos)` — per-frame call. If `target_pos is None`, holds position and skips updating PID state (no phantom-zero-error samples). Otherwise computes pixel errors, runs each PID, adds the correction to the current servo angle, calls `servo.move_pan` / `servo.move_tilt`. Returns a result dict with errors, corrections, and final commanded angles.
+- `stop(kit)` — delegates to `servo.cleanup`.
+
+Sign convention: `simple_pid` computes `error = setpoint − input`. We feed it `(target − center)` with `setpoint=0`, so the correction sign comes out OPPOSITE to the error sign for positive Kp. Whether that matches the bracket's mechanical orientation is unknown a priori → Step 5 establishes the sign empirically.
+
+### test_tracking.py ✅
+
+[test_tracking.py](../../test_tracking.py). Standalone end-to-end test — closes the camera → detector → tracker → servo loop with no laser involvement.
+
+OpenCV window with:
+- Red cross at frame center
+- Green circle at detected target
+- Overlay: current pan/tilt angles, pixel error per axis, PID correction per axis
+
+`q` quits cleanly; `finally` block guarantees `servo.cleanup`, `camera.release`, `cv2.destroyAllWindows`.
+
+### config.py — PID section ✅
+
+[config.py](../../config.py). Added:
+
+```python
+KP_PAN  = 0.05    # PLACEHOLDER — sign may need flipping (see tracker docs)
+KI_PAN  = 0.0
+KD_PAN  = 0.01
+
+KP_TILT = 0.05
+KI_TILT = 0.0
+KD_TILT = 0.01
+
+PID_OUTPUT_LIMIT = 20.0  # degrees per update (per axis)
+```
+
+---
+
+# Open questions / known unknowns
+
+- **Ramping latency vs PID stability.** `servo.py`'s `_ramp` adds 50 ms per 2° of motion. A 20° correction takes 500 ms — far longer than a single frame interval. The PID will compute the next correction based on a stale view of the bracket position. If this proves unstable, options are: shrink `PID_OUTPUT_LIMIT` so corrections stay small (and ramp quickly), reduce `RAMP_DELAY_S` in `servo.py`, or skip ramping entirely during tracking and reserve it for `init()`/`cleanup()` only.
+- **Detection jitter and Kd.** Kd amplifies frame-to-frame noise. If the detector's centroid jiggles by 5–10 px while the target is stationary, Kd will try to "correct" that. A low-pass filter on detector output (e.g., exponential moving average) would help if this becomes a real problem.
+- **Auto-exposure on the LifeCam.** Same caveat as Phase 4 — sudden lighting changes can throw off detection mid-track. Not worth pinning exposure unless we see it bite during tuning.
