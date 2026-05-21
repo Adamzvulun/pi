@@ -1,5 +1,23 @@
 # Laser Tracker Project — Handoff to Claude Code (Laptop)
 
+> **⚠️ HISTORICAL DOCUMENT — read this for original project intent only.**
+>
+> This is the original handoff written at project kickoff (before any code).
+> The hardware state and "first task" sections below describe the *initial*
+> plan; several things have since changed (MB102 removed in favor of LM2596,
+> breadboard temporarily out, bracket reassembled, Phase 3 complete).
+>
+> **For current state, read these instead:**
+> - [`CLAUDE.md`](CLAUDE.md) — project context (kept current)
+> - [`docs/plan/README.md`](docs/plan/README.md) — phase-by-phase status
+> - [`docs/wiring.md`](docs/wiring.md) — current physical wiring
+> - [`docs/operating-guide.md`](docs/operating-guide.md) — commands and procedures
+> - [`problems/001-servo-power.md`](problems/001-servo-power.md) — the MB102 → LM2596 story
+>
+> What's kept current from this file: Adam's preferences (beginner, prose over
+> bullets, no kill switch, no safety glasses, learns by doing) and the
+> three-machine workflow description.
+
 ## Context
 
 You are Claude Code running on Adam Zvulun's laptop inside Claude Desktop. Adam is a beginner with electronics and Linux, building an autonomous laser tracking system for a school final project.
