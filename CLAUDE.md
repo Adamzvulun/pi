@@ -42,13 +42,14 @@ Code is NEVER edited directly on the Pi.
 - `simple-pid` — PID controller for closed-loop tracking (Phase 5)
 
 **apt-installed (system packages, NOT in requirements.txt):**
-- `picamera2` — camera capture
-- `python3-opencv` / `cv2` — image processing
+- `python3-opencv` / `cv2` — image processing AND camera capture (via `cv2.VideoCapture` against the USB webcam)
 - `python3-numpy` / `numpy` — array math
 - `python3-gpiozero` / `gpiozero` — GPIO control
-- `rpicam-apps` — CLI camera tools (`rpicam-still`, `rpicam-vid`) for testing
+- `picamera2`, `rpicam-apps` — installed but currently unused (Pi 5 CSI camera on hand is incompatible with the Pi 4 CSI slot; the project uses a USB webcam instead). Keep installed in case a compatible CSI camera ever appears.
 
-**Important:** The venv was created with `--system-site-packages`. This is why `picamera2`, `cv2`, and `numpy` are importable from within the venv even though they are apt packages, not pip packages. Do not attempt to pip-install these.
+**Important:** The venv was created with `--system-site-packages`. This is why `cv2` and `numpy` are importable from within the venv even though they are apt packages, not pip packages. Do not attempt to pip-install these.
+
+**Camera:** Microsoft LifeCam HD-3000 USB webcam on `/dev/video0`. `camera.py` opens it via `cv2.VideoCapture(0)` at 640×480 BGR. The kernel `uvcvideo` driver handles it — no install needed. OpenCV's GStreamer backend emits a "Cannot query video position" warning at open; it's benign, the v4l2 fallback works fine.
 
 **GPIO:**
 - Use `gpiozero.LED` for the laser GPIO pin (simple digital output)
@@ -142,8 +143,9 @@ Update this section at the end of every session.
 - ✅ **Task 3.2 (test_servo.py) verified end-to-end**: I2C → PCA9685 → both DS3225 servos respond, external 5V PSU sustains load.
 - ✅ **Task 3.3 (calibrate_servo.py) edge calibration complete.** Recorded limits: `PAN_MIN=50`, `PAN_MAX=220`, `TILT_MIN=115`, `TILT_MAX=205`. See `docs/calibration.md` for the full record.
 - ✅ **Task 3.4 (servo.py) written.** Owner module for ServoKit/PCA9685 — public API: `init()`, `move_pan(kit, angle)`, `move_tilt(kit, angle)`, `center(kit)`, `cleanup(kit)`, `current_pan()`, `current_tilt()`. All moves clamped to calibrated limits.
-- ⏳ **Phase 3 complete.** Next: Phase 4 — connect Pi Camera, write camera.py, tune HSV detector.
-- ⏸ Phase 4 (camera), Phase 5 (PID), Phase 6 (laser), Phase 7 (mounting), Phase 8 (integration) — not started
+- ✅ **Phase 3 complete.**
+- ⏳ **Phase 4 in progress** (USB webcam path). Microsoft LifeCam HD-3000 plugged into Pi, verified at 640×480 BGR via `cv2.VideoCapture(0)`. `camera.py`, `config.py`, `detector.py`, `tune_detector.py` written. **Still to do:** VNC into Pi, run `tune_detector.py`, hand-edit tuned HSV range into `config.py`, record in `docs/calibration.md`.
+- ⏸ Phase 5 (PID), Phase 6 (laser — MOSFET breadboard + laser.py), Phase 7 (mounting), Phase 8 (integration) — not started
 
 ### Current wiring snapshot (post problem-001 resolution)
 

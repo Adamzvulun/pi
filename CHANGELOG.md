@@ -1,5 +1,29 @@
 # Changelog
 
+## [Phase 4 — Camera + detection] - 2026-05-22
+
+### Hardware
+- **USB webcam path adopted.** Pi 5 CSI camera on hand remains incompatible with the Pi 4's 15-pin CSI slot. Plugged a Microsoft LifeCam HD-3000 (USB ID `045e:0779`) into the Pi instead. Recognized by the in-kernel `uvcvideo` driver — no install needed. `lsusb`, `/dev/video0`, and `cv2.VideoCapture(0).read()` all verified at 640×480 BGR.
+
+### Code added
+- `camera.py` — owner module for the camera subsystem. Public API `init/capture_frame/release` against `cv2.VideoCapture`. Same shape as the original picamera2 plan so downstream code doesn't care which backend is used.
+- `config.py` — shared tuned constants. Frame geometry, placeholder `HSV_LOWER`/`HSV_UPPER`, `MIN_CONTOUR_AREA=200`, `FIRE_PIXEL_THRESHOLD=15`.
+- `detector.py` — owner module for target detection. Public `detect(frame) -> (x,y) | None` and `build_mask(frame)`. Pipeline: blur → BGR→HSV → inRange → erode×2 → dilate×2 → findContours → largest → centroid via moments.
+- `tune_detector.py` — interactive HSV slider GUI. Three windows (controls + feed + mask), six trackbars, `s` prints copy-pasteable values, `q` quits. Mirrors `detector.build_mask()`'s pipeline exactly so the preview matches runtime behavior.
+
+### Docs updated
+- `docs/plan/README.md` — Phase 4 from BLOCKED to IN PROGRESS.
+- `docs/plan/phase-4-camera.md` — rewritten Status section; Tasks 4.1, 4.2, 4.4, 4.5, 4.6 marked done; tuning procedure flagged as the only remaining work in this phase.
+- `README.md`, `CLAUDE.md` — camera entry updated (LifeCam HD-3000 USB, `cv2.VideoCapture`, `picamera2` retained as installed-but-unused).
+
+### Still to do for Phase 4
+- VNC into Pi, run `tune_detector.py`, narrow HSV until target shows as a clean blob.
+- Hand-edit `HSV_LOWER` and `HSV_UPPER` in `config.py`.
+- Record final values, target description, and lighting in `docs/calibration.md`.
+- Smoke-test `detector.detect()` on a captured frame.
+
+---
+
 ## [Phase 3 — Servo bring-up] - 2026-05-20
 
 ### Hardware

@@ -1,201 +1,315 @@
-# Phase 4 — Camera + Target Detection ⏸ BLOCKED
+# Phase 4 — Camera + Target Detection ⏳ IN PROGRESS
 
 ## Status
 
-**Blocked until a Pi 4-compatible camera or CSI adapter cable is available.**
+**Unblocked via USB webcam.** A Microsoft LifeCam HD-3000 is plugged into the Pi. `lsusb` shows `045e:0779`, `/dev/video0` exists, `cv2.VideoCapture(0).read()` returns a `(480, 640, 3)` BGR frame. The GStreamer "Cannot query video position" warning at open time is benign — OpenCV's GStreamer backend probes first, then falls back to v4l2.
 
-The camera and ribbon cable on hand (parts list items 5 + 7) are labeled "for Raspberry Pi 5 / Zero." Pi 5 / Zero use a 22-pin 0.5mm-pitch CSI connector. Pi 4 uses a 15-pin 1.0mm-pitch connector. They're physically incompatible — no software workaround.
+The original Pi 5 camera + 22-pin ribbon stay shelved (incompatible with the Pi 4's 15-pin CSI slot). The USB webcam is the project's camera path going forward.
 
-Options explored and rejected (Adam's constraints — no buying, no phone-as-IP-camera):
-- USB webcam fallback — none on hand
-- Phone-as-IP-camera via IP Webcam / DroidCam — rejected
-- CSI adapter cable (~$3) — can't buy
+## What's done and what's left
 
-Phase 4 will resume when either:
-1. A Pi 4-compatible camera becomes available, OR
-2. A 15→22 pin CSI adapter cable becomes available, OR
-3. A USB webcam becomes available (would require a `cv2.VideoCapture`-based rewrite of `camera.py`)
+| Step | Status |
+|------|--------|
+| Camera connected and verified | ✅ |
+| `camera.py` written | ✅ |
+| `config.py` written (placeholder HSV) | ✅ |
+| `detector.py` written | ✅ |
+| `tune_detector.py` written | ✅ |
+| **Run `tune_detector.py` over VNC and tune HSV range** | ⏳ next |
+| **Hand-edit final HSV values into `config.py`** | ⏳ |
+| **Record values + target description in `docs/calibration.md`** | ⏳ |
+| **Smoke-test `detector.detect()` against a real target** | ⏳ |
 
-In the meantime, **Phase 6 (laser) and Phase 7A (permanent base)** are still actionable.
-
----
-
-## Prerequisites (when unblocked)
-
-- Compatible camera physically connected to the Pi
-- `rpicam-still -o test.jpg` produces a valid image (or `cv2.VideoCapture(0)` opens, if USB)
-
-## Goal
-
-Detect a colored target in the camera frame and return its pixel coordinates. Build `camera.py` and `detector.py` as the only modules that touch the camera and OpenCV directly.
+Reference details for each of the ✅ items are at the bottom of this file.
 
 ---
 
-## Task 4.1 — Connect the Pi Camera
+# What to do now — step by step
 
-**Do this with the Pi powered off.**
+This is a follow-along guide. Do the steps in order. Each one says where you do it (laptop vs. Pi vs. VNC).
 
-The Pi Camera connects via a flat ribbon cable into the CSI (Camera Serial Interface) slot on the Pi. The CSI slot is the narrow white connector between the HDMI ports and the USB ports, labeled "CAMERA" on the board.
+## Step 1 — On the laptop: make sure Phase 4 code is on GitHub
 
-**How to seat the ribbon cable:**
-1. Gently lift the dark locking tab on the CSI connector — it pulls straight up (not a hinge, don't yank it)
-2. Slide the ribbon cable in with the metal contacts facing toward the HDMI ports (away from you)
-3. Press the locking tab back down firmly
+The Pi can't run `tune_detector.py` until the code is pushed and pulled. From a terminal on the laptop in `C:\Projects\pi`:
 
-Power the Pi back on, SSH in, and test:
-
-```bash
-rpicam-still -o ~/test.jpg
+```powershell
+git status
 ```
 
-**Note on Bookworm:** there is NO "Enable Camera" option in `raspi-config` on Bookworm. The legacy interface was removed because libcamera auto-detects cameras at boot via device tree. If `rpicam-still` errors with "no cameras available," the issue is the ribbon cable seating or hardware compatibility (see top of this file).
+If `camera.py`, `config.py`, `detector.py`, `tune_detector.py` show up as untracked or modified, ask Claude Code to commit and push them (one Phase 4 scaffolding commit). Then wait ~60 seconds for the Pi's auto-pull cron to run.
 
-**Success:** the command completes without errors and `test.jpg` exists.
-
----
-
-## Task 4.2 — Write camera.py
-
-The single point of access to the camera for all other code.
-
-**Contains:**
-- `init(width=640, height=480)` — starts picamera2, configures resolution, returns the camera object. 640×480 is the right starting resolution: high enough to see detail, low enough for the Pi to process in real time.
-- `capture_frame(camera)` — captures one frame and returns it as a numpy array in BGR color format (OpenCV's expected order).
-- `release(camera)` — stops and closes the camera cleanly.
-
-**Why BGR not RGB:** OpenCV historically uses BGR order. picamera2 captures in RGB by default, so `camera.py` converts to BGR on capture. The rest of the project doesn't need to think about color order.
-
-**Test:**
+## Step 2 — On the Pi (over SSH): confirm the pull happened
 
 ```bash
-python3 -c "
-import camera, cv2
-cam = camera.init()
-frame = camera.capture_frame(cam)
-cv2.imwrite('/home/adam/capture_test.jpg', frame)
-camera.release(cam)
-print('Saved.')
-"
+ssh adam@LaserPi.local
+cd ~/pi
+git log -1 --oneline       # should be the Phase 4 scaffolding commit
+ls camera.py detector.py tune_detector.py config.py
 ```
 
-The saved image should look identical to what `rpicam-still` produced.
-
----
-
-## Task 4.3 — Understand HSV color detection
-
-Before writing the detector, understand what it's doing.
-
-The camera produces BGR images — each pixel has B, G, R values. Detecting a color in BGR is unreliable because a red ball in bright sun vs. dim room produces wildly different RGB numbers.
-
-HSV (Hue, Saturation, Value) separates color from brightness:
-- **Hue** (0–179 in OpenCV) — actual color
-- **Saturation** (0–255) — vividness (0 = grey)
-- **Value** (0–255) — brightness (0 = black)
-
-Thresholding on Hue (with loose ranges on S and V) finds a color regardless of lighting.
-
-**Choose the target object now.** It should be:
-- A single solid color that doesn't appear elsewhere in the scene
-- Bright and saturated
-- Good options: bright orange, tennis ball yellow-green, bright blue
-
-**Avoid red as the target color.** Red wraps around OpenCV's HSV space (H near 0 AND near 179), so a single `cv2.inRange` call can't capture it cleanly. Every other color is straightforward.
-
----
-
-## Task 4.4 — Write tune_detector.py
-
-Interactive HSV slider tool. Live camera feed + mask preview, six sliders (H/S/V min/max), find the range that isolates the target as a clean white blob in the mask.
-
-**Contains:**
-- Two side-by-side windows: live camera feed and the mask
-- Six trackbars: `H_min`, `H_max`, `S_min`, `S_max`, `V_min`, `V_max`
-- Mask updates live as sliders move
-- Press `s` to print the six values to the terminal
-- Press `q` to quit
-
-**How to run:**
-
-Needs a GUI, so use VNC. Connect to `LaserPi.local` via VNC, open a terminal in the Pi's desktop, run:
+If git log is still showing the Phase 3 commit, the auto-pull hasn't run yet. Either wait, or run it manually:
 
 ```bash
+git pull --rebase --autostash
+```
+
+## Step 3 — Pick your target object
+
+Hold up the object you plan to track. It must be:
+
+- A single solid color that doesn't appear elsewhere in the camera's view
+- Bright and saturated — a washed-out pastel will be hard to isolate
+- **Not red** — red wraps around OpenCV's hue space (H near 0 AND H near 179), so a single `cv2.inRange` call can't catch it cleanly. Avoid red entirely.
+
+Good options: bright orange, tennis-ball yellow-green, vivid blue, vivid purple. A piece of colored paper, a ball, a sticky note all work.
+
+Set up the room with the actual lighting you'll use during the demo — HSV tuned at 2 AM under a desk lamp won't survive being moved into sunlight.
+
+## Step 4 — VNC into the Pi (you need a GUI for this)
+
+`tune_detector.py` opens three OpenCV windows. SSH alone can't show them. Connect via VNC instead:
+
+1. Open the VNC Viewer on the laptop
+2. Connect to `LaserPi.local` (or the Pi's IP if `.local` doesn't resolve)
+3. Log in to the Pi desktop
+4. Open a terminal in the Pi desktop (not the SSH one — needs to inherit the desktop's display)
+
+## Step 5 — Run tune_detector.py
+
+In the Pi-desktop terminal (the VNC one):
+
+```bash
+cd ~/pi
+source venv/bin/activate
 python3 tune_detector.py
 ```
 
-**Tuning procedure:**
-1. Point camera at target with your actual operating lighting
-2. Sliders start wide; mask shows lots of white
-3. Narrow `H_max` down and raise `H_min` until only the target is white
-4. Raise `S_min` to drop grey / washed-out pixels
-5. Adjust `V_min` / `V_max` for your lighting
-6. Press `s` when the mask is clean
+Three windows open:
 
-Manually copy the six values into `config.py`'s `HSV_LOWER` and `HSV_UPPER`. Hand-editing is intentional — auto-writing Python source is fragile.
+- **controls** — six sliders (`H_min`, `H_max`, `S_min`, `S_max`, `V_min`, `V_max`)
+- **feed** — live camera view with a green circle at the detected centroid (only drawn when a target is found)
+- **mask** — the binary mask `detector.detect()` will actually operate on. White = "matches color range," black = "doesn't."
 
----
+If you don't see all three, drag them apart — they may be stacked.
 
-## Task 4.5 — Write config.py
+The terminal will say:
+```
+Tuner running. 's' = print values, 'q' = quit.
+```
 
-Shared tuned constants. Other modules import from here.
+## Step 6 — Tune the HSV range
 
-**Contains:**
-- `HSV_LOWER` — numpy array `[H_min, S_min, V_min]`
-- `HSV_UPPER` — numpy array `[H_max, S_max, V_max]`
-- `FRAME_WIDTH = 640`
-- `FRAME_HEIGHT = 480`
-- `FRAME_CENTER_X = FRAME_WIDTH // 2`
-- `FRAME_CENTER_Y = FRAME_HEIGHT // 2`
+Hold the target in front of the webcam. Aim is to make the **mask** window show **just the target as a clean white blob on a pure-black background**.
 
-Will grow over time to include PID gains (Phase 5) and boresight offset (Phase 7).
+### The order to adjust sliders
 
----
+Start with all sliders at default (H range wide, S/V at 0–255 — the mask will be almost all white).
 
-## Task 4.6 — Write detector.py
+1. **Narrow Hue first.** Hue is the color. Drag `H_min` up and `H_max` down until the mask is white **only** where the target is. Tighten until just before the target itself starts losing pixels — that's the edge of usable range.
+2. **Then raise `S_min`.** Saturation removes greys and washed-out background. Push `S_min` up until walls, skin, paper, etc. drop out of the mask. The target should still glow white.
+3. **Then nudge `V_min` and `V_max` for lighting.**
+   - Raise `V_min` if dark shadows are leaking through as false positives.
+   - Lower `V_max` if shiny / overexposed highlights are getting included where they shouldn't.
+4. **Wave the target around the frame.** The green circle in the `feed` window should follow it. If the circle disappears, your range is too tight — widen the dimension that was about to clip.
+5. **Hold it stationary near a frame edge.** Confirm the mask doesn't suddenly grow large blobs from something the camera sees in the periphery.
 
-The actual detection logic.
+### What "good" looks like
 
-**Public API:**
-- `detect(frame)` — takes a BGR frame, returns `(x, y)` pixel coordinates of the target center, or `None` if not found.
+- `mask` window: target = solid white blob, no holes. Background = pure black, no twinkly noise pixels.
+- `feed` window: green circle pinned to the visual center of the target, follows smoothly as you move it.
+- The mask doesn't flicker noticeably between frames when nothing's moving.
 
-**Algorithm:**
-1. Apply 5×5 Gaussian blur to the BGR frame (smooths sensor noise)
-2. Convert BGR → HSV
-3. `cv2.inRange(hsv, HSV_LOWER, HSV_UPPER)` produces a binary mask
-4. Clean up with `cv2.erode` (kills tiny noise specks) then `cv2.dilate` (fills holes back in)
-5. `cv2.findContours` to enumerate blobs
-6. If no contours → return None
-7. Pick the largest contour by area
-8. If area below minimum threshold → return None (filters background noise)
-9. Compute center via `cv2.moments`
-10. Return `(cx, cy)`
+### What "bad" looks like (and what to do)
 
-**Test:**
+- **Mask has lots of background noise (twinkly white speckles).** Raise `S_min`. If that hurts the target too much, raise `V_min` a little instead.
+- **Target shows up as a ring with a black hole inside.** Saturation is dropping out in the highlight at the center. Lower `S_min` a touch.
+- **Green circle jumps around even when the target is still.** Two separate blobs of similar color exist. Move the camera, change background, or tighten the range further to kill the smaller blob.
+- **Green circle never appears even though the mask shows white.** Blob is smaller than `MIN_CONTOUR_AREA=200` (about a 14×14 patch). Hold target closer, or open `config.py` and lower the constant.
+
+## Step 7 — Capture the tuned values
+
+When the mask is clean and the green circle locks on, focus the terminal that's running `tune_detector.py` and press **`s`**.
+
+It prints something like:
+
+```
+============================================================
+Current HSV range — paste into config.py:
+
+HSV_LOWER: np.ndarray = np.array([10, 150, 100])   # [H_min, S_min, V_min]
+HSV_UPPER: np.ndarray = np.array([25, 255, 255])  # [H_max, S_max, V_max]
+
+Also record in docs/calibration.md along with target description
+and lighting conditions.
+============================================================
+```
+
+Copy the two `HSV_LOWER` / `HSV_UPPER` lines. Then press **`q`** to quit cleanly.
+
+## Step 8 — On the laptop: paste the values into config.py
+
+Open `C:\Projects\pi\config.py`. Find this block:
+
+```python
+HSV_LOWER: np.ndarray = np.array([0, 100, 100])   # [H_min, S_min, V_min]
+HSV_UPPER: np.ndarray = np.array([30, 255, 255])  # [H_max, S_max, V_max]
+```
+
+Replace those two lines with the printed values from Step 7.
+
+## Step 9 — Record the calibration in docs/calibration.md
+
+Open `C:\Projects\pi\docs\calibration.md`. Find the section that says:
+
+```
+## HSV target range — not yet measured
+```
+
+Replace it with the actual measurement. Use this format:
+
+```markdown
+## HSV target range — YYYY-MM-DD
+
+Measured with `tune_detector.py` on the Microsoft LifeCam HD-3000.
+
+| Constant   | Value                | Notes |
+|------------|----------------------|-------|
+| `HSV_LOWER` | np.array([H, S, V]) | |
+| `HSV_UPPER` | np.array([H, S, V]) | |
+
+**Target object:** <describe — e.g. "bright orange Post-it Note, ~7×7 cm">
+
+**Lighting:** <describe — e.g. "overhead room LED, no direct sunlight, ~6 PM">
+
+Values live in `config.py`. If lighting or target change, rerun
+`tune_detector.py` and update both.
+```
+
+Fill in the date, the numbers, the target description, the lighting.
+
+## Step 10 — Commit and push
+
+From the laptop:
+
+```powershell
+git add config.py docs/calibration.md
+git commit -m "Tune HSV target range for Phase 4 detection"
+git push
+```
+
+The Pi auto-pulls within 60 seconds.
+
+## Step 11 — Smoke-test detector.detect on the Pi
+
+SSH back to the Pi (regular SSH is fine — no GUI needed):
 
 ```bash
+ssh adam@LaserPi.local
+cd ~/pi && source venv/bin/activate
 python3 -c "
 import camera, detector
 cam = camera.init()
 frame = camera.capture_frame(cam)
-result = detector.detect(frame)
-print('Detected at:', result)
+print('Detected at:', detector.detect(frame))
 camera.release(cam)
 "
 ```
 
-Hold target → coordinates print. Move target away → `None`.
+Hold the target in front of the camera → should print `Detected at: (x, y)` with sensible coordinates (0 ≤ x ≤ 639, 0 ≤ y ≤ 479).
+
+Take the target away → should print `Detected at: None`.
+
+Run it a few times to confirm it's stable.
+
+When this passes, Phase 4 is complete and you can move to Phase 5 (PID tracking).
 
 ---
 
-## Open questions / known unknowns
+# Acceptance criteria
 
-- **Camera replacement path** — see Status banner at top
-- **If a USB webcam becomes the camera:** `camera.py` will use `cv2.VideoCapture(0)` instead of picamera2. Public API stays the same (`init`, `capture_frame`, `release`), so downstream code doesn't change. The branching point is internal to `camera.py`.
-- **Wide-angle lens distortion:** the original Pi 5 camera is 220° fisheye. Any replacement may be narrower. Detector code is unaffected, but PID gains in Phase 5 may need rescaling if the angular-degrees-per-pixel ratio changes significantly.
+- Detector returns valid `(x, y)` for the held-up target
+- Returns `None` when the target is removed
+- Coordinates are inside `(0, 0)` to `(FRAME_WIDTH-1, FRAME_HEIGHT-1)`
+- HSV range, target description, lighting all recorded in `docs/calibration.md`
+- No false positives from the empty room (background returns `None`)
 
-## Acceptance criteria
+---
 
-- `python3 detector.py` (or the test inline) returns valid `(x, y)` for a held-up target
-- Returns `None` when target is removed
-- Coordinate values are within `(0, 0)` to `(FRAME_WIDTH-1, FRAME_HEIGHT-1)`
-- HSV range and target object documented in `docs/calibration.md`
+# Troubleshooting
+
+**`tune_detector.py` crashes immediately with "Cannot open camera"** — webcam isn't connected or another process has it. Close any other camera-using app, replug the USB, retry. Confirm with `ls /dev/video0`.
+
+**Three windows don't appear** — VNC may be sharing display `:0` but the script is opening on `:1`. Check `echo $DISPLAY` in the VNC terminal — it should print `:0` or similar. If empty, run `export DISPLAY=:0` before running the script.
+
+**Sliders work but the live feed is frozen** — could be a v4l2 buffering issue. Press `q` to quit cleanly, then retry. If persistent, restart the Pi.
+
+**The mask is clean but the green circle never appears** — the blob is smaller than `MIN_CONTOUR_AREA = 200`. Either bring the target closer to the camera, or open `config.py` and lower the constant (e.g., to 100).
+
+**Mask twinkles even when nothing moves** — auto-exposure is hunting. For now, just live with it — if it causes real detection problems during Phase 5 tracking, see the auto-exposure note under "Open questions" below.
+
+**After tuning the mask is clean but the detector smoke test (Step 11) returns `None`** — probably the lighting changed between when you tuned and when you tested. Re-run `tune_detector.py` under the test's actual lighting.
+
+---
+
+# Open questions / known unknowns
+
+- **Field of view** — the LifeCam HD-3000's FOV is narrower than the original 220° fisheye plan. Detector code is unaffected, but the PID gains tuned in Phase 5 will be specific to this camera's degrees-per-pixel. If the camera is ever swapped, expect to retune Phase 5.
+- **Auto-exposure** — most consumer webcams (LifeCam included) hunt their exposure when lighting changes. The HSV range tuned in stable lighting may misfire under sudden changes. If this becomes a real problem, `camera.py` can set `cv2.CAP_PROP_AUTO_EXPOSURE = 0.25` and pin `cv2.CAP_PROP_EXPOSURE` manually. Not worth doing until we see it bite.
+
+---
+
+# Reference: what was already built
+
+Details on the ✅ items from the top table. You don't need to do anything in this section — it's here for "what is this file / why does it exist" lookups.
+
+### Task 4.1 — Camera connection ✅
+
+Microsoft LifeCam HD-3000 plugged into a USB port on the Pi. In-kernel `uvcvideo` driver handles standard UVC webcams — no install needed. Verified:
+
+```bash
+lsusb                    # → "Microsoft Corp. LifeCam HD-3000" at 045e:0779
+ls /dev/video*           # → /dev/video0 exists (alongside several others)
+python3 -c "import cv2; cap=cv2.VideoCapture(0); ok,f=cap.read(); print(ok, f.shape); cap.release()"
+# → True (480, 640, 3)
+```
+
+### Task 4.2 — camera.py ✅
+
+[camera.py](../../camera.py). Owner module for the camera subsystem; the only file that imports `cv2.VideoCapture` for capture.
+
+Public API:
+- `init(width=640, height=480, device_index=0)` → `cv2.VideoCapture`
+- `capture_frame(cap)` → BGR `numpy.ndarray`
+- `release(cap)` → `None`
+
+`VideoCapture` delivers BGR natively, so no `cvtColor` on capture (unlike the original picamera2 plan).
+
+### Task 4.3 — HSV background
+
+Camera produces BGR. Thresholding in BGR is unreliable because lighting changes shift all three channels together. HSV separates the dimensions:
+
+- **Hue** (0–179 in OpenCV — half the usual 0–359 so it fits in a byte) is the color itself
+- **Saturation** (0–255) is vividness (0 = grey)
+- **Value** (0–255) is brightness (0 = black)
+
+Thresholding tightly on Hue with loose Saturation/Value finds the color across a wide range of lighting. That's what `tune_detector.py` is for — finding the right ranges empirically.
+
+### Task 4.4 — tune_detector.py ✅
+
+[tune_detector.py](../../tune_detector.py). Three windows (controls + live feed with centroid overlay + binary mask), six trackbars, `s` prints copy-pasteable values, `q` quits. Mirrors `detector.build_mask()`'s pipeline exactly so what you see in the mask window is what `detect()` will see at runtime.
+
+Manual copy-paste of the values into `config.py` is intentional — auto-writing Python source from a tuning tool is fragile (a runaway slider during shutdown could overwrite good values).
+
+### Task 4.5 — config.py ✅
+
+[config.py](../../config.py). Holds frame geometry (`FRAME_WIDTH`, `FRAME_HEIGHT`, centers), placeholder `HSV_LOWER` / `HSV_UPPER`, `MIN_CONTOUR_AREA = 200`, `FIRE_PIXEL_THRESHOLD = 15`. Will grow with PID gains (Phase 5) and boresight offset (Phase 7).
+
+### Task 4.6 — detector.py ✅
+
+[detector.py](../../detector.py). Owner module for target detection.
+
+Public API:
+- `detect(frame)` → `(x, y)` pixel coords of target centroid, or `None`
+- `build_mask(frame)` → binary mask (exposed for debugging)
+
+Algorithm: 5×5 Gaussian blur → BGR→HSV → `cv2.inRange(HSV_LOWER, HSV_UPPER)` → erode×2 → dilate×2 → `findContours(RETR_EXTERNAL)` → largest by area → reject if `< MIN_CONTOUR_AREA` → centroid from `cv2.moments`.
