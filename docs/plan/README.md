@@ -9,15 +9,15 @@ Each phase has its own file. Click into one for detail.
 | 3 | [Servo control](phase-3-servo-control.md) — `test_servo.py`, `calibrate_servo.py`, `servo.py` | ✅ Complete |
 | 4 | [Camera + detection](phase-4-camera.md) — `camera.py`, `detector.py`, HSV tuning | ✅ Complete |
 | 5 | [PID tracking](phase-5-pid-tracking.md) — `tracker.py`, PID gain tuning | ⏳ In progress |
-| 6 | [Laser integration](phase-6-laser.md) — MOSFET driver circuit, `laser.py` | ⏳ In progress |
+| 6 | [Laser integration](phase-6-laser.md) — MOSFET driver circuit, `laser.py` | ⏳ In progress (code ready, breadboard build pending) |
 | 7 | [Mounting + boresight](phase-7-mounting.md) — wood base, 3D-printed mounts, alignment | ⏸ Future |
 | 8 | [Final integration](phase-8-integration.md) — `main.py`, end-to-end test | ⏸ Future |
 
+**Phase 5 paused** — code (`tracker.py`, `test_tracking.py`) is in place but tuning is blocked on the camera-mounting problem. The LifeCam can't be secured to the tilt plate well enough to test the closed-loop. Will resume once a workable mount exists.
+
 ## Currently working on
 
-**Phase 5** — PID closed-loop tracking. `tracker.py`, `test_tracking.py`, and PID constants in `config.py` are written. Camera needs to be temporarily mounted on the tilt plate, then run `test_tracking.py` over VNC, confirm the Kp sign matches the servo mounting, and tune Kp/Kd/Ki empirically. Detailed runbook in [`phase-5-pid-tracking.md`](phase-5-pid-tracking.md).
-
-**Phase 6** — laser MOSFET driver circuit on breadboard (can run in parallel with Phase 5). Bare-diode laser confirmed (no PCB), 100Ω series resistor mandatory, red = +, black = −. Awaiting hardware build before writing `laser.py`.
+**Phase 6** — laser integration. `laser.py` and `test_laser.py` written. Hardware build pending: rebuild MOSFET driver on breadboard, wire Pi GPIO18 / 5V / GND, attach laser, run test. Full runbook in [`phase-6-laser.md`](phase-6-laser.md).
 
 ## Next available work when the current item blocks
 

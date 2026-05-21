@@ -145,8 +145,9 @@ Update this section at the end of every session.
 - ✅ **Task 3.4 (servo.py) written.** Owner module for ServoKit/PCA9685 — public API: `init()`, `move_pan(kit, angle)`, `move_tilt(kit, angle)`, `center(kit)`, `cleanup(kit)`, `current_pan()`, `current_tilt()`. All moves clamped to calibrated limits.
 - ✅ **Phase 3 complete.**
 - ✅ **Phase 4 complete** (USB webcam path). Microsoft LifeCam HD-3000 → `camera.py` (`cv2.VideoCapture`) → `detector.py` (HSV thresholding) returns `(x, y)` of a blue target. HSV range `np.array([79, 76, 0])` to `np.array([105, 255, 255])` tuned against a folded 10×20 cm blue plastic bag under overhead ceiling light. Recorded in `config.py` and `docs/calibration.md`.
-- ⏳ **Phase 5 in progress.** `tracker.py` (PID glue) and `test_tracking.py` (end-to-end loop test, no laser) written. PID gains in `config.py` are placeholders (`Kp=0.05, Ki=0, Kd=0.01`). Still to do: temporarily mount camera on tilt plate, run `test_tracking.py` on Pi via VNC, confirm Kp sign matches servo mounting (flip if bracket tracks AWAY from target), tune empirically, record gains in `docs/calibration.md`.
-- ⏸ Phase 6 (laser — MOSFET breadboard + laser.py), Phase 7 (mounting), Phase 8 (integration) — not started
+- ⏸ **Phase 5 paused.** `tracker.py`, `test_tracking.py`, and PID constants in `config.py` are written and pushed. Tuning is blocked because the LifeCam HD-3000 can't be secured to the tilt plate well enough to close the loop. Resumes once a workable temporary mount exists (or once Phase 7B's permanent mount lands).
+- ⏳ **Phase 6 in progress.** `laser.py` (gpiozero owner module — public API `init/fire/off/cleanup`, `LASER_PIN=18`, variable must be named `laser_dev`) and `test_laser.py` (init → 3-2-1 countdown → 1s fire → cleanup, try/finally for safety) written. Still to do: rebuild MOSFET driver on breadboard (IRLZ44N + 220Ω gate + 100kΩ pulldown + 100Ω laser limiter), wire Pi pins 4/12/14, multimeter pre-check, attach bare diode (red=+, black=−), run `test_laser.py`.
+- ⏸ Phase 7 (mounting), Phase 8 (integration) — not started
 
 ### Current wiring snapshot (post problem-001 resolution)
 

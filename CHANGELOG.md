@@ -1,5 +1,28 @@
 # Changelog
 
+## [Phase 6 — Laser scaffolding] - 2026-05-22
+
+### Code added
+- `laser.py` — owner module for the laser on GPIO18. Public API `init/fire/off/cleanup`. The only file that imports `gpiozero` for the laser pin. Variable holding the device must be named `laser_dev` (using `laser` shadows the module and breaks subsequent `laser.cleanup` calls — CLAUDE.md flags this).
+- `test_laser.py` — Phase 6 standalone test: init → 3-2-1 countdown → fire 1.0s → off → cleanup. Wrapped in try/finally so Ctrl+C or an exception still turns the laser off.
+
+### Docs
+- `docs/plan/phase-6-laser.md` rewritten as a step-by-step runbook covering safety, parts inventory, MOSFET driver build, multimeter pre-power check, laser attach, and the test. Reference sections at the bottom describe what's built.
+- `docs/plan/README.md`, `CLAUDE.md` updated — Phase 5 paused (blocked on camera mount), Phase 6 actively in progress.
+
+### Context — why the pivot
+Phase 5 code shipped, but tuning is blocked: the LifeCam HD-3000 can't be secured to the tilt plate well enough for the closed-loop to make sense (camera wobble breaks the feedback). Switched focus to Phase 6 because it's independent of the camera mount and uses already-defined hardware (resistors picked, polarity confirmed). Phase 5 resumes when a workable mount exists or Phase 7B lands.
+
+### Still to do for Phase 6
+- Rebuild MOSFET driver on breadboard (IRLZ44N + 220Ω gate + 100kΩ pulldown + 100Ω laser limiter).
+- Wire Pi pins 4 (5V), 12 (GPIO18), 14 (GND) to the breadboard.
+- Multimeter pre-check: red rail ~5V, gate to GND ~0V (pulldown working).
+- Attach bare diode (red=+, black=−).
+- Power-up sanity check: laser must be OFF before any script runs.
+- Run `python3 test_laser.py`, confirm 1-second dot on a matte wall.
+
+---
+
 ## [Phase 5 — PID tracking scaffolding] - 2026-05-22
 
 ### Code added
