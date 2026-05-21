@@ -97,6 +97,8 @@ The terminal will say:
 Tuner running. 's' = print values, 'q' = quit.
 ```
 
+**Important about keyboard input:** OpenCV captures `s` / `q` keypresses only when one of its windows is focused, not the terminal. Click on the `feed` window (or `mask`, or `controls`) before pressing keys. The output of `s` still prints to the terminal — but the *keystroke* has to be received by an OpenCV window.
+
 ## Step 6 — Tune the HSV range
 
 Hold the target in front of the webcam. Aim is to make the **mask** window show **just the target as a clean white blob on a pure-black background**.
@@ -128,7 +130,7 @@ Start with all sliders at default (H range wide, S/V at 0–255 — the mask wil
 
 ## Step 7 — Capture the tuned values
 
-When the mask is clean and the green circle locks on, focus the terminal that's running `tune_detector.py` and press **`s`**.
+When the mask is clean and the green circle locks on, **click on the `feed` window** to give it focus, then press **`s`**. (Pressing `s` while the terminal is focused does nothing — OpenCV only sees keys when one of its own windows has focus.)
 
 It prints something like:
 
@@ -237,7 +239,9 @@ When this passes, Phase 4 is complete and you can move to Phase 5 (PID tracking)
 
 # Troubleshooting
 
-**`tune_detector.py` crashes immediately with "Cannot open camera"** — webcam isn't connected or another process has it. Close any other camera-using app, replug the USB, retry. Confirm with `ls /dev/video0`.
+**Pressing `s` or `q` does nothing** — you're focused on the terminal. OpenCV's `waitKey` only sees keypresses when one of its windows is focused. Click on the `feed` window first, then press the key.
+
+**`tune_detector.py` crashes immediately with "Cannot open camera"** — webcam isn't connected or another process has it (including a previous `tune_detector.py` that didn't exit cleanly). Run `pgrep -fa python` to spot any orphan, kill it with `kill <pid>`, then retry. Replug the USB if that doesn't help. Confirm device with `ls /dev/video0`.
 
 **Three windows don't appear** — VNC may be sharing display `:0` but the script is opening on `:1`. Check `echo $DISPLAY` in the VNC terminal — it should print `:0` or similar. If empty, run `export DISPLAY=:0` before running the script.
 
