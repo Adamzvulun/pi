@@ -87,6 +87,14 @@ def _draw_overlay(display, target, result):
             f"target lost — COASTING ({remaining} frames left)",
             (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 165, 255), 1,
         )
+    elif result is not None and result.get("recentering"):
+        # Coast failed to find the target; bracket is ramping back to
+        # PAN_CENTER / TILT_CENTER so the camera has its widest FOV ready.
+        cv2.putText(
+            display,
+            "target lost — RECENTERING to home",
+            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (180, 105, 255), 1,
+        )
     else:
         cv2.putText(
             display, "no target — holding position", (10, 30),
@@ -114,6 +122,15 @@ def _draw_overlay(display, target, result):
             f"tilt {tilt:6.1f}deg  COAST corr {result['tilt_correction']:+6.2f}deg"
         )
         line_color = (0, 165, 255)  # orange — matches the status text above
+    elif result.get("recentering"):
+        # Recentering — show the step size used this frame.
+        pan_line = (
+            f"pan  {pan:6.1f}deg  RECENTER step {result['pan_correction']:+5.2f}deg"
+        )
+        tilt_line = (
+            f"tilt {tilt:6.1f}deg  RECENTER step {result['tilt_correction']:+5.2f}deg"
+        )
+        line_color = (180, 105, 255)  # purple — matches the status text above
     else:
         # Normal tracking (active or in-deadband). Pixel error is a real int.
         pan_line = (

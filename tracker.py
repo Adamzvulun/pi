@@ -59,6 +59,10 @@ log = logging.getLogger(__name__)
 _last_pan_correction: float = 0.0
 _last_tilt_correction: float = 0.0
 _coast_frames_remaining: int = 0
+# After coast expires (or hits servo limits) without re-acquiring, set
+# this so subsequent update() calls drive the bracket back to center
+# until either the target reappears or we're already centered.
+_recentering: bool = False
 
 
 def _reset_coast() -> None:
@@ -69,6 +73,13 @@ def _reset_coast() -> None:
     _last_pan_correction = 0.0
     _last_tilt_correction = 0.0
     _coast_frames_remaining = 0
+
+
+def _reset_recenter() -> None:
+    """Cancel any in-progress recenter (e.g. because the target just
+    reappeared and normal tracking should resume immediately)."""
+    global _recentering
+    _recentering = False
 
 
 def init() -> Tuple[PID, PID]:
@@ -122,48 +133,112 @@ def update(
         pan_angle, tilt_angle     — actual angle commanded (after clamp)
     """
     global _last_pan_correction, _last_tilt_correction, _coast_frames_remaining
+    global _recentering
 
-    # ---- Target lost branch — try to coast --------------------------------
+    # ---- Target lost branch -----------------------------------------------
     if target_pos is None:
-        # Coast only if the last real tracking step left us with a
-        # non-trivial direction AND we haven't exhausted the coast window.
+        # First try: coast (if the last tracking step gave us a direction).
         last_was_meaningful = (
             abs(_last_pan_correction) >= config.COAST_MIN_CORRECTION_DEG
             or abs(_last_tilt_correction) >= config.COAST_MIN_CORRECTION_DEG
         )
         if _coast_frames_remaining > 0 and last_was_meaningful:
-            new_pan = servo.current_pan() + _last_pan_correction
-            new_tilt = servo.current_tilt() + _last_tilt_correction
-            actual_pan = servo.move_pan(kit, new_pan, ramp=False)
-            actual_tilt = servo.move_tilt(kit, new_tilt, ramp=False)
+            requested_pan = servo.current_pan() + _last_pan_correction
+            requested_tilt = servo.current_tilt() + _last_tilt_correction
+            actual_pan = servo.move_pan(kit, requested_pan, ramp=False)
+            actual_tilt = servo.move_tilt(kit, requested_tilt, ramp=False)
 
-            # Decay so the bracket eases to a stop instead of running until
-            # it hits the calibrated limit. Each frame the coast correction
-            # shrinks by COAST_DECAY.
-            _last_pan_correction *= config.COAST_DECAY
-            _last_tilt_correction *= config.COAST_DECAY
-            _coast_frames_remaining -= 1
+            # If both axes were clamped by servo.py (the bracket physically
+            # can't go any further in the coast direction), there's no
+            # point spending more frames here — exit coast early and let
+            # the recenter logic take over next frame.
+            pan_clamped = abs(actual_pan - requested_pan) > 0.5
+            tilt_clamped = abs(actual_tilt - requested_tilt) > 0.5
+            if pan_clamped and tilt_clamped:
+                log.debug("Coast hit servo limits on both axes — stopping coast.")
+                _coast_frames_remaining = 0
+            else:
+                # Decay correction so the bracket eases to a stop rather
+                # than slamming into a limit.
+                _last_pan_correction *= config.COAST_DECAY
+                _last_tilt_correction *= config.COAST_DECAY
+                _coast_frames_remaining -= 1
 
+                return {
+                    "pan_error": None,
+                    "tilt_error": None,
+                    "pan_correction": _last_pan_correction,
+                    "tilt_correction": _last_tilt_correction,
+                    "pan_angle": actual_pan,
+                    "tilt_angle": actual_tilt,
+                    "in_deadband": False,
+                    "coasting": True,
+                    "coast_remaining": _coast_frames_remaining,
+                    "recentering": False,
+                }
+
+        # Coast unavailable (or just ended). If recenter is enabled and we
+        # were doing something useful before the loss (we'd have non-zero
+        # correction history or active recenter flag), drive back to center.
+        if config.RECENTER_AFTER_COAST and not _recentering:
+            # First frame after a failed coast — flip into recenter mode if
+            # we'd been actively tracking (a coast attempt happened) or
+            # we're not already at center.
+            current_pan = servo.current_pan()
+            current_tilt = servo.current_tilt()
+            already_centered = (
+                abs(current_pan - servo.PAN_CENTER) < 1.0
+                and abs(current_tilt - servo.TILT_CENTER) < 1.0
+            )
+            if last_was_meaningful and not already_centered:
+                log.info("Coast ended without re-acquisition — recentering bracket.")
+                _recentering = True
+            _reset_coast()
+
+        if _recentering:
+            current_pan = servo.current_pan()
+            current_tilt = servo.current_tilt()
+            pan_delta = servo.PAN_CENTER - current_pan
+            tilt_delta = servo.TILT_CENTER - current_tilt
+
+            # Done if within one step of center on both axes.
+            if (abs(pan_delta) < config.RECENTER_STEP_DEG
+                    and abs(tilt_delta) < config.RECENTER_STEP_DEG):
+                log.info("Recenter complete — holding at center.")
+                # Snap precisely to center, then exit recenter mode.
+                servo.move_pan(kit, servo.PAN_CENTER, ramp=False)
+                servo.move_tilt(kit, servo.TILT_CENTER, ramp=False)
+                _recentering = False
+                return None
+
+            # Move one step toward center on each axis.
+            step = config.RECENTER_STEP_DEG
+            pan_step = max(-step, min(step, pan_delta))
+            tilt_step = max(-step, min(step, tilt_delta))
+            actual_pan = servo.move_pan(kit, current_pan + pan_step, ramp=False)
+            actual_tilt = servo.move_tilt(kit, current_tilt + tilt_step, ramp=False)
             return {
                 "pan_error": None,
                 "tilt_error": None,
-                "pan_correction": _last_pan_correction,
-                "tilt_correction": _last_tilt_correction,
+                "pan_correction": pan_step,
+                "tilt_correction": tilt_step,
                 "pan_angle": actual_pan,
                 "tilt_angle": actual_tilt,
                 "in_deadband": False,
-                "coasting": True,
-                "coast_remaining": _coast_frames_remaining,
+                "coasting": False,
+                "recentering": True,
             }
 
-        # No reason to coast — hold position. Make sure stale state isn't
-        # left over to fire on a later loss.
-        if _coast_frames_remaining > 0:
-            log.debug("Coast window ended without re-acquisition.")
-        _reset_coast()
+        # Nothing to do — bracket holds wherever it was.
         return None
 
     # ---- Target acquired branch — normal PID tracking ---------------------
+    # If we'd been recentering after a failed coast, drop that — the
+    # target's back and PID should drive the bracket directly.
+    if _recentering:
+        log.info("Target re-acquired during recenter — resuming PID tracking.")
+        _reset_recenter()
+
     target_x, target_y = target_pos
     pan_error = target_x - config.FRAME_CENTER_X
     tilt_error = target_y - config.FRAME_CENTER_Y
@@ -195,6 +270,7 @@ def update(
             "tilt_angle": servo.current_tilt(),
             "in_deadband": True,
             "coasting": False,
+            "recentering": False,
         }
 
     # current_pan / current_tilt are set by servo.init(), which any caller
@@ -224,6 +300,7 @@ def update(
         "tilt_angle": actual_tilt,
         "in_deadband": False,
         "coasting": False,
+        "recentering": False,
     }
 
 

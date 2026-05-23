@@ -1,5 +1,32 @@
 # Changelog
 
+## [Recenter-after-coast + early-end on servo clamp] - 2026-05-23
+
+### Fixes
+Two follow-ups to the coast-mode commit, both surfaced by Adam's first real session with the feature:
+
+1. **Bracket parked in a corner after diagonal coast.** When the target moved diagonally fast enough that coast pushed the bracket into both pan and tilt limits, it stayed there until coast frames ran out, then froze. Now: when coast expires (or both axes clamp simultaneously during coast), the tracker flips into a non-blocking recenter mode that ramps the bracket back to `PAN_CENTER` / `TILT_CENTER` at `RECENTER_STEP_DEG` degrees per frame. Target reappearing mid-recenter cancels it and PID takes over.
+2. **Coast spending frames doing nothing when the bracket can't move.** If both axes were clamped by `servo.move_*` (requested angle outside calibrated range), the bracket physically can't go further in the coast direction. Coast now detects this (`abs(actual - requested) > 0.5° on both axes`) and ends immediately, handing control to the recenter logic.
+
+### Code changes
+- `tracker.py`: new module state `_recentering`. `_reset_recenter()` helper. The target-lost branch now does: try coast → detect double-clamp → flip to recenter → step toward center until done. Target-acquired branch resets recenter state. Result dict gains `recentering: bool` (always present, mirrors `coasting`).
+- `test_tracking.py`: overlay handles the new state. Status text reads `target lost — RECENTERING to home` in purple; angle rows show `RECENTER step ±N.NN deg`.
+- `config.py`: `RECENTER_AFTER_COAST = True` (master enable), `RECENTER_STEP_DEG = 2.0` (per-frame motion cap during recenter).
+
+### Behavior summary
+| State | Trigger | Overlay |
+|-------|---------|---------|
+| Tracking | Target detected, error outside deadband | green target circle |
+| Locked | Target detected, error inside deadband | cyan target circle |
+| Coasting | Target lost, last correction was meaningful, frames remain | orange "COASTING (N left)" |
+| Recentering | Coast expired or hit double-clamp, not yet at center | purple "RECENTERING to home" |
+| Holding | None of the above (e.g. target lost while stationary in deadband) | grey "holding position" |
+
+### Docs
+- `docs/plan/phase-5-pid-tracking.md` troubleshooting section: new entry covering the diagonal-coast-into-corner symptom and the recenter knobs.
+
+---
+
 ## [Coast mode for fast targets] - 2026-05-23
 
 ### What changed

@@ -122,3 +122,20 @@ COAST_DECAY: float = 0.95
 # for coast mode to kick in. Below this threshold we treat the loss as
 # "target was basically stationary, hold position."
 COAST_MIN_CORRECTION_DEG: float = 0.1
+
+# ---- Post-coast recenter (Phase 5 extension) ------------------------------
+# After a coast window expires without re-acquiring the target — or after
+# the bracket runs into a servo limit during coast — automatically ramp
+# back to PAN_CENTER / TILT_CENTER. Without this, a fast diagonal target
+# would leave the bracket parked in a corner staring at the wall with no
+# hope of seeing the target again. The recenter is done non-blocking, a
+# few degrees per frame, so a target reappearing mid-recenter is picked
+# up immediately by normal tracking.
+
+# Master enable. Set to False to keep the bracket wherever coast left it.
+RECENTER_AFTER_COAST: bool = True
+
+# Max degrees of motion per frame during recenter. Smaller = smoother but
+# slower return; larger = faster but more visible step motion. 2° at 30 fps
+# gives ~60°/sec recenter speed — full PAN range (170°) recovered in ~3 s.
+RECENTER_STEP_DEG: float = 2.0
