@@ -27,7 +27,7 @@ See [`docs/wiring.md`](docs/wiring.md) for the current physical wiring, [`docs/c
 
 ## Current state
 
-Phase 3 (servo control) and Phase 4 (camera + detection) are complete — `detector.detect()` returns `(x, y)` pixel coordinates of a blue target captured from the LifeCam HD-3000. Phase 5 (PID tracking) is next. Phase 6 (laser integration) is parallel-actionable — MOSFET driver circuit to be rebuilt on the breadboard.
+Phases 3 (servo control), 4 (camera + detection), and 5 (PID tracking) are all complete. The full vision-to-motion loop runs end-to-end — the bracket smoothly tracks a blue target via PID control on `tracker.py`'s closed loop. Final tuned PID gains live in [`config.py`](config.py) and are documented in [`docs/calibration.md`](docs/calibration.md). Phase 6 (laser integration) is next: code is written, the MOSFET driver still needs to be rebuilt on the breadboard.
 
 Calibrated values are in [`docs/calibration.md`](docs/calibration.md). Working servo angle limits: `PAN_MIN=50, PAN_MAX=220, TILT_MIN=115, TILT_MAX=205`.
 

@@ -54,9 +54,32 @@ Measured with `tune_detector.py` on the Microsoft LifeCam HD-3000 USB webcam.
 
 Values live in `config.py`. If the target object, lighting, or camera position changes, rerun `tune_detector.py` and update both files.
 
-## PID gains — not yet tuned
+## PID gains — 2026-05-23
 
-Will be filled in during Task 5.4.
+Tuned with `test_tracking.py` on the Pi. Camera (LifeCam HD-3000) 3D-printed-mounted to the tilt plate. Target was the same folded 10×20 cm blue plastic bag used for the HSV calibration above, under overhead ceiling lighting.
+
+| Constant                | Value | Notes |
+|-------------------------|-------|-------|
+| `KP_PAN` / `KP_TILT`    | 0.017 | Final tuned value |
+| `KI_PAN` / `KI_TILT`    | 0.0   | Not needed — P-only is sufficient |
+| `KD_PAN` / `KD_TILT`    | 0.0   | Removed — Kd amplified detector centroid jitter |
+| `PID_OUTPUT_LIMIT`      | 10.0  | Degrees per axis per update; caps single-frame swing |
+| `TRACKING_DEADBAND_PX`  | 15    | Hold position when both axis errors within this many pixels |
+
+**Tuning history (so the rationale survives future sessions):**
+
+| Setting               | Outcome |
+|-----------------------|---------|
+| Kp = 0.05, Kd = 0.01 (placeholders), `servo.move_*` ramped 2°/50 ms | Tracking "worked" but bracket jiggled on a stationary target. Ramp was the real rate-limiter — masking that Kp was hot. |
+| Added a deadband (8 px), kept ramping | Jiggle persisted because detector centroid bounced ±10 px in/out of the 8 px window. |
+| Disabled ramping in `tracker.update()` (added `ramp=False` to `servo.move_pan`/`move_tilt`); deadband → 15; Kd → 0 | Camera lag (250 ms/correction) disappeared, but Kp = 0.05 now caused bracket to oscillate between calibrated limits — once the ramp throttle was gone, the PID was actually getting the snap it requested. |
+| Kp → 0.01, output limit → 10° | Stable, smooth, but slow to react to fast-moving targets. |
+| Kp → 0.02 | Slightly jittery. |
+| **Kp → 0.017** | Sweet spot — fast enough to follow, calm enough on a stationary target. |
+
+**Why these values are right for THIS setup:** Kp depends on camera frame rate, lens degrees-per-pixel, and the speed of typical target motion. If any of those change (faster camera, narrower FOV lens, faster targets), retune. The deadband and Kd choices are more universal — Kd = 0 should hold for any detector-noise-dominated setup, and the deadband should always be ≥ the detector centroid's frame-to-frame jitter range.
+
+Values live in `config.py`. Any retune updates both files.
 
 ## Boresight offset — not yet measured
 

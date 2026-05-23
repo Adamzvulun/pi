@@ -1,5 +1,31 @@
 # Changelog
 
+## [Phase 5 — Closed-loop PID tracking complete] - 2026-05-23
+
+### Achievement
+The full vision-to-motion loop runs end-to-end. Camera (on 3D-printed tilt mount) → detector → PID → servos. The bracket smoothly tracks a slow-moving blue plastic bag, holds still on a stationary target (deadband locks the loop), recovers gracefully from sudden target moves, and shows no oscillation or runaway behavior.
+
+### Final tuned values
+- `KP_PAN` = `KP_TILT` = **0.017** (P-only response).
+- `KI_PAN` = `KI_TILT` = 0.
+- `KD_PAN` = `KD_TILT` = 0. (Kd kept amplifying detector centroid jitter; removed entirely.)
+- `PID_OUTPUT_LIMIT` = **10.0°** per axis per update.
+- `TRACKING_DEADBAND_PX` = **15** (matches `FIRE_PIXEL_THRESHOLD` so Phase 8 fire-when-centered will trigger inside the deadband).
+
+### Key learnings
+- **`servo.py`'s 50 ms/2° ramp was a loop bottleneck.** Added a `ramp=False` parameter so `tracker.update()` can issue immediate PWM commands without the per-correction sleep stalling camera capture. `init()` and `cleanup()` still ramp.
+- **The "right" Kp depends entirely on whether ramping is on.** With ramping, the ramp itself acts as a rate-limiter, masking that 0.05 is too hot. Without ramping, 0.05 oscillates wildly between calibrated limits. 5× cut to 0.01 stabilized it; bumped back up to 0.017 for responsiveness after empirical testing.
+- **Detector centroid jitter is ~10 px** with this camera/target/lighting. The deadband had to be 15 px to catch it solidly.
+- **The "forgot to plug in 12V" failure mode bit us once.** Added a pre-flight checklist to the runbook so it doesn't happen again.
+
+### Docs
+- `docs/calibration.md` gets a full PID gains section with tuning history.
+- `docs/plan/phase-5-pid-tracking.md` rewritten from runbook to completion record. The tuning steps are preserved as a re-tuning runbook for future use.
+- `docs/plan/README.md`, `CLAUDE.md`, `README.md` updated.
+- `config.py`'s PID comments explain the ramp-vs-Kp relationship so future sessions don't relearn it.
+
+---
+
 ## [Phase 5 unblocked — camera mounted] - 2026-05-23
 
 ### Hardware

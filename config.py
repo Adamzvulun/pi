@@ -60,13 +60,17 @@ FIRE_PIXEL_THRESHOLD: int = 15
 # depends on how the servo is physically mounted on the bracket. If the bracket
 # tracks AWAY from the target instead of toward it, FLIP THE SIGN of the
 # corresponding Kp. The PID library handles negative gains correctly.
-# Kp was originally 0.05 when servo moves were ramped (2°/50ms inside
-# servo.py). The ramp throttled bracket motion regardless of what the PID
-# asked for, masking that 0.05 is too hot for an un-ramped per-frame
-# response. Once tracker.py started calling servos with ramp=False, the
-# bracket oscillated between calibrated limits — the PID was actually
-# getting the snap it requested. 0.01 (5× smaller) gives ~1° correction
-# per 100 px error, which the DS3225 slews in ~12ms — about one frame.
+# Tuned 2026-05-23 against the actual hardware (LifeCam HD-3000 on the
+# 3D-printed tilt mount, blue plastic bag target, overhead lighting).
+# Tuning history is in docs/calibration.md.
+#
+# Brief context: Kp depends entirely on whether servo.py is called with
+# ramp=True (calibration) or ramp=False (tracking). The ramp itself acts
+# as a rate-limiter, so the "right" Kp for ramped operation (~0.05) is
+# very different from the right value for un-ramped operation (~0.017).
+# tracker.update() calls with ramp=False, so the values below assume
+# un-ramped tracking. If you ever revert to ramped tracking, Kp must
+# come back up.
 KP_PAN: float = 0.017
 KI_PAN: float = 0.0
 # Kd amplifies frame-to-frame detector centroid jitter into bracket

@@ -1,29 +1,36 @@
-# Phase 5 — PID Closed-Loop Tracking ⏳ IN PROGRESS
+# Phase 5 — PID Closed-Loop Tracking ✅ COMPLETE
 
 ## Status
 
-`tracker.py` and `test_tracking.py` are written. PID gains in [config.py](../../config.py) are conservative starting values that almost certainly need empirical tuning — and the sign of `KP_PAN` / `KP_TILT` may need flipping depending on servo mounting (see "sign caveat" below).
+**Done as of 2026-05-23.** The full loop runs end-to-end: camera (on 3D-printed tilt-plate mount) → detector → PID → servos. The bracket smoothly follows a slowly-moving blue plastic bag, holds still on a stationary target (deadband locks it), and recovers quickly from sudden target moves.
 
-This is the first phase where camera, detector, servos, and PID controllers all run together.
-
-## What's done and what's left
+## Final state
 
 | Step | Status |
 |------|--------|
 | `tracker.py` written | ✅ |
 | `test_tracking.py` written | ✅ |
-| PID constants added to `config.py` | ✅ (placeholders — Kp=0.05, Ki=0, Kd=0.01) |
-| Camera mounted on tilt plate | ✅ 3D-printed mount, rigid |
-| **First real run of `test_tracking.py` on Pi via VNC** | ⏳ |
-| **Confirm tracking direction (flip Kp sign if needed)** | ⏳ |
-| **Tune Kp, then Kd, then Ki if needed** | ⏳ |
-| **Record tuned gains in `config.py` and `docs/calibration.md`** | ⏳ |
+| PID constants in `config.py` | ✅ Kp=0.017, Ki=0, Kd=0, output limit 10°, deadband 15 px |
+| Camera mounted on tilt plate (3D-printed) | ✅ |
+| First real run of `test_tracking.py` | ✅ |
+| Sign of Kp confirmed | ✅ Positive on both axes — no flip needed |
+| Kp tuned empirically | ✅ 0.017 final, after 0.05 → 0.01 → 0.02 → 0.017 |
+| Gains recorded in `docs/calibration.md` | ✅ |
 
-Reference details for the built modules are at the bottom of this file.
+## Surprises encountered (worth remembering)
+
+- **Forgot to plug in the 12V PSU** on the very first run. Loop ran, but servos didn't move physically, so PID kept demanding bigger corrections → continuous `clamped` warnings. Pre-flight checklist in Step 2 of the runbook below exists because of this.
+- **The 50 ms/2° ramp inside `servo.py` was the real bottleneck.** With ramping on, the bracket moved so slowly that Kp = 0.05 felt fine — the ramp was acting as a rate-limiter. The cost was visible "camera lag" because the main loop blocked for hundreds of ms per correction. Fix was a `ramp=False` parameter on `servo.move_pan` / `move_tilt`, called from `tracker.update()` to keep the loop fast. **The right Kp is dramatically different for ramped vs un-ramped operation** — disabling ramping required a 5× cut to Kp.
+- **Detector centroid jitter is ~10 px frame-to-frame** with this camera + lighting + target. The deadband had to be 15 px to catch it solidly. The original 8 px placeholder was too narrow.
+- **Kd amplifies detector noise.** Removed entirely (set to 0). P-only is sufficient and stable.
+
+The runbook below is preserved for **re-tuning** if the camera, target, lighting, or mount changes. Reference details for the built modules are at the bottom of the file.
 
 ---
 
-# What to do now — step by step
+# Re-tuning runbook (only when re-tuning)
+
+The phase is complete — follow this only if the camera, target, lighting, or mount changes and you need to retune Kp from scratch. Step 9 records the final values; pickup at whichever step makes sense for what you're changing.
 
 ## Step 1 — Camera mount ✅ done
 

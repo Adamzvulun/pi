@@ -145,9 +145,9 @@ Update this section at the end of every session.
 - ✅ **Task 3.4 (servo.py) written.** Owner module for ServoKit/PCA9685 — public API: `init()`, `move_pan(kit, angle)`, `move_tilt(kit, angle)`, `center(kit)`, `cleanup(kit)`, `current_pan()`, `current_tilt()`. All moves clamped to calibrated limits.
 - ✅ **Phase 3 complete.**
 - ✅ **Phase 4 complete** (USB webcam path). Microsoft LifeCam HD-3000 → `camera.py` (`cv2.VideoCapture`) → `detector.py` (HSV thresholding) returns `(x, y)` of a blue target. HSV range `np.array([79, 76, 0])` to `np.array([105, 255, 255])` tuned against a folded 10×20 cm blue plastic bag under overhead ceiling light. Recorded in `config.py` and `docs/calibration.md`.
-- ⏳ **Phase 5 in progress.** `tracker.py`, `test_tracking.py`, and PID constants in `config.py` (placeholders `Kp=0.05, Ki=0, Kd=0.01`) all pushed. **3D-printed camera mount in place** — LifeCam HD-3000 now rigid on the tilt plate. Next: run `test_tracking.py` on Pi via VNC with 12V on, sign-check `KP_PAN`/`KP_TILT` (flip to -0.05 if bracket tracks AWAY from target), tune empirically, record gains in `docs/calibration.md`.
-- ⏸ **Phase 6 paused.** `laser.py` (gpiozero owner — public API `init/fire/off/cleanup`, `LASER_PIN=18`, variable must be `laser_dev`) and `test_laser.py` written and pushed. Hardware build (MOSFET breadboard + wiring + diode attach) deferred until after Phase 5 tuning lands.
-- ⏸ Phase 7 (mounting), Phase 8 (integration) — not started
+- ✅ **Phase 5 complete.** Closed loop runs end-to-end (camera → detector → PID → servos). 3D-printed camera mount holds the LifeCam HD-3000 rigid on the tilt plate. `tracker.py` calls `servo.move_pan/move_tilt` with `ramp=False` to avoid loop-blocking. Final tuned values in `config.py`: `Kp=0.017` (both axes), `Ki=0`, `Kd=0`, `PID_OUTPUT_LIMIT=10°`, `TRACKING_DEADBAND_PX=15`. Recorded in `docs/calibration.md` with full tuning history.
+- ⏳ **Phase 6 in progress.** `laser.py` (gpiozero owner — public API `init/fire/off/cleanup`, `LASER_PIN=18`, variable must be `laser_dev`) and `test_laser.py` written and pushed. Still to do: rebuild MOSFET driver on breadboard (IRLZ44N + 220Ω gate + 100kΩ pulldown + 100Ω laser limiter), wire Pi pins 4/12/14, multimeter pre-check, attach bare diode (red=+, black=−), run `test_laser.py`.
+- ⏸ Phase 7 (mounting + boresight), Phase 8 (integration) — not started
 
 ### Current wiring snapshot (post problem-001 resolution)
 
