@@ -67,14 +67,14 @@ FIRE_PIXEL_THRESHOLD: int = 15
 # bracket oscillated between calibrated limits — the PID was actually
 # getting the snap it requested. 0.01 (5× smaller) gives ~1° correction
 # per 100 px error, which the DS3225 slews in ~12ms — about one frame.
-KP_PAN: float = 0.01
+KP_PAN: float = 0.02
 KI_PAN: float = 0.0
 # Kd amplifies frame-to-frame detector centroid jitter into bracket
 # motion. P-only is sufficient for the slow-moving targets this project
 # handles.
 KD_PAN: float = 0.0
 
-KP_TILT: float = 0.01
+KP_TILT: float = 0.02
 KI_TILT: float = 0.0
 KD_TILT: float = 0.0
 
