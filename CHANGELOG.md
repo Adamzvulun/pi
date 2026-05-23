@@ -1,5 +1,33 @@
 # Changelog
 
+## [Docs sync pre-book] - 2026-05-23
+
+### Why
+Pre-flight before authoring the project book: all repo docs needed to be reconciled to `HANDOFF.md` as the canonical state. The book inherits its facts from the docs, so any drift between them would poison the book. Found and fixed a mix of stale phase-status claims, references to the MB102 as a current component, references to the Pi Camera (CSI) as the active camera, placeholder PID gains in the Phase 5 reference section, and the Phase 6 / Phase 8 tables claiming work was still pending that has been done.
+
+### Files updated
+- `docs/operating-guide.md` — added a lead-in pointing at `control_panel.py` as the canonical operator interface; new §3.5 walking through the GUI sections; §7 file reference rewritten with current modules (`control_panel.py`, `tune_detector.py`, `test_tracking.py`, `test_laser.py`); §7 "Where calibrated values live" replaced "will live" placeholders with the actual recorded values; §8 phase status synced with `HANDOFF.md` (Phases 4 + 5 ✅, Phase 6 ⏸ blocked on dead diode, Phase 7A ⏳ actionable).
+- `docs/circuit-diagram.md` — system-overview, power-distribution, and camera-connection diagrams rebuilt without the MB102 (Pi GPIO 5V now feeds PCA9685 VCC). Camera section switched from Pi CSI ribbon to USB-A LifeCam. Stale "diagrams reflect target wiring after problem 001 is resolved" footer removed (problem 001 *is* resolved and the diagrams now reflect actual state).
+- `docs/wiring.md` — "Current state" heading now reads "Phases 1–5 complete, Phase 6 blocked on dead laser diode". Removed "MOSFET will be rebuilt in Phase 6" language; replaced with a built-and-pulldown-verified section. Camera section added (USB LifeCam, 3D-printed mount on tilt plate).
+- `docs/setup-pi.md` — Step 6 wiring table changed from Pi → breadboard rows (`j14` / `j13`) to direct Pi → PCA9685 pins (current wiring). Step 7 power-on order updated to drop "Plug 12V PSU to MB102 first".
+- `docs/project-plan.md` — phase-status table synced with `docs/plan/README.md` (Phases 4 + 5 ✅, Phase 6 blocked, Phase 7A actionable, Phase 8 gated).
+- `docs/plan/phase-1-foundation.md` — file-reference entry for `HANDOFF.md` updated from "Original Claude Code handoff doc" to "Session quickstart".
+- `docs/plan/phase-5-pid-tracking.md` — "Reference: config.py — PID section" now shows the actual tuned values (Kp=0.017, Kd=0, output limit 10°, deadband 15 px), not the original placeholders.
+- `docs/plan/phase-6-laser.md` — "What's done and what's left" table reconciled with the status block above it (gather parts / build MOSFET / wire Pi / verify pulldown all ✅; only the diode swap + `test_laser.py` run remain).
+- `docs/plan/phase-7-mounting.md` — "Phase 4 unblocked" prerequisite replaced with "Phase 4 complete ✅ — USB webcam on `/dev/video0`, 3D-printed camera mount already holds the LifeCam HD-3000 rigid on the tilt plate". Camera-ribbon extension advice in Task 7B.3 replaced with USB-A extension cable advice.
+- `docs/plan/phase-8-integration.md` — final file-map at completion synced (camera.py / detector.py / tracker.py / laser.py / config.py / control_panel.py / tune_detector.py / test_tracking.py / test_laser.py all ✅; main.py and boresight.py still ⏸).
+
+### Not touched on purpose
+- `CLAUDE.md` and `HANDOFF.md` — already canonical.
+- `problems/001-servo-power.md` — historical record. Resolution Notes at the bottom already corrects the as-found diagrams.
+- `problems/002-laser-dead.md` — current and accurate.
+- `docs/plan/README.md`, `docs/plan/phase-2-hardware.md`, `docs/plan/phase-3-servo-control.md`, `docs/plan/phase-4-camera.md`, `docs/calibration.md`, `README.md` — already in sync.
+
+### Removed
+- `docs/_rubric.txt` and `docs/_proposal.txt` — temp `pdftotext` extractions used while planning the project book. Not meant to live in the repo.
+
+---
+
 ## [Session handoff refreshed] - 2026-05-23
 
 ### Changed

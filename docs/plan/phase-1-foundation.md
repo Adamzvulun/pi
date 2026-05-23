@@ -35,7 +35,7 @@ Get a usable Raspberry Pi development environment: OS, system packages, Python v
 | `README.md` | Project overview |
 | `CLAUDE.md` | Project context for Claude Code sessions |
 | `CHANGELOG.md` | Session log |
-| `HANDOFF.md` | Original Claude Code handoff doc |
+| `HANDOFF.md` | Session quickstart — refreshed each significant milestone |
 | `main.py` | Placeholder |
 
 ## Final state / outputs

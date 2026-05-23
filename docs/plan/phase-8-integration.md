@@ -2,8 +2,8 @@
 
 ## Prerequisites
 
-- All previous phases complete (3 ✅, 4, 5, 6, 7)
-- `servo.py`, `camera.py`, `detector.py`, `tracker.py`, `laser.py`, `config.py` all working in isolation
+- All previous phases complete (3 ✅, 4 ✅, 5 ✅, 6 ⏸ blocked on dead laser diode, 7B gated on Phase 6)
+- `servo.py`, `camera.py`, `detector.py`, `tracker.py`, `laser.py`, `config.py` all written and working in isolation. The end-to-end loop (camera → detector → PID → servos) already runs without firing via `test_tracking.py`. Phase 8 is just bolting `laser.fire()` into that loop with the centered-target gate.
 
 ## Goal
 
@@ -95,24 +95,27 @@ python3 main.py
 
 ```
 pi/
-├── main.py                  ✅ full tracking loop
+├── main.py                  ⏸ full tracking loop (placeholder until Phase 8 lands)
 ├── servo.py                 ✅ ServoKit owner module
-├── camera.py                ⏸ picamera2 (or cv2.VideoCapture) wrapper
-├── detector.py              ⏸ HSV blob detection
-├── tracker.py               ⏸ PID loop
-├── laser.py                 ⏸ GPIO18 laser control
-├── config.py                ⏸ tuned constants (HSV, PID, boresight)
-├── test_servo.py            ✅ kept for debugging
-├── calibrate_servo.py       ✅ kept for recalibration
-├── tune_detector.py         ⏸ HSV tuning GUI
-├── test_tracking.py         ⏸ tracking without laser
-├── test_laser.py            ⏸ laser test
-├── boresight.py             ⏸ camera-laser offset calibration
+├── camera.py                ✅ cv2.VideoCapture wrapper for the LifeCam HD-3000
+├── detector.py              ✅ HSV blob detection
+├── tracker.py               ✅ PID loop (with coast + recenter modes)
+├── laser.py                 ✅ GPIO18 laser control
+├── config.py                ✅ tuned constants (HSV, PID, coast, recenter; boresight still TBD)
+├── control_panel.py         ✅ tkinter operator GUI
+├── test_servo.py            ✅ servo chain sanity test
+├── calibrate_servo.py       ✅ interactive servo edge calibration
+├── tune_detector.py         ✅ HSV tuning GUI
+├── test_tracking.py         ✅ end-to-end tracking (no laser)
+├── test_laser.py            ✅ laser fire test
+├── boresight.py             ⏸ camera-laser offset calibration (Task 7B.4)
 ├── requirements.txt         ✅
 ├── CLAUDE.md                ✅
 ├── CHANGELOG.md             ✅
 ├── HANDOFF.md               ✅
 ├── README.md                ✅
+├── scripts/
+│   └── install_desktop_shortcut.sh  ✅
 ├── docs/
 │   ├── setup-pi.md          ✅
 │   ├── wiring.md            ✅
@@ -127,11 +130,12 @@ pi/
 │       ├── phase-3-servo-control.md   ✅
 │       ├── phase-4-camera.md          ✅
 │       ├── phase-5-pid-tracking.md    ✅
-│       ├── phase-6-laser.md           ✅
-│       ├── phase-7-mounting.md        ✅
-│       └── phase-8-integration.md     ✅ (this file)
+│       ├── phase-6-laser.md           ⏸ blocked on dead diode
+│       ├── phase-7-mounting.md        ⏳ 7A actionable, 7B gated on Phase 6
+│       └── phase-8-integration.md     ⏸ this file — gated on Phase 6
 └── problems/
-    └── 001-servo-power.md   ✅
+    ├── 001-servo-power.md   ✅ resolved (LM2596)
+    └── 002-laser-dead.md    ⏸ awaiting replacement diode
 ```
 
-✅ = exists at end of Phase 3 (current state). ⏸ = remains to be built.
+✅ = currently in the repo. ⏸ = remains to be built or blocked. ⏳ = partially actionable.

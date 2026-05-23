@@ -17,14 +17,14 @@ If the next diode also fails to light, the MOSFET path itself becomes suspect �
 | Resistor + polarity confirmed (100Ω, red=+, black=−) | ✅ |
 | `laser.py` written | ✅ |
 | `test_laser.py` written | ✅ |
-| **Gather parts** | ⏳ |
-| **Build MOSFET driver circuit on breadboard** | ⏳ |
-| **Wire Pi GPIO18 / 5V / GND to breadboard** | ⏳ |
-| **Verify gate is LOW with Pi powered (multimeter)** | ⏳ |
-| **Attach the laser diode** | ⏳ |
-| **Run `test_laser.py` — observe dot for 1s** | ⏳ |
+| Gather parts | ✅ |
+| Build MOSFET driver circuit on breadboard | ✅ |
+| Wire Pi GPIO18 / 5V / GND to breadboard | ✅ Pins 4, 12, 14 wired |
+| Verify gate is LOW with Pi powered (pulldown working) | ✅ Laser does not flash at boot |
+| Attach the laser diode | ⚠️ Diode dead — replacement required |
+| **Run `test_laser.py` — observe dot for 1s** | ⏸ Blocked on replacement diode |
 
-Reference details for the built modules are at the bottom of this file.
+The entire driver path is built and software-verified. The only outstanding step is swapping in a working laser diode, after which the runbook below resumes at Step 6 (attach laser → power up → run `test_laser.py`). Reference details for the built modules are at the bottom of this file.
 
 ---
 

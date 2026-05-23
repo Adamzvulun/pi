@@ -5,6 +5,14 @@ developed in real sessions, gotchas, and troubleshooting. Read this when
 you come back to the project after a break, or when something stops
 working.
 
+> **Operator interface:** day-to-day operation goes through `control_panel.py`
+> — the tkinter GUI. Install the desktop shortcut once with
+> `bash ~/pi/scripts/install_desktop_shortcut.sh` and double-click the
+> "Laser Tracker" icon (over VNC). Terminal commands in this guide are
+> reserved for OS-level one-shots (`i2cdetect`, `lsusb`, `git pull`),
+> first-time setup, and re-calibrations that the GUI subprocess-launches
+> anyway. See §3.5 for the control panel walkthrough.
+
 ---
 
 ## 1. Daily workflow
@@ -59,7 +67,11 @@ that uses the Adafruit libraries (they live inside the venv).
 1. Turn on the **12V PSU**. Red LED on the supply lights up. The LM2596
    immediately starts delivering 5V to the PCA9685 V+ rail.
 2. Plug **USB-C** into the Pi. Wait ~30 seconds for it to boot.
-3. SSH in once you can ping it: `ping LaserPi.local`.
+3. Connect over **VNC** (for any GUI work — the control panel, the tracking
+   overlay, the HSV tuner) or plain **SSH** (`ssh adam@LaserPi.local`) for
+   non-GUI commands. The desktop launcher for `control_panel.py` is what
+   gets used for actual operation; SSH/VNC terminals are only needed for
+   `i2cdetect`, `lsusb`, or `git pull`.
 
 **The order matters only for a tidy startup — there's no electrical
 damage risk from reversing it.** But if the Pi is powered without the
@@ -217,7 +229,37 @@ python3 -c "import servo; servo.init()"
 This configures and centers both servos. **Snaps** them to center from
 wherever they are — DS3225 + LM2596 handle the spike fine, but you'll
 hear a quick whine. If you want smooth motion, use `calibrate_servo.py`
-with `=PAN_CENTER` and `=TILT_CENTER` instead.
+with `=PAN_CENTER` and `=TILT_CENTER` instead. From the control panel
+this is the "Center" button under the Servos section, or the emergency
+stop button (which also turns the laser off).
+
+---
+
+## 3.5 The control panel (control_panel.py) — the operator GUI
+
+`control_panel.py` is a single tkinter window that wraps every routine
+operation. Adam launches it from the "Laser Tracker" icon on the Pi's
+desktop (`bash ~/pi/scripts/install_desktop_shortcut.sh` installs it
+once). It is the canonical operator interface — when something is
+missing, that's a control-panel feature request, not a reason to drop
+into the terminal.
+
+| GUI section | Buttons / controls |
+|---|---|
+| Status header | Live pan / tilt angles, laser ON/OFF state (refreshed at 5 Hz) |
+| Hardware | "Initialize hardware" — explicit init so the GUI doesn't claim devices on open |
+| Servos | Center, pan / tilt sliders (clamped to calibrated limits), "Move to slider values", "Recalibrate limits…" (launches `calibrate_servo.py` as a subprocess) |
+| Laser | "Enable laser controls" gate, "Fire 1 second" (with confirmation), "Force OFF" |
+| Tools | "Start tracking test…" (launches `test_tracking.py`), "Tune HSV detector…" (launches `tune_detector.py`), "Camera smoke test" |
+| System | "Reload config", "Show config values", "Shutdown Pi", "Reboot Pi" (with confirmations) |
+| Log pane | Live `logging` output from anything running in the GUI process |
+| Emergency stop | Big red button at the bottom — laser OFF, servos centered, no confirmation |
+
+The GUI lazily inits hardware (you have to click "Initialize hardware"
+first), releases its servo claim before launching a tracking subprocess
+so two processes never fight over PCA9685, and runs a full cleanup
+(laser off, servos centered, devices released, subprocesses terminated)
+on window close.
 
 ---
 
@@ -357,15 +399,20 @@ actual public API:
 
 | File                  | Purpose                                                |
 |-----------------------|--------------------------------------------------------|
-| `main.py`             | Final tracking loop (placeholder for now)              |
+| `main.py`             | Final tracking loop (placeholder until Phase 8 lands)  |
+| `control_panel.py`    | Operator GUI (tkinter) — the canonical interface       |
 | `servo.py`            | Owner module for ServoKit/PCA9685 — all servo access   |
+| `camera.py`           | Owner module for the LifeCam HD-3000 via `cv2.VideoCapture` |
+| `detector.py`         | HSV target detection (blur → HSV → inRange → centroid) |
+| `tracker.py`          | PID closed-loop tracking with coast + recenter modes   |
+| `laser.py`            | Owner module for GPIO18 laser control                  |
+| `config.py`           | Single source of truth for tuned constants             |
 | `test_servo.py`       | Sanity test for servo chain                            |
+| `test_tracking.py`    | End-to-end tracking with cv2 overlay (no laser)        |
+| `test_laser.py`       | Standalone laser fire test                             |
 | `calibrate_servo.py`  | Interactive servo control + edge calibration tool      |
-| `camera.py`           | (Phase 4 — picamera2 wrapper)                          |
-| `detector.py`         | (Phase 4 — HSV target detection)                       |
-| `tracker.py`          | (Phase 5 — PID control)                                |
-| `laser.py`            | (Phase 6 — GPIO18 laser control)                       |
-| `config.py`           | (Phase 4 — shared tuned constants)                     |
+| `tune_detector.py`    | HSV slider GUI for retuning detection                  |
+| `scripts/install_desktop_shortcut.sh` | One-time installer for the control-panel desktop launcher |
 
 ### Doc files
 
@@ -374,32 +421,41 @@ actual public API:
 | `CLAUDE.md`                   | Project context for Claude Code sessions      |
 | `README.md`                   | Project overview                              |
 | `CHANGELOG.md`                | Session-by-session change log                 |
-| `HANDOFF.md`                  | Original Claude Code handoff context          |
+| `HANDOFF.md`                  | Current session quickstart (TL;DR + state)    |
 | `docs/plan/`                  | Phase-by-phase build plan (one file per phase) |
 | `docs/operating-guide.md`     | This file — practical how-to                  |
 | `docs/wiring.md`              | Current physical wiring state                 |
 | `docs/circuit-diagram.md`     | Mermaid diagrams of full system               |
 | `docs/calibration.md`         | Record of all tuned values                    |
 | `docs/setup-pi.md`            | One-time Pi setup instructions                |
+| `docs/next-session-prompt.md` | Paste-ready prompt for fresh Claude sessions  |
 | `problems/NNN-*.md`           | One file per problem encountered + fix        |
 
 ### Where calibrated values live
 
-- **Servo angle limits** — hardcoded in `servo.py` (`PAN_MIN`/`PAN_MAX`/
-  `TILT_MIN`/`TILT_MAX`), and mirrored in `docs/calibration.md` for the
-  record.
-- **HSV target range** — will live in `config.py` once Phase 4 starts.
-- **PID gains** — will live in `config.py` once Phase 5 starts.
-- **Boresight offset** — will live in `config.py` once Phase 7 starts.
+- **Servo angle limits** (`PAN_MIN`/`PAN_MAX`/`TILT_MIN`/`TILT_MAX`) —
+  `servo.py`, mirrored in `docs/calibration.md`.
+- **HSV target range** (`HSV_LOWER`/`HSV_UPPER`) — `config.py`, mirrored
+  in `docs/calibration.md`. Current: `np.array([79, 76, 0])` to
+  `np.array([105, 255, 255])` (folded blue plastic bag, overhead lighting).
+- **PID gains** (`KP_PAN`/`KP_TILT`/`KI_*`/`KD_*`/`PID_OUTPUT_LIMIT`) —
+  `config.py`, mirrored in `docs/calibration.md`. Current: Kp=0.017
+  (both axes), Ki=0, Kd=0, output limit 10°/frame, deadband 15 px.
+- **Coast + recenter knobs** (`COAST_MAX_FRAMES`/`COAST_DECAY`/
+  `COAST_MIN_CORRECTION_DEG`/`RECENTER_AFTER_COAST`/`RECENTER_STEP_DEG`)
+  — `config.py`. See `CHANGELOG.md` entries for coast mode and recenter.
+- **Boresight offset** (`BORESIGHT_X_OFFSET`/`BORESIGHT_Y_OFFSET`) — will
+  live in `config.py` after Task 7B.4 (gated on Phase 6).
 
 ---
 
 ## 8. Phase status (quick view)
 
-- ✅ **Phase 1–2**: OS install, libraries, breadboard hardware
+- ✅ **Phase 1–2**: OS install, libraries, initial breadboard hardware (Phase 2 superseded by Phase 3 rework)
 - ✅ **Phase 3**: Servo control (`test_servo.py`, `calibrate_servo.py`, `servo.py`)
-- ⏳ **Phase 4**: Camera + target detection (Pi Camera needs connecting first)
-- ⏸ **Phase 5**: PID closed-loop tracking
-- ⏸ **Phase 6**: Laser integration (MOSFET circuit rebuild on breadboard)
-- ⏸ **Phase 7**: Mechanical mounting, boresight calibration
-- ⏸ **Phase 8**: Final integration into `main.py`
+- ✅ **Phase 4**: Camera + target detection (USB webcam via `cv2.VideoCapture`, HSV detector tuned)
+- ✅ **Phase 5**: PID closed-loop tracking with coast + recenter (Kp=0.017, deadband 15 px)
+- ⏸ **Phase 6**: Laser integration — driver circuit built, software-verified; **blocked on dead bare-diode laser** ([problems/002-laser-dead.md](../problems/002-laser-dead.md))
+- ⏳ **Phase 7A**: Permanent base + electronics mounting — actionable now, independent of the laser blocker
+- ⏸ **Phase 7B**: Laser mount + boresight — gated on Phase 6
+- ⏸ **Phase 8**: Final integration into `main.py` — gated on Phase 6

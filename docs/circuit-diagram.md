@@ -5,6 +5,9 @@ View this file on GitHub (or in any Markdown viewer with Mermaid support) to see
 the rendered graphics. If you only see code blocks, your viewer doesn't support
 Mermaid — open the file on github.com instead.
 
+All diagrams reflect the **actual current wiring** (post problem 001 — MB102
+removed, LM2596 for servo power, Pi GPIO 5V for chip logic, LifeCam USB webcam).
+
 ---
 
 ## 1. System overview
@@ -24,8 +27,7 @@ flowchart TB
     PSU12["⚡ 12V 5A PSU<br/>(wall adapter)"]:::power
     USBC["⚡ Pi USB-C adapter<br/>5V 3A"]:::power
 
-    MB102["MB102 module<br/>regulator<br/>12V → 5V<br/>(~700mA max)"]:::power
-    LM2596["LM2596 buck converter<br/>12V → 5V<br/>(up to 3A)<br/>SET WITH TRIMPOT"]:::power
+    LM2596["LM2596 buck converter<br/>12V → 5V<br/>(up to 3A, set with trimpot)"]:::power
 
     Pi["Raspberry Pi 4B<br/>(8GB)"]:::pi
     PCA["PCA9685<br/>16-channel PWM driver<br/>I2C address 0x40"]:::driver
@@ -33,23 +35,22 @@ flowchart TB
     PanServo["DS3225 servo<br/>PAN (channel 0)"]:::servo
     TiltServo["DS3225 servo<br/>TILT (channel 1)"]:::servo
 
-    Cam["Pi Camera<br/>(5MP wide-angle)"]:::camera
+    Cam["Microsoft LifeCam HD-3000<br/>USB webcam (640×480 BGR)"]:::camera
 
     MOSFET["IRLZ44N<br/>N-channel MOSFET"]:::laser
-    Laser["650nm laser module<br/>(low power)"]:::laser
+    Laser["5 mW 650 nm bare diode<br/>(awaiting replacement)"]:::laser
 
-    LogicRail([5V logic rail]):::rail
-    ServoRail([5V servo rail]):::rail
+    LogicRail([5V logic rail — from Pi GPIO]):::rail
+    ServoRail([5V servo rail — from LM2596]):::rail
     GndRail([GND rail — common]):::rail
 
-    PSU12 -->|"12V"| MB102
     PSU12 -->|"12V"| LM2596
     USBC -->|"5V via USB-C"| Pi
 
-    MB102 -->|"5V (~50mA)"| LogicRail
+    Pi -->|"GPIO pin 2 (5V)"| LogicRail
     LM2596 -->|"5V (up to 3A)"| ServoRail
-    MB102 -.->|"GND"| GndRail
     LM2596 -.->|"GND"| GndRail
+    Pi -.->|"GPIO pin 6 (GND)"| GndRail
 
     LogicRail -->|"VCC"| PCA
     ServoRail -->|"V+"| PCA
@@ -57,17 +58,16 @@ flowchart TB
 
     Pi -->|"GPIO2 / pin 3 — SDA"| PCA
     Pi -->|"GPIO3 / pin 5 — SCL"| PCA
-    Pi -.->|"pin 6 — GND"| GndRail
 
     Pi -->|"GPIO18 / pin 12"| MOSFET
-    LogicRail -->|"5V"| Laser
+    LogicRail -->|"5V via 100Ω"| Laser
     Laser -->|"laser −"| MOSFET
     MOSFET -.->|"source"| GndRail
 
     PCA -->|"channel 0 PWM"| PanServo
     PCA -->|"channel 1 PWM"| TiltServo
 
-    Cam -.->|"CSI ribbon cable"| Pi
+    Cam -.->|"USB-A"| Pi
 ```
 
 ---
@@ -82,34 +82,34 @@ flowchart LR
     classDef reg fill:#ffe0b2,stroke:#e65100,color:#000,stroke-width:2px
     classDef rail fill:#fff9c4,stroke:#f57f17,color:#000,stroke-width:1px
     classDef load fill:#c5e1a5,stroke:#558b2f,color:#000
+    classDef pi fill:#c8e6c9,stroke:#2e7d32,color:#000,stroke-width:2px
 
     P12["12V 5A wall PSU<br/>60W total"]:::src
     Pusb["Pi USB-C adapter<br/>5V 3A — 15W"]:::src
 
-    MB["MB102<br/>12V→5V regulator"]:::reg
-    BK["LM2596<br/>12V→5V buck"]:::reg
+    BK["LM2596<br/>12V→5V buck<br/>up to 3A"]:::reg
+
+    PiB["Pi 4B board<br/>~600mA"]:::pi
+    PiPin2["Pi GPIO pin 2<br/>(5V tap)"]:::pi
 
     LR(("5V LOGIC rail<br/>~50mA load")):::rail
     SR(("5V SERVO rail<br/>up to 1A load")):::rail
     GND(("GND<br/>common reference")):::rail
 
-    PiB["Pi 4B board<br/>~600mA"]:::load
     Vcc["PCA9685 VCC<br/>(chip logic)"]:::load
     Vp["PCA9685 V+<br/>(servo power)"]:::load
     PanS["Pan servo<br/>~500mA"]:::load
     TiltS["Tilt servo<br/>~500mA"]:::load
 
-    P12 ==>|"12V positive"| MB
     P12 ==>|"12V positive"| BK
     P12 -.->|"PSU negative"| GND
-
     Pusb ==>|"5V USB-C"| PiB
 
-    MB ==>|"5V out"| LR
+    PiB ==> PiPin2
+    PiPin2 ==>|"~50mA tap"| LR
     BK ==>|"5V out (regulated, set with multimeter)"| SR
-
-    MB -.-> GND
     BK -.-> GND
+    PiB -.->|"GPIO pin 6"| GND
 
     LR --> Vcc
     SR --> Vp
@@ -117,10 +117,16 @@ flowchart LR
     Vp --> TiltS
 ```
 
-**Why two regulators for the same 5V?**
-The MB102 can't supply enough current for the servos. The LM2596 takes the same
-12V source but uses a switching design that can supply 3A. By splitting the rails,
-the servo current spikes can never affect the chip logic or the Pi.
+**Why two 5V sources for the same nominal voltage?**
+The DS3225 servos draw 600–900mA combined under load and can spike to 2A+
+under stall. The LM2596 buck converter handles that off the 12V PSU
+without touching the Pi's rail. The PCA9685's chip-logic side (~50mA)
+runs off the Pi's GPIO 5V — clean, regulated, already there, and one
+fewer power module to configure. Common GND across all three (Pi,
+LM2596 OUT−, PCA9685 GND) keeps I2C signals referenced correctly.
+
+(The MB102 module from the original Phase 2 design is no longer in the
+circuit — see [problem 001](../problems/001-servo-power.md).)
 
 ---
 
@@ -209,11 +215,15 @@ flowchart LR
     R100k["100kΩ<br/>pulldown to GND"]:::res
     Drain["MOSFET<br/>DRAIN (D)"]:::mos
     Source["MOSFET<br/>SOURCE (S)"]:::mos
-    Laser["Laser (+)<br/>to 5V rail"]:::power
-    LaserNeg["Laser (−)"]:::power
-    GND[("GND rail")]:::gnd
+    R100["100Ω<br/>current limiter"]:::res
+    Pin4["Pi 5V<br/>(pin 4)"]:::power
+    LaserPos["Laser (+, red)"]:::power
+    LaserNeg["Laser (−, black)"]:::power
+    GND[("GND rail<br/>(Pi pin 14)")]:::gnd
 
-    Laser ==>|"5V supply"| LaserNeg
+    Pin4 ==>|"5V supply"| R100
+    R100 ==> LaserPos
+    LaserPos ==>|"forward bias when MOSFET conducts"| LaserNeg
     LaserNeg ==>|"laser current"| Drain
     Source ==>|"current to ground"| GND
 
@@ -230,11 +240,18 @@ flowchart LR
 2. The 100kΩ resistor between gate and GND **pulls the gate low** whenever
    GPIO18 is not actively driving high. Without this, the gate could float
    to an unknown voltage at boot and the laser could turn on unintentionally.
-3. When the Pi sets GPIO18 HIGH (3.3V), the gate voltage rises, the MOSFET
+   Verified working — the laser does not flash at boot.
+3. The 100Ω resistor between the 5V rail and the laser anode limits the
+   diode's forward current to ~20 mA (conservative for a 5 mW bare diode).
+4. When the Pi sets GPIO18 HIGH (3.3V), the gate voltage rises, the MOSFET
    conducts between drain and source, and current flows through the laser
    to GND → laser turns ON.
-4. When the Pi sets GPIO18 LOW (0V), the gate is pulled back low by the 100kΩ,
+5. When the Pi sets GPIO18 LOW (0V), the gate is pulled back low by the 100kΩ,
    the MOSFET stops conducting, and the laser turns OFF.
+
+The current diode is dead and awaiting replacement — see
+[problem 002](../problems/002-laser-dead.md). The driver path itself is
+verified up to the diode terminals.
 
 **IRLZ44N pinout (TO-220 package, flat face toward you, leads down):**
 
@@ -261,26 +278,31 @@ flowchart LR
 
 ## 6. Camera connection (informational)
 
-The Pi Camera plugs into the Pi's CSI port via a flat ribbon cable.
-**Not connected to the breadboard at all.**
+The camera is a Microsoft LifeCam HD-3000 USB webcam — **not** a CSI Pi
+Camera. It plugs into one of the Pi's USB-A ports and is handled by the
+in-kernel `uvcvideo` driver. No install or device-tree config needed.
 
 ```mermaid
 flowchart LR
     classDef cam fill:#d1c4e9,stroke:#4527a0,color:#000,stroke-width:2px
     classDef pi fill:#c8e6c9,stroke:#2e7d32,color:#000,stroke-width:2px
 
-    Cam["Pi Camera module<br/>5MP wide-angle"]:::cam
-    Ribbon["15-pin ribbon cable<br/>(metal contacts toward HDMI side of Pi)"]
-    CSI["CSI camera port<br/>(between HDMI and USB)"]:::pi
+    Cam["LifeCam HD-3000<br/>USB webcam<br/>640×480 BGR via cv2.VideoCapture"]:::cam
+    USB["USB-A cable"]
+    USBport["USB-A port on Pi"]:::pi
     PiBoard["Raspberry Pi 4B"]:::pi
 
-    Cam ==> Ribbon
-    Ribbon ==> CSI
-    CSI ==> PiBoard
+    Cam ==> USB
+    USB ==> USBport
+    USBport ==> PiBoard
 ```
 
-The camera is mounted to the tilt plate of the pan-tilt bracket so that when
-the servos move, the camera's view moves too.
+The camera is held rigidly on the tilt plate of the pan-tilt bracket via a
+3D-printed mount — when the servos move, the camera's view moves with them.
+
+The Pi 5 CSI camera + 22-pin ribbon on hand is incompatible with the Pi 4's
+15-pin CSI slot and stays shelved. `picamera2` / `rpicam-apps` remain
+apt-installed but are unused — handy if a compatible CSI camera ever shows up.
 
 ---
 
@@ -296,7 +318,7 @@ flowchart TB
     Pan["PAN servo (DS3225)<br/>rotates horizontally<br/>= 'left/right'"]:::servo
     TiltPlate["Tilt plate (moves with pan)"]:::base
     Tilt["TILT servo (DS3225)<br/>rotates vertically<br/>= 'up/down'"]:::servo
-    Payload["Camera + Laser<br/>(both mounted to top plate)"]:::payload
+    Payload["Camera + (future) Laser<br/>(both mounted to top plate)"]:::payload
 
     Base --> Pan
     Pan --> TiltPlate
@@ -307,6 +329,8 @@ flowchart TB
 The pan servo is at the bottom; it rotates the entire upper assembly left/right.
 The tilt servo sits above it and pivots the camera/laser plate up/down.
 This is why pan is channel 0 (the "base" axis) and tilt is channel 1.
+The camera is mounted now; the laser will join it on the same plate after Phase 6
+unblocks (replacement diode) and Phase 7B (laser mount + boresight) is done.
 
 ---
 
@@ -331,10 +355,9 @@ This is why pan is channel 0 (the "base" axis) and tilt is channel 1.
 
 ## Notes
 
-- **Common ground is critical.** The Pi, MB102, LM2596, and PCA9685 must all
+- **Common ground is critical.** The Pi, LM2596 OUT−, and PCA9685 must all
   share the same GND rail. Without it, I2C will not communicate.
 - **The LM2596 must be set to 5.0V before connecting** — see
   [problems/001-servo-power.md](../problems/001-servo-power.md) for procedure.
-- **Diagrams reflect the target wiring after problem 001 is resolved.**
-  As of right now, the Pi-to-breadboard jumpers are not yet installed
-  (Task 3.1 will do that).
+- The MB102 module from the original Phase 2 design is removed from the
+  circuit and no longer wired anywhere.

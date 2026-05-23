@@ -6,9 +6,9 @@ Turn the loose assembly into a stable, presentable, transportable single unit. M
 
 ## Prerequisites
 
-- **Phase 6 complete** (for laser mounting + boresight)
-- **Phase 4 unblocked** (for camera mounting + boresight)
-- Phase 7A (base + electronics mounting) can start anytime — independent of camera availability
+- **Phase 6 complete** (for laser mounting + boresight) — currently blocked on a dead laser diode ([problem 002](../../problems/002-laser-dead.md))
+- **Phase 4 complete** ✅ — USB webcam on `/dev/video0`, 3D-printed camera mount already holds the LifeCam HD-3000 rigid on the tilt plate
+- Phase 7A (base + electronics mounting) can start anytime — independent of the laser blocker
 
 ## Structure
 
@@ -40,12 +40,11 @@ This phase is split into two halves:
 
 **Not all at once.** Recommended sequence:
 
-1. **Now / in parallel with Phase 6:** Design and 3D-print the pan servo base. Cut/sand the wooden board to size. Independent of remaining electronics.
-2. **After Phase 6 complete (laser working):** Mount the laser, mount the breadboard (no further changes expected).
-3. **After Phase 4 unblocks (camera resolved):** Mount the camera onto the tilt plate, with positioning that suits whatever camera you end up with.
-4. **Phase 7A proper:** Mount Pi, PCA9685, LM2596 with proper routing and cable management. By this point everything is settled.
+1. **Now / in parallel with Phase 6's blocker:** Design and 3D-print the pan servo base. Cut/sand the wooden board to size. Mount Pi, PCA9685, LM2596 with proper routing and cable management. This is the bulk of Phase 7A — all independent of the laser.
+2. **After Phase 6 resolves (replacement laser arrives and `test_laser.py` produces a 1 s dot):** Mount the laser onto the tilt plate. Mount the breadboard near the laser (short MOSFET-to-laser run). This kicks off Phase 7B.
+3. **Boresight calibration (Task 7B.4):** runs after both the camera (already mounted via 3D-printed mount, Phase 5) and the laser are on the tilt plate.
 
-Don't mount everything prematurely — rework on a finished board is annoying. The pan base is the one piece that's safe to print/build now.
+Don't mount everything prematurely — rework on a finished board is annoying. Pan base + base board + electronics holders are safe to print/build now, since their footprints and positions don't depend on the laser path.
 
 ## Task 7A.1 — Pan servo base (3D printed)
 
@@ -164,9 +163,9 @@ Route laser wires the same way as the camera cable. Make sure neither binds duri
 
 ## Task 7B.3 — Extend cables if needed
 
-After mounting, check whether the existing wires (camera ribbon, laser wires, servo wires) have enough length to reach connections while allowing full bracket movement.
+After mounting, check whether the existing wires (camera USB cable, laser wires, servo wires) have enough length to reach connections while allowing full bracket movement.
 
-- Camera ribbon too short → longer Pi Camera ribbon extension cables are cheap. Common and expected.
+- Camera USB cable too short → use a USB-A extension cable, or an active USB extender if the run is over ~2 m. Cheap and easy.
 - Laser wires too short → splice or solder extensions with thin hookup wire.
 - Servo wires usually have plenty of length from the kit.
 

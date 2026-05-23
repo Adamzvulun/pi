@@ -205,19 +205,26 @@ OpenCV window with:
 
 ### config.py — PID section ✅
 
-[config.py](../../config.py). Added:
+[config.py](../../config.py). Final tuned values (after empirical tuning from
+the original 0.05 placeholders documented in `docs/calibration.md`):
 
 ```python
-KP_PAN  = 0.05    # PLACEHOLDER — sign may need flipping (see tracker docs)
+KP_PAN  = 0.017   # P-only response (Kd amplified detector noise)
 KI_PAN  = 0.0
-KD_PAN  = 0.01
+KD_PAN  = 0.0
 
-KP_TILT = 0.05
+KP_TILT = 0.017
 KI_TILT = 0.0
-KD_TILT = 0.01
+KD_TILT = 0.0
 
-PID_OUTPUT_LIMIT = 20.0  # degrees per update (per axis)
+PID_OUTPUT_LIMIT      = 10.0   # degrees per axis per update — caps single-frame swing
+TRACKING_DEADBAND_PX  = 15     # error threshold below which tracker holds position
 ```
+
+Coast (`COAST_MAX_FRAMES`, `COAST_DECAY`, `COAST_MIN_CORRECTION_DEG`) and
+recenter (`RECENTER_AFTER_COAST`, `RECENTER_STEP_DEG`) knobs are also in
+`config.py` — see the CHANGELOG entries for "Coast mode for fast targets"
+and "Recenter-after-coast" for the rationale.
 
 ---
 

@@ -7,11 +7,15 @@ For visual diagrams of the full target system, see [`circuit-diagram.md`](circui
 
 ---
 
-## Current state (Phase 3 — Servo bring-up complete)
+## Current state (Phases 1–5 complete, Phase 6 blocked on dead laser diode)
 
-Both DS3225 servos are powered and verified working. The breadboard is
-temporarily out of the rig; the laser MOSFET circuit will be reassembled
-on it in Phase 6.
+Both DS3225 servos are powered and verified working. The full vision-to-motion
+closed loop (camera → HSV detector → PID → servos) runs end-to-end via
+`tracker.py` / `test_tracking.py`, with coast and recenter behaviors. The
+LifeCam HD-3000 USB webcam is held rigidly on the tilt plate by a 3D-printed
+mount. The MB-102 breadboard is reinstalled to carry the Phase 6 laser MOSFET
+driver circuit — built and pulldown-verified — but the bare laser diode itself
+is dead and waiting on a replacement (see [problem 002](../problems/002-laser-dead.md)).
 
 ### Power architecture
 
@@ -59,44 +63,47 @@ Wire colors on DS3225: brown=GND, red=V+, orange=PWM signal. Polarity matters.
 
 ### Mechanical state
 
-Pan-tilt bracket has been **reassembled with both servos held at electrical 135°**
+Pan-tilt bracket was **reassembled with both servos held at electrical 135°**
 during mounting. Electrical center now corresponds to physical center on both
-axes (within one spline tooth, ~15°). The safe edge limits will be hardcoded
-into `servo.py` (Task 3.4) once recorded from `calibrate_servo.py` output.
+axes (within one spline tooth, ~15°). The safe edge limits are hardcoded in
+`servo.py` and recorded in [`docs/calibration.md`](calibration.md):
+`PAN_MIN=50, PAN_MAX=220, TILT_MIN=115, TILT_MAX=205`.
+
+### Camera (Phase 4)
+
+- Microsoft LifeCam HD-3000 USB webcam (`045e:0779`) on `/dev/video0`
+- Plugged into a USB-A port on the Pi — handled by the in-kernel `uvcvideo` driver, no install needed
+- Accessed via `cv2.VideoCapture(0)` from `camera.py` at 640×480 BGR
+- Held rigid on the tilt plate by a 3D-printed mount (Phase 5 prerequisite)
+
+The Pi 5 CSI camera on hand is incompatible with the Pi 4's 15-pin CSI ribbon slot and stays shelved. `picamera2` / `rpicam-apps` remain apt-installed but unused.
+
+### Laser MOSFET driver (Phase 6 — built, awaiting working diode)
+
+Built on the MB-102 breadboard:
+- IRLZ44N N-channel MOSFET (G/D/S left-to-right with flat face toward you)
+- 220Ω resistor between GPIO18 and MOSFET gate
+- 100kΩ pulldown from MOSFET gate to GND (verified — laser does not flash at boot)
+- 100Ω current limiter between 5V rail and laser anode
+- Laser (+, when present) red → 100Ω side; laser (−) black → MOSFET drain; source → GND rail
+
+Pi-side wiring for the laser:
+
+| Pi pin | Pi signal | Destination | Purpose |
+|--------|-----------|-------------|---------|
+| 4      | 5V        | Breadboard red (+) rail | Laser supply via 100Ω |
+| 12     | GPIO18    | 220Ω → MOSFET gate | Laser switch control |
+| 14     | GND       | Breadboard blue (−) rail | Shared ground |
+
+Wiring and pulldown are software-verified via clean `test_laser.py` log runs. The diode itself does not emit; awaiting replacement (see [problem 002](../problems/002-laser-dead.md)).
 
 ---
 
 ## Removed from the circuit
 
-These were part of the original plan but are no longer wired:
-
-- **MB102 breadboard power module** — replaced by LM2596 for servo power
-  and Pi GPIO 5V for logic power. May return for the laser circuit if
-  convenient.
-- **Breadboard itself** — temporarily out. Will be reintroduced for the
-  laser MOSFET circuit in Phase 6.
-- **Laser MOSFET driver circuit** — was previously built on the breadboard
-  but disconnected when the board was removed. Will be rebuilt in Phase 6.
-
----
-
-## Not yet wired (later phases)
-
-### Phase 6 — laser
-
-| Pi pin | Pi signal | Destination | Purpose |
-|--------|-----------|-------------|---------|
-| 12     | GPIO18    | MOSFET gate (via 220Ω) | Laser switch control |
-
-Laser circuit components (when rebuilt):
-- IRLZ44N N-channel MOSFET (G/D/S leftmost-to-rightmost with flat face toward you)
-- 220Ω resistor between GPIO18 and MOSFET gate
-- 100kΩ pulldown from MOSFET gate to GND (keeps laser OFF when GPIO floats)
-- Laser (+) to 5V rail, laser (−) to MOSFET drain, source to GND
-
-### Phase 4 — camera
-
-Pi Camera connects via CSI ribbon cable directly to the Pi (not through the breadboard).
+- **MB102 breadboard power module** — replaced by LM2596 for servo power and
+  Pi GPIO 5V (pin 2) for PCA9685 chip-logic power. No longer in the circuit
+  at all. Detail in [problem 001](../problems/001-servo-power.md).
 
 ---
 

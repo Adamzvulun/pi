@@ -99,30 +99,38 @@ To test it: push a small change from the laptop, wait 60 seconds, then check `~/
 
 ---
 
-## Step 6 — Wire the Pi to the breadboard
+## Step 6 — Wire the Pi to the PCA9685
 
 **Do this with the Pi powered off (unplug the USB-C cable first).**
 
-You need three jumper wires. These connect the Pi's I2C bus and ground to the breadboard so it can talk to the PCA9685 servo driver.
+You need four female-to-female jumper wires connecting the Pi GPIO header
+directly to the PCA9685 breakout (no breadboard in this path — that was the
+original Phase 2 plan, but the MB102 was removed during problem 001 and the
+Pi-to-PCA9685 link is now a direct four-wire run).
 
 **Finding the pins:** hold the Pi with the USB ports facing away from you. The GPIO header is the two rows of pins on the top-left. Pin 1 is the corner closest to the SD card slot (tiny triangle on the board). Top row = odd pins (1, 3, 5…), bottom row = even pins (2, 4, 6…), counting left to right.
 
-| Pi physical pin | Pi signal   | Breadboard destination | Why                         |
-|-----------------|-------------|------------------------|-----------------------------|
-| Pin 3           | GPIO2 (SDA) | j14                    | I2C data line to PCA9685    |
-| Pin 5           | GPIO3 (SCL) | j13                    | I2C clock line to PCA9685   |
-| Pin 6           | GND         | blue (−) rail          | Shared ground               |
+| Pi physical pin | Pi signal   | PCA9685 pin | Why                         |
+|-----------------|-------------|-------------|-----------------------------|
+| Pin 2           | 5V          | VCC         | PCA9685 chip-logic power    |
+| Pin 3           | GPIO2 (SDA) | SDA         | I2C data line               |
+| Pin 5           | GPIO3 (SCL) | SCL         | I2C clock line              |
+| Pin 6           | GND         | GND         | Shared ground               |
 
-Pin 3 and Pin 5 are the second and third pins in the top row. Pin 6 is directly below Pin 5.
+Servo power (PCA9685 V+ green terminal) is fed separately from the LM2596 buck
+converter — see [`docs/wiring.md`](wiring.md) for the full servo-side wiring
+and [`problems/001-servo-power.md`](../problems/001-servo-power.md) for why
+the LM2596 is used instead of the original MB102 plan.
 
-The GPIO18 laser wire (pin 12 → row 50) is left for later, when the laser module is physically attached.
+The GPIO18 laser wire (pin 12) is left for later, when the laser MOSFET driver
+breadboard circuit is connected — covered in [`docs/plan/phase-6-laser.md`](plan/phase-6-laser.md).
 
 ---
 
 ## Step 7 — Power up and confirm the PCA9685 is detected
 
 Power on in this order:
-1. Plug in the 12V PSU to the MB102 first
+1. Plug in the 12V PSU (feeds the LM2596 → PCA9685 V+ servo rail)
 2. Then plug the USB-C cable into the Pi
 
 Wait ~30 seconds for the Pi to boot, then SSH back in:
