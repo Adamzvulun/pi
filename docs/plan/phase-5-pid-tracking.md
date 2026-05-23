@@ -144,6 +144,8 @@ Phase 5 is complete when:
 
 # Troubleshooting
 
+**Bracket jiggles when the target is stationary** — detector centroid jitters ±2-3 px frame-to-frame, and the PID dutifully "corrects" each micro-shift. There's a deadband for this: `TRACKING_DEADBAND_PX` in `config.py`. While both pixel errors are below that threshold, `tracker.update()` holds position. The target marker on the overlay turns cyan and reads `LOCKED (deadband)` when this kicks in. If the bracket is *still* jiggling with the deadband active, either the target is exactly on the edge of the deadband (slightly larger value will fix), or Kd is amplifying noise (drop `KD_PAN` / `KD_TILT` to 0). Keep the deadband smaller than `FIRE_PIXEL_THRESHOLD` (=15) so the laser-fire condition can still trigger from inside the deadband.
+
 **Bracket snaps violently on startup** — expected on the very first run after the servos drifted while unplugged. `servo.init()` has no readback so it can't ramp; it just commands `PAN_CENTER` / `TILT_CENTER` directly. The DS3225 + LM2596 handle this. If it's repeatedly violent on every startup, the servos may be drifting between runs — check that the bracket isn't being bumped while powered down.
 
 **Bracket tracks AWAY from target forever** — sign of Kp is wrong for your servo mounting. See Step 5.

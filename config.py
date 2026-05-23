@@ -73,3 +73,11 @@ KD_TILT: float = 0.01
 # Kp=0.05 would request a +16° jump on a single frame, which is jarring and
 # risks overshoot.
 PID_OUTPUT_LIMIT: float = 20.0
+
+# When the target's pixel error is within this distance of frame center on
+# BOTH axes, the tracker holds position instead of issuing tiny corrections.
+# Prevents jiggle from detector centroid jitter (the detected centroid moves
+# ±2-3 px frame-to-frame even when the target is still). Should stay smaller
+# than FIRE_PIXEL_THRESHOLD so the laser-fire check can still trigger from
+# inside the deadband.
+TRACKING_DEADBAND_PX: int = 8

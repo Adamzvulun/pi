@@ -107,8 +107,30 @@ def update(
     pan_error = target_x - config.FRAME_CENTER_X
     tilt_error = target_y - config.FRAME_CENTER_Y
 
+    # Always run the PID — keeps its internal time-tracking and derivative
+    # state consistent across frames. We may or may not USE the correction.
     pan_correction = pan_pid(pan_error)
     tilt_correction = tilt_pid(tilt_error)
+
+    # Deadband: if the target is already very close to frame center on
+    # BOTH axes, hold position instead of nudging the servos. Detector
+    # centroid jitter (~2-3 px frame-to-frame) would otherwise drive the
+    # bracket to micro-correct forever, producing visible jiggle.
+    in_deadband = (
+        abs(pan_error) < config.TRACKING_DEADBAND_PX
+        and abs(tilt_error) < config.TRACKING_DEADBAND_PX
+    )
+
+    if in_deadband:
+        return {
+            "pan_error": pan_error,
+            "tilt_error": tilt_error,
+            "pan_correction": 0.0,
+            "tilt_correction": 0.0,
+            "pan_angle": servo.current_pan(),
+            "tilt_angle": servo.current_tilt(),
+            "in_deadband": True,
+        }
 
     # current_pan / current_tilt are set by servo.init(), which any caller
     # is expected to have called first. servo.move_* will raise if not.
@@ -125,6 +147,7 @@ def update(
         "tilt_correction": tilt_correction,
         "pan_angle": actual_pan,
         "tilt_angle": actual_tilt,
+        "in_deadband": False,
     }
 
 

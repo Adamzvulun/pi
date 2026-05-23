@@ -64,10 +64,16 @@ def _draw_overlay(display, target, result):
 
     # Target marker.
     if target is not None:
-        cv2.circle(display, target, 8, (0, 255, 0), 2)
+        # Cyan circle when in deadband (locked), green when actively tracking.
+        in_dead = result is not None and result.get("in_deadband", False)
+        circle_color = (255, 255, 0) if in_dead else (0, 255, 0)
+        cv2.circle(display, target, 8, circle_color, 2)
+
+        status = "LOCKED (deadband)" if in_dead else "tracking"
+        text_color = (255, 255, 0) if in_dead else (0, 255, 0)
         cv2.putText(
-            display, f"target {target}", (10, 30),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1,
+            display, f"target {target} — {status}", (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1,
         )
     else:
         cv2.putText(
