@@ -8,16 +8,16 @@ Each phase has its own file. Click into one for detail.
 | 2 | [Initial hardware build](phase-2-hardware.md) — breadboard wiring | ✅ Complete (superseded by Phase 3 rework) |
 | 3 | [Servo control](phase-3-servo-control.md) — `test_servo.py`, `calibrate_servo.py`, `servo.py` | ✅ Complete |
 | 4 | [Camera + detection](phase-4-camera.md) — `camera.py`, `detector.py`, HSV tuning | ✅ Complete |
-| 5 | [PID tracking](phase-5-pid-tracking.md) — `tracker.py`, PID gain tuning | ⏳ In progress |
-| 6 | [Laser integration](phase-6-laser.md) — MOSFET driver circuit, `laser.py` | ⏳ In progress (code ready, breadboard build pending) |
+| 5 | [PID tracking](phase-5-pid-tracking.md) — `tracker.py`, PID gain tuning | ⏳ In progress (camera now mounted) |
+| 6 | [Laser integration](phase-6-laser.md) — MOSFET driver circuit, `laser.py` | ⏸ Paused (code ready, breadboard build deferred) |
 | 7 | [Mounting + boresight](phase-7-mounting.md) — wood base, 3D-printed mounts, alignment | ⏸ Future |
 | 8 | [Final integration](phase-8-integration.md) — `main.py`, end-to-end test | ⏸ Future |
 
-**Phase 5 paused** — code (`tracker.py`, `test_tracking.py`) is in place but tuning is blocked on the camera-mounting problem. The LifeCam can't be secured to the tilt plate well enough to test the closed-loop. Will resume once a workable mount exists.
-
 ## Currently working on
 
-**Phase 6** — laser integration. `laser.py` and `test_laser.py` written. Hardware build pending: rebuild MOSFET driver on breadboard, wire Pi GPIO18 / 5V / GND, attach laser, run test. Full runbook in [`phase-6-laser.md`](phase-6-laser.md).
+**Phase 5** — PID closed-loop tracking, unblocked by a 3D-printed camera mount that holds the LifeCam HD-3000 rigidly to the tilt plate. `tracker.py`, `test_tracking.py`, and PID constants in `config.py` are written. Next: run `test_tracking.py` on the Pi via VNC, sign-check Kp on each axis, tune Kp → Kd → (Ki if needed), record final gains. Full runbook in [`phase-5-pid-tracking.md`](phase-5-pid-tracking.md).
+
+**Phase 6 paused** — `laser.py` and `test_laser.py` are written and pushed, but the MOSFET driver hasn't been rebuilt on the breadboard yet. Resumes after Phase 5 lands (or anytime in parallel — Phase 6 is independent of the camera).
 
 ## Next available work when the current item blocks
 

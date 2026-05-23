@@ -1,5 +1,21 @@
 # Changelog
 
+## [Phase 5 unblocked — camera mounted] - 2026-05-23
+
+### Hardware
+- **3D-printed camera mount installed.** The LifeCam HD-3000 is now rigidly attached to the tilt plate. This unblocks the Phase 5 closed-loop test — the camera view shifts with the bracket so PID has real feedback to work with.
+
+### Docs
+- `docs/plan/README.md` — Phase 5 flipped back to in-progress, Phase 6 to paused. The "Currently working on" section rewritten accordingly.
+- `docs/plan/phase-5-pid-tracking.md` — Step 1 (camera mount) marked done; runbook Step 2 rewritten as a pre-flight checklist (12V PSU on, latest code on Pi, VNC ready) so the "forgot to plug in 12V" failure mode doesn't bite a second time. Duplicate Step 3 from the prior edit cleaned up.
+- `docs/plan/phase-6-laser.md` — status changed to ⏸ PAUSED with a note that the runbook remains valid for whenever it resumes.
+- `CLAUDE.md` — current-state bullets flipped.
+
+### No code changes this entry
+Tracker code and the Phase 6 laser scaffolding were already pushed in earlier commits. This is purely a status/docs update to reflect that Phase 5 is now actionable.
+
+---
+
 ## [Phase 6 — Laser scaffolding] - 2026-05-22
 
 ### Code added

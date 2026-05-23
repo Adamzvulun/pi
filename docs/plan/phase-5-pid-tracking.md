@@ -13,8 +13,8 @@ This is the first phase where camera, detector, servos, and PID controllers all 
 | `tracker.py` written | ✅ |
 | `test_tracking.py` written | ✅ |
 | PID constants added to `config.py` | ✅ (placeholders — Kp=0.05, Ki=0, Kd=0.01) |
-| **Camera temporarily mounted on tilt plate** | ⏳ |
-| **First run of `test_tracking.py` on Pi via VNC** | ⏳ |
+| Camera mounted on tilt plate | ✅ 3D-printed mount, rigid |
+| **First real run of `test_tracking.py` on Pi via VNC** | ⏳ |
 | **Confirm tracking direction (flip Kp sign if needed)** | ⏳ |
 | **Tune Kp, then Kd, then Ki if needed** | ⏳ |
 | **Record tuned gains in `config.py` and `docs/calibration.md`** | ⏳ |
@@ -25,50 +25,38 @@ Reference details for the built modules are at the bottom of this file.
 
 # What to do now — step by step
 
-## Step 1 — Mount the camera on the tilt plate (temporarily)
+## Step 1 — Camera mount ✅ done
 
-The tracking loop only works if the camera moves *with* the bracket. As pan/tilt rotates, the camera view shifts, the target appears in a new pixel location, and PID corrects again. If the camera sits separately on the desk, the target's pixel position never changes when the bracket moves and the loop has nothing to do.
+A 3D-printed mount holds the LifeCam HD-3000 rigidly to the tilt plate. If you ever need to redo it, the requirements are:
 
-You don't need permanent mounting yet — that's Phase 7B. For Phase 5, attach the LifeCam HD-3000 to the tilt plate with:
-
-- Strong tape (electrical or gaffer's), OR
-- Zip ties through the camera's stand holes, OR
-- Rubber bands looped around the camera and bracket arm
-
-**Things to check after mounting:**
-- Camera lens points roughly forward (same direction the laser will eventually point)
-- USB cable has 10+ cm of slack — when pan reaches its limit, the cable shouldn't tug on the camera
+- Camera lens points roughly forward (where the laser will eventually point)
+- USB cable has 10+ cm of slack — pan sweep shouldn't tug on the camera
 - Camera doesn't wobble when you nudge the bracket by hand
 - Nothing on the bracket (cable, camera body) intrudes into the camera's field of view
 
-A wobbly camera will give the PID jittery target coordinates and the loop will fight itself. Solid > pretty.
+Permanent mounting refinements happen in Phase 7B alongside the laser mount and the boresight calibration.
 
-## Step 2 — Confirm the laptop code is on the Pi
+## Step 2 — Pre-flight checks before running
 
-From the laptop:
+Before launching `test_tracking.py`, confirm:
 
-```powershell
-git log -1 --oneline
-```
-
-Phase 5 scaffolding commit should be at the top. Wait ~60 seconds for the Pi's auto-pull cron, or SSH to the Pi and `cd ~/pi && git pull --rebase --autostash`.
+- [ ] **12V PSU is plugged in and switched on.** The LM2596 LED should be lit. Without 12V the servos can't physically move — the loop runs but the bracket stays still and you get nothing but `clamped` warnings. (This bit us once already.)
+- [ ] **Latest code is on the Pi.** From the laptop: `git log -1 --oneline` should match what's on the Pi. If you've made changes since the last Pi pull, wait 60 seconds for the auto-pull cron or run `git pull --rebase --autostash` on the Pi.
+- [ ] **VNC into LaserPi** — `test_tracking.py` opens an OpenCV window; plain SSH can't show it.
 
 ## Step 3 — Stay clear of the bracket's sweep arc
 
-`servo.init()` snaps both servos to center at script start. If the tilt servo drifted while unplugged (per Adam's note from before), the snap motion may be large and sudden. The servos and PSU can handle it, but you don't want a hand or the USB cable in the way. Keep clear during the first 1–2 seconds after launch.
+`servo.init()` snaps both servos to center at script start. If the tilt servo drifted while unplugged, the snap motion may be large and sudden. The servos and PSU can handle it, but you don't want a hand or the USB cable in the way. Keep clear during the first 1–2 seconds after launch.
 
-## Step 4 — Run test_tracking.py via VNC
+## Step 4 — Run test_tracking.py
 
-`test_tracking.py` opens an OpenCV window, so use VNC, not plain SSH.
+In a terminal on the Pi desktop (the VNC one — not plain SSH, since the script opens an OpenCV window):
 
-1. VNC into LaserPi.
-2. Open a terminal on the Pi desktop.
-3. Run:
-   ```bash
-   cd ~/pi
-   source venv/bin/activate
-   python3 test_tracking.py
-   ```
+```bash
+cd ~/pi
+source venv/bin/activate
+python3 test_tracking.py
+```
 
 A window titled `tracking` opens. You'll see:
 

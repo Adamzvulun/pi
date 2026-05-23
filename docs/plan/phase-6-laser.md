@@ -1,8 +1,10 @@
-# Phase 6 — Laser Integration ⏳ IN PROGRESS
+# Phase 6 — Laser Integration ⏸ PAUSED
 
 ## Status
 
-Code is written (`laser.py`, `test_laser.py`). The bare diode laser, the resistor value (100Ω series), and the polarity (red = +, black = −) are all confirmed. **What's left is physical** — rebuild the MOSFET driver circuit on the breadboard, wire it to the Pi, attach the laser, and run `test_laser.py`.
+Code is written (`laser.py`, `test_laser.py`) and pushed. The bare diode laser, the resistor value (100Ω series), and the polarity (red = +, black = −) are all confirmed. **What's left is physical** — rebuild the MOSFET driver circuit on the breadboard, wire it to the Pi, attach the laser, and run `test_laser.py`.
+
+**Why paused:** working on Phase 5 first now that the 3D-printed camera mount is in place. Phase 6 is independent of the camera and can resume anytime — the runbook below stays valid.
 
 ## What's done and what's left
 
