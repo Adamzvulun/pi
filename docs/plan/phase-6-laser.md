@@ -1,10 +1,14 @@
-# Phase 6 — Laser Integration ⏸ PAUSED
+# Phase 6 — Laser Integration ⏸ BLOCKED — laser diode dead
 
 ## Status
 
-Code is written (`laser.py`, `test_laser.py`) and pushed. The bare diode laser, the resistor value (100Ω series), and the polarity (red = +, black = −) are all confirmed. **What's left is physical** — rebuild the MOSFET driver circuit on the breadboard, wire it to the Pi, attach the laser, and run `test_laser.py`.
+Code is written (`laser.py`, `test_laser.py`) and pushed; software-verified end-to-end (clean init → fire → off → cleanup logs). The MOSFET driver circuit is built on the breadboard with the correct three resistors (220 Ω gate, 100 kΩ pulldown, 100 Ω laser limit), wired to Pi pins 4 (5 V), 12 (GPIO18), 14 (GND). The 100 kΩ pulldown is confirmed working — the laser does not flash at boot, gate is held LOW until the script fires.
 
-**Why paused:** working on Phase 5 first now that the 3D-printed camera mount is in place. Phase 6 is independent of the camera and can resume anytime — the runbook below stays valid.
+**Blocker:** the bare laser diode itself is dead. It does not emit in any tested configuration, in either polarity, even when the MOSFET is fully removed from the path (laser wired directly across `5 V → 100 Ω → laser → GND`). Full diagnosis recorded in [`problems/002-laser-dead.md`](../../problems/002-laser-dead.md).
+
+**To resolve:** replace the laser diode. When the replacement arrives, attach red → 100 Ω side, black → MOSFET drain side, run `python3 test_laser.py`. No code changes needed.
+
+If the next diode also fails to light, the MOSFET path itself becomes suspect — at that point we'd substitute a regular LED + 100 Ω as a known-good test load to verify the gate-driven switching works independently of the laser.
 
 ## What's done and what's left
 

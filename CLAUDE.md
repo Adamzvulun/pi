@@ -146,8 +146,9 @@ Update this section at the end of every session.
 - ✅ **Phase 3 complete.**
 - ✅ **Phase 4 complete** (USB webcam path). Microsoft LifeCam HD-3000 → `camera.py` (`cv2.VideoCapture`) → `detector.py` (HSV thresholding) returns `(x, y)` of a blue target. HSV range `np.array([79, 76, 0])` to `np.array([105, 255, 255])` tuned against a folded 10×20 cm blue plastic bag under overhead ceiling light. Recorded in `config.py` and `docs/calibration.md`.
 - ✅ **Phase 5 complete.** Closed loop runs end-to-end (camera → detector → PID → servos). 3D-printed camera mount holds the LifeCam HD-3000 rigid on the tilt plate. `tracker.py` calls `servo.move_pan/move_tilt` with `ramp=False` to avoid loop-blocking. Final tuned values in `config.py`: `Kp=0.017` (both axes), `Ki=0`, `Kd=0`, `PID_OUTPUT_LIMIT=10°`, `TRACKING_DEADBAND_PX=15`. Recorded in `docs/calibration.md` with full tuning history.
-- ⏳ **Phase 6 in progress.** `laser.py` (gpiozero owner — public API `init/fire/off/cleanup`, `LASER_PIN=18`, variable must be `laser_dev`) and `test_laser.py` written and pushed. Still to do: rebuild MOSFET driver on breadboard (IRLZ44N + 220Ω gate + 100kΩ pulldown + 100Ω laser limiter), wire Pi pins 4/12/14, multimeter pre-check, attach bare diode (red=+, black=−), run `test_laser.py`.
-- ⏸ Phase 7 (mounting + boresight), Phase 8 (integration) — not started
+- ⏸ **Phase 6 blocked — dead laser diode** ([problems/002-laser-dead.md](problems/002-laser-dead.md)). `laser.py` and `test_laser.py` written and software-verified; MOSFET driver circuit built on breadboard with all three resistors (pulldown confirmed working — no flash at boot); Pi pins 4/12/14 wired. But the bare laser diode does not emit in any test, including a direct bypass (`5V → 100Ω → laser → GND`, no MOSFET). Replacement diode required. When it arrives: red → 100Ω side, black → MOSFET drain, run `test_laser.py` — no code changes needed.
+- ⏳ **Phase 7A actionable in the meantime** — permanent base + electronics mounting is independent of the laser. Phase 7B (laser mount + boresight) stays gated on Phase 6.
+- ⏸ Phase 8 (integration) — gated on Phase 6.
 
 ### Current wiring snapshot (post problem-001 resolution)
 

@@ -1,5 +1,31 @@
 # Changelog
 
+## [Phase 6 — Blocked on dead laser diode] - 2026-05-23
+
+### What happened
+First-power-up testing of the Phase 6 MOSFET driver circuit revealed that the bare 5 mW 650 nm laser diode does not emit light in any tested configuration. After methodically ruling out software, polarity, loose connections, wiring errors, the MOSFET, and resistor mix-ups (the 100 Ω was confirmed correct via color-band check), the laser diode itself is concluded dead.
+
+### Diagnosis path
+1. Software clean — `test_laser.py` logs show GPIO command going out on schedule.
+2. Boot test passed — laser stays OFF before any script runs (100 kΩ gate pulldown confirmed working).
+3. Polarity swap (full circuit) — no light either way.
+4. Wire re-seat — no change.
+5. Photo audit — three resistors visible, MOSFET present, jumpers seated.
+6. **Bypass test** — laser wired directly across `5 V → 100 Ω → laser → GND` (no MOSFET, no GPIO). No light in either polarity.
+7. Resistor color-band check — confirmed 100 Ω (brown-black-brown-gold), not the visually-similar 100 kΩ.
+
+Full record in [`problems/002-laser-dead.md`](problems/002-laser-dead.md).
+
+### Status
+Phase 6 paused pending a replacement diode. When it arrives: attach (red = +, black = −), run `test_laser.py`, no code changes needed.
+
+### Pivot
+- `docs/plan/phase-6-laser.md` status changed to "⏸ Blocked — dead laser diode" with link to problem 002.
+- `docs/plan/README.md` updated: Phase 7A (permanent base + electronics mounting) becomes the current actionable phase, since it's independent of the laser.
+- `CLAUDE.md` current-state bullets updated.
+
+---
+
 ## [Phase 5 — Closed-loop PID tracking complete] - 2026-05-23
 
 ### Achievement
