@@ -97,3 +97,28 @@ PID_OUTPUT_LIMIT: float = 10.0
 # the centroid solidly. Matches FIRE_PIXEL_THRESHOLD so the fire-when-centered
 # logic in Phase 8 will trigger exactly when the tracker is in its hold state.
 TRACKING_DEADBAND_PX: int = 15
+
+# ---- Coast mode (Phase 5 extension) ---------------------------------------
+# When the detector loses the target mid-track (e.g. user moves it faster
+# than the bracket can keep up and it leaves the FOV), continue applying
+# the LAST PID correction for a short window so the bracket keeps moving
+# in the same direction and might re-acquire. Without this, the bracket
+# would freeze the instant detection fails and never catch a fast target.
+#
+# Only coasts if the last correction was non-trivial (above
+# COAST_MIN_CORRECTION_DEG). If the target was stationary in the deadband
+# and then disappeared, holding position is correct — coasting in some
+# stale direction would be wrong.
+
+# How many frames to coast before giving up. ~1 second at 30 fps.
+COAST_MAX_FRAMES: int = 30
+
+# Multiplicative decay applied to the coast correction each frame.
+# 0.95 means after 30 frames the correction is ~22% of its starting value,
+# so the bracket eases to a stop rather than slamming into a limit.
+COAST_DECAY: float = 0.95
+
+# Last correction must exceed this (degrees, absolute value on either axis)
+# for coast mode to kick in. Below this threshold we treat the loss as
+# "target was basically stationary, hold position."
+COAST_MIN_CORRECTION_DEG: float = 0.1

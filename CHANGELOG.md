@@ -1,5 +1,33 @@
 # Changelog
 
+## [Coast mode for fast targets] - 2026-05-23
+
+### What changed
+Tracker now extrapolates the last motion when it loses the target, instead of freezing. Use case: user moves the blue bag faster than the bracket can chase; bag leaves the FOV; before this change, the bracket would stop the instant detection failed; now it continues in the last-known direction for up to ~1 second so the target has a chance to come back into view.
+
+### Code changes
+- `tracker.py` keeps three new module-level state values: `_last_pan_correction`, `_last_tilt_correction`, `_coast_frames_remaining`. Saved on every normal-tracking update, reset whenever the target is in the deadband (target was stationary, no direction to coast in).
+- `tracker.update()` adds a coast branch: when `target_pos is None` AND the last correction exceeded `COAST_MIN_CORRECTION_DEG`, continue applying that correction (with per-frame `COAST_DECAY` slowdown) until `COAST_MAX_FRAMES` runs out or the target re-acquires. Servo clamps in `servo.move_pan/move_tilt` keep the bracket inside calibrated limits.
+- The result dict has new `coasting: bool` and `coast_remaining: int` fields when active.
+
+### config.py
+- `COAST_MAX_FRAMES = 30` — ~1 s at 30 fps.
+- `COAST_DECAY = 0.95` — per-frame multiplier (after 30 frames, correction is ~22% of starting value).
+- `COAST_MIN_CORRECTION_DEG = 0.1` — don't coast if the last correction was trivial.
+
+### test_tracking.py
+- Overlay now reads `target lost — COASTING (N frames left)` in orange while coast is active. Easy to spot from the VNC screen.
+
+### Docs
+- `docs/plan/phase-5-pid-tracking.md` troubleshooting section gets a new entry covering the fast-target / coast behavior and how to tune `COAST_*` knobs.
+
+### Tuning notes
+- Raise `COAST_MAX_FRAMES` if 1 second isn't enough to re-acquire fast targets.
+- Lower `COAST_DECAY` toward 1.0 if the bracket gives up too quickly mid-coast.
+- Raise `COAST_MIN_CORRECTION_DEG` if the bracket coasts off in odd directions on stationary-target losses.
+
+---
+
 ## [Operator GUI] - 2026-05-23
 
 ### Code added

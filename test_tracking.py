@@ -25,6 +25,9 @@ sweep arc until it settles.
 
 Behavior to watch for during tuning:
     GOOD  — target moves slowly → bracket follows → error converges → motion stops
+    GOOD  — target moves fast and leaves FOV → bracket coasts in the last
+            direction for up to COAST_MAX_FRAMES; overlay reads
+            "COASTING (N frames left)" in orange
     BAD   — bracket tracks AWAY from target → flip sign of KP_PAN / KP_TILT
     BAD   — bracket oscillates around the target → reduce Kp (try half)
     BAD   — bracket reaches target but keeps drifting → too much I, or Kd negative
@@ -62,7 +65,7 @@ def _draw_overlay(display, target, result):
         (0, 0, 255), cv2.MARKER_CROSS, markerSize=30, thickness=1,
     )
 
-    # Target marker.
+    # Target marker / status text.
     if target is not None:
         # Cyan circle when in deadband (locked), green when actively tracking.
         in_dead = result is not None and result.get("in_deadband", False)
@@ -74,6 +77,15 @@ def _draw_overlay(display, target, result):
         cv2.putText(
             display, f"target {target} — {status}", (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1,
+        )
+    elif result is not None and result.get("coasting"):
+        # Target lost but we're still moving in the last direction.
+        # Orange text + countdown so it's obvious from across the room.
+        remaining = result.get("coast_remaining", 0)
+        cv2.putText(
+            display,
+            f"target lost — COASTING ({remaining} frames left)",
+            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 165, 255), 1,
         )
     else:
         cv2.putText(

@@ -50,6 +50,27 @@ import servo
 log = logging.getLogger(__name__)
 
 
+# ---- Coast-mode state -----------------------------------------------------
+# When the target is being tracked normally, we remember the last PID
+# correction (degrees per axis). If the target then disappears, update()
+# continues applying those corrections for up to COAST_MAX_FRAMES so the
+# bracket keeps chasing instead of freezing. Configurable from config.py.
+
+_last_pan_correction: float = 0.0
+_last_tilt_correction: float = 0.0
+_coast_frames_remaining: int = 0
+
+
+def _reset_coast() -> None:
+    """Forget the last correction so an immediate target-loss won't coast.
+    Called when the tracker has no reason to coast (e.g. target is in the
+    deadband — it was stationary, holding position is the right behavior)."""
+    global _last_pan_correction, _last_tilt_correction, _coast_frames_remaining
+    _last_pan_correction = 0.0
+    _last_tilt_correction = 0.0
+    _coast_frames_remaining = 0
+
+
 def init() -> Tuple[PID, PID]:
     """
     Create the two PID controllers using gains from config.py.
@@ -100,9 +121,49 @@ def update(
         pan_correction, tilt_correction — in degrees
         pan_angle, tilt_angle     — actual angle commanded (after clamp)
     """
+    global _last_pan_correction, _last_tilt_correction, _coast_frames_remaining
+
+    # ---- Target lost branch — try to coast --------------------------------
     if target_pos is None:
+        # Coast only if the last real tracking step left us with a
+        # non-trivial direction AND we haven't exhausted the coast window.
+        last_was_meaningful = (
+            abs(_last_pan_correction) >= config.COAST_MIN_CORRECTION_DEG
+            or abs(_last_tilt_correction) >= config.COAST_MIN_CORRECTION_DEG
+        )
+        if _coast_frames_remaining > 0 and last_was_meaningful:
+            new_pan = servo.current_pan() + _last_pan_correction
+            new_tilt = servo.current_tilt() + _last_tilt_correction
+            actual_pan = servo.move_pan(kit, new_pan, ramp=False)
+            actual_tilt = servo.move_tilt(kit, new_tilt, ramp=False)
+
+            # Decay so the bracket eases to a stop instead of running until
+            # it hits the calibrated limit. Each frame the coast correction
+            # shrinks by COAST_DECAY.
+            _last_pan_correction *= config.COAST_DECAY
+            _last_tilt_correction *= config.COAST_DECAY
+            _coast_frames_remaining -= 1
+
+            return {
+                "pan_error": None,
+                "tilt_error": None,
+                "pan_correction": _last_pan_correction,
+                "tilt_correction": _last_tilt_correction,
+                "pan_angle": actual_pan,
+                "tilt_angle": actual_tilt,
+                "in_deadband": False,
+                "coasting": True,
+                "coast_remaining": _coast_frames_remaining,
+            }
+
+        # No reason to coast — hold position. Make sure stale state isn't
+        # left over to fire on a later loss.
+        if _coast_frames_remaining > 0:
+            log.debug("Coast window ended without re-acquisition.")
+        _reset_coast()
         return None
 
+    # ---- Target acquired branch — normal PID tracking ---------------------
     target_x, target_y = target_pos
     pan_error = target_x - config.FRAME_CENTER_X
     tilt_error = target_y - config.FRAME_CENTER_Y
@@ -122,6 +183,9 @@ def update(
     )
 
     if in_deadband:
+        # Target was stationary in the deadband — if it disappears now we
+        # should NOT coast off in some old direction. Clear coast state.
+        _reset_coast()
         return {
             "pan_error": pan_error,
             "tilt_error": tilt_error,
@@ -130,6 +194,7 @@ def update(
             "pan_angle": servo.current_pan(),
             "tilt_angle": servo.current_tilt(),
             "in_deadband": True,
+            "coasting": False,
         }
 
     # current_pan / current_tilt are set by servo.init(), which any caller
@@ -145,6 +210,11 @@ def update(
     actual_pan = servo.move_pan(kit, new_pan, ramp=False)
     actual_tilt = servo.move_tilt(kit, new_tilt, ramp=False)
 
+    # Save state so we can coast if the target disappears next frame.
+    _last_pan_correction = pan_correction
+    _last_tilt_correction = tilt_correction
+    _coast_frames_remaining = config.COAST_MAX_FRAMES
+
     return {
         "pan_error": pan_error,
         "tilt_error": tilt_error,
@@ -153,6 +223,7 @@ def update(
         "pan_angle": actual_pan,
         "tilt_angle": actual_tilt,
         "in_deadband": False,
+        "coasting": False,
     }
 
 
