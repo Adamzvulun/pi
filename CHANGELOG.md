@@ -1,5 +1,18 @@
 # Changelog
 
+## [Session handoff refreshed] - 2026-05-23
+
+### Changed
+- `HANDOFF.md` rewritten as the **current** session quickstart instead of the original kickoff history. Now leads with a TL;DR of where the project is (phases 1-5 done, Phase 6 blocked on dead laser, Phase 7A actionable), then the hardware-on-hand table, reading order, Adam's working preferences, module-ownership rules, and the next-actionable-work pointer. The original "you're starting from an empty repo" content is superseded by CLAUDE.md plus the phase docs and is no longer kept.
+
+### Added
+- `docs/next-session-prompt.md` — a paste-ready prompt to drop into a fresh Claude Code window. Instructs the new session to read HANDOFF.md, CLAUDE.md, the plan docs, calibration, problem records, CHANGELOG, and the two memory files, then confirm understanding before doing anything else. Spells out the persistent working-style preferences (auto-commit, GUI-first via control_panel.py, comment generously, prose over bullets, no safety push-back, don't re-invent owner modules) and the current state at the session boundary.
+
+### Why
+So a future session — whether by Adam alone, or with a new Claude window, or after a long pause — picks up at the exact rhythm we've established: control panel for tests, auto-commit, GUI gets new features instead of telling the operator to type commands. Avoids re-litigating choices already made and re-explaining state that's already documented.
+
+---
+
 ## [Desktop shortcut for the control panel] - 2026-05-23
 
 ### Added

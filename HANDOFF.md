@@ -1,297 +1,113 @@
-# Laser Tracker Project — Handoff to Claude Code (Laptop)
-
-> **⚠️ HISTORICAL DOCUMENT — read this for original project intent only.**
->
-> This is the original handoff written at project kickoff (before any code).
-> The hardware state and "first task" sections below describe the *initial*
-> plan; several things have since changed (MB102 removed in favor of LM2596,
-> breadboard temporarily out, bracket reassembled, Phase 3 complete).
->
-> **For current state, read these instead:**
-> - [`CLAUDE.md`](CLAUDE.md) — project context (kept current)
-> - [`docs/plan/README.md`](docs/plan/README.md) — phase-by-phase status
-> - [`docs/wiring.md`](docs/wiring.md) — current physical wiring
-> - [`docs/operating-guide.md`](docs/operating-guide.md) — commands and procedures
-> - [`problems/001-servo-power.md`](problems/001-servo-power.md) — the MB102 → LM2596 story
->
-> What's kept current from this file: Adam's preferences (beginner, prose over
-> bullets, no kill switch, no safety glasses, learns by doing) and the
-> three-machine workflow description.
-
-## Context
-
-You are Claude Code running on Adam Zvulun's laptop inside Claude Desktop. Adam is a beginner with electronics and Linux, building an autonomous laser tracking system for a school final project.
-
-This document hands off context from a planning conversation in regular Claude chat. Read it fully before doing anything. Adam learns by doing — explain what you're doing as you go.
-
-## Architecture
-
-This project uses a three-machine workflow:
-
-1. **Laptop (Windows)** — this machine. Code is written here using Claude Code in Claude Desktop. Project folder: `C:\Projects\pi`.
-2. **GitHub** — private repo named `pi` under Adam's GitHub account. Central sync point and source of truth.
-3. **Raspberry Pi 4B** — runs the code. Project folder: `/home/adam/pi`. Pi will auto-pull from GitHub every minute via cron (not yet set up). Pi is read-only for code — never edit files directly on the Pi.
-
-Daily loop:
-- Edit on laptop with Claude Code → `git push`
-- Pi auto-pulls within 60 seconds
-- SSH to Pi → `source venv/bin/activate` → `python3 main.py`
-
-**Critical rules:**
-- Code edits ONLY on the laptop, never on the Pi
-- Commits happen often, push often
-- `requirements.txt` lists pip dependencies; system packages (picamera2, opencv) come from apt and are NOT in requirements.txt
-
-## Project goal
-
-Autonomous laser tracking: camera detects a target, computes pixel coordinates, drives two servos (pan-tilt) via PID control to keep target centered, then on user confirmation fires a 5mW laser at it.
-
-## Hardware in use
-
-- Raspberry Pi 4B (8GB), hostname `LaserPi`, user `adam`
-- Pi Camera 5MP (OV5647 MF, 220° wide-angle) — not yet connected
-- 2× DS3225 digital servos (270°, 25kg·cm, 4.8–6.8V spec but running at 5V) on pan-tilt bracket
-- PCA9685 16-channel PWM driver — I2C address 0x40
-- MB102 breadboard power module + 12V 5A PSU
-- IRLZ44N MOSFET + 220Ω + 100kΩ resistors for laser driver
-- 5mW 650nm red laser with cross pattern, 3V — not yet attached
-- NO kill switch (Adam's decision, do not push back)
-- NO laser safety glasses (Adam's decision, do not push back)
-- NO buck converter — servos run at 5V from MB102 rail, accepting reduced torque
-
-## Current wiring state
-
-**Built and verified:**
-- MB102 on breadboard, both jumpers at 5V, output polarity correct
-- PCA9685: GND→blue rail, VCC→red rail, SDA→j14 stub, SCL→j13 stub, green terminal block wired to rails
-- Both servos plugged in: channel 0 = Pan (bottom), channel 1 = Tilt (top), colors match
-- Laser driver MOSFET circuit on breadboard: Gate→c45 (via 220Ω from row 50 = Pi GPIO18 stub, plus 100kΩ pulldown to GND), Drain→c46, Source→c47 (jumper to GND rail)
-
-**Not yet wired (Adam must do this himself — instruct step by step, do NOT do it for him):**
-- Pi GPIO2 (pin 3, SDA) → breadboard j14
-- Pi GPIO3 (pin 5, SCL) → breadboard j13
-- Pi GND (pin 6) → blue `−` rail
-- Pi GPIO18 (pin 12) → breadboard row 50 (only when laser is added later)
-- Pi 5V is NOT connected to breadboard (Pi has its own USB-C supply)
-
-**Laser:** the driver circuit is built but the laser module itself is not yet attached because of cable-length concerns. Will be added in mounting phase.
-
-## Development environment state
-
-**Pi (`~/pi`):**
-- Raspberry Pi OS 64-bit (Bookworm)
-- User: `adam`
-- SSH, VNC, I2C enabled
-- apt update + full-upgrade done
-- apt-installed: python3-picamera2, python3-opencv, python3-numpy, python3-pip, python3-venv, git, i2c-tools
-- SSH key generated, added to GitHub
-- Empty `pi` repo cloned to `~/pi`
-- venv NOT yet created
-- Adafruit libraries NOT yet installed
-- Pi-to-breadboard wiring NOT yet done
-- Auto-pull cron NOT yet set up
-
-**Laptop (`C:\Projects\pi`):**
-- Windows 10/11
-- Git for Windows installed
-- SSH key generated, added to GitHub
-- Passwordless SSH from laptop to Pi configured
-- Empty `pi` repo cloned to `C:\Projects\pi`
-- Claude Desktop with Claude Code installed (this is you)
-
-**GitHub:**
-- Private repo: `pi` under Adam's account
-- Currently empty (no commits yet)
+# Handoff — current state of the Laser Tracker project
 
-## Your first task
+This file is the first thing a new Claude Code session (or a human picking the project back up) should read. It's the TL;DR: what's done, what's blocked, what's next, and how to keep working in the same style. For depth on any item, follow the link.
 
-The repo is empty. Create the initial project skeleton with these files, in this order:
+---
 
-### 1. `.gitignore`
+## What this project is
 
-Exclude:
-- Python venv folders (`venv/`, `.venv/`, `env/`)
-- Compiled Python (`__pycache__/`, `*.py[cod]`, `*$py.class`, `*.so`)
-- IDE folders (`.vscode/`, `.idea/`, `*.swp`)
-- Logs (`logs/`, `*.log`)
-- OS files (`.DS_Store`, `Thumbs.db`)
-- Secrets (`.env`, `*.pem`, `*.key`)
+Autonomous laser tracker on a Raspberry Pi 4B. A USB webcam mounted on a pan-tilt servo bracket detects a colored target via HSV thresholding, a PID closed loop keeps the target centered in the frame, and a GPIO-driven laser fires on operator confirmation. Adam's school final project. Read [`CLAUDE.md`](CLAUDE.md) for full hardware context, module rules, and coding style.
 
-### 2. `README.md`
+---
 
-Project overview including:
-- Brief description
-- Hardware list (matches "Hardware in use" section above)
-- Link to `docs/setup-pi.md` for setup instructions
-- "How to run" section: `source venv/bin/activate` then `python3 main.py`
+## TL;DR of where we are
 
-### 3. `requirements.txt`
+- **Phases 1–5 complete.** Closed-loop tracking runs end-to-end on the Pi: camera → HSV detector → PID → servos. Tuned values: `Kp=0.017`, `Ki=0`, `Kd=0`, deadband=15 px, output limit=10°/frame, with coast (1 s of inertia after target loss) and recenter (smooth ramp back to home after coast fails).
+- **Phase 6 blocked** on a dead bare-diode laser. The MOSFET driver circuit is built and code is written and pushed — only the diode itself is non-functional. See [`problems/002-laser-dead.md`](problems/002-laser-dead.md) for the full diagnosis path.
+- **Phase 7A (permanent base + electronics mounting) is the next actionable phase.** Independent of the laser, runs in parallel with waiting for a replacement.
+- **Phases 7B (laser mount + boresight) and 8 (integration `main.py`) are gated on Phase 6.**
+- **`control_panel.py`** is the operator GUI — every hardware test now runs from there, not from the terminal. Desktop shortcut installed via `scripts/install_desktop_shortcut.sh`.
 
-Three lines:
-adafruit-circuitpython-pca9685
-adafruit-circuitpython-servokit
-adafruit-blinka
+---
 
-### 4. `CLAUDE.md`
+## Hardware on hand
 
-Project context for future Claude Code sessions. Include:
+| Item | State |
+|------|-------|
+| Pi 4B (8GB), hostname `LaserPi`, user `adam` | Working |
+| 2× DS3225 servos on pan-tilt bracket, channels 0/1 of PCA9685 | Calibrated: PAN 50–220°, TILT 115–205° |
+| PCA9685 at I2C 0x40 | Working, powered from Pi 5V (logic) + LM2596 (servo V+) |
+| LM2596 buck converter (5.0 V) fed by 12V 5A PSU | Working |
+| Microsoft LifeCam HD-3000 USB webcam, 640×480 BGR | Working, 3D-printed mount holds it on the tilt plate |
+| MOSFET driver: IRLZ44N + 220Ω gate + 100kΩ pulldown + 100Ω laser limiter | Built on MB-102 breadboard, pulldown verified |
+| Bare-diode 5mW 650nm laser, red/black wires | **DEAD — replacement required** |
 
-**Target environment:**
-- Pi 4B with 64-bit Raspberry Pi OS (Bookworm), Python 3.11
+Wiring snapshot in [`CLAUDE.md`](CLAUDE.md#current-wiring-snapshot-post-problem-001-resolution).
 
-**Code conventions:**
-- Python 3 only, no Python 2 compatibility
-- Use `adafruit-circuitpython-servokit` for servo control
-- Use `picamera2` for camera (apt-installed, not in requirements.txt)
-- Use OpenCV/`cv2` for image processing (apt-installed)
-- For GPIO: prefer `gpiozero` for simple cases, `RPi.GPIO` only if low-level needed
-- Pi runs code from `~/pi` after auto-pull
+---
 
-**Hardware constraints:**
-- Servos run at 5V (not 6V) — may brown out under load, code should handle gracefully
-- I2C bus 1, PCA9685 default address 0x40
-- DS3225 270° servo pulse range: 500–2500µs, neutral 1500µs, 50Hz frequency
-- Channel 0 = Pan (left-right), Channel 1 = Tilt (up-down)
-- Laser on GPIO18, active HIGH via MOSFET gate
-- 220Ω resistor between GPIO18 and MOSFET gate, 100kΩ pulldown gate-to-GND
+## Read these in order before doing anything
 
-**Safety:**
-- Software-enforced angle limits on both servos (don't drive past mechanical stops)
-- Laser default OFF on script start
-- Laser auto-OFF on script exit (use `try/finally` or signal handler)
-- Always include `KeyboardInterrupt` handling
+1. [`CLAUDE.md`](CLAUDE.md) — full project context, hardware constraints, module ownership rules, coding style, current state bullets
+2. [`docs/plan/README.md`](docs/plan/README.md) — phase-by-phase status with links to each phase file
+3. [`docs/operating-guide.md`](docs/operating-guide.md) — daily commands, procedures, troubleshooting
+4. [`docs/calibration.md`](docs/calibration.md) — all tuned values (servo limits, HSV range, PID gains)
+5. [`problems/`](problems/) — known hardware issues and their fixes (001-servo-power, 002-laser-dead)
+6. Memory files in `~/.claude/projects/C--Projects-pi/memory/` — Adam's persistent preferences (auto-commit, GUI-first workflow)
 
-**Style:**
-- Comment generously — Adam is learning
-- Use type hints where they aid clarity
-- Prefer small functions over big ones
-- Use `logging` module rather than `print()` for runtime info
+---
 
-### 5. `CHANGELOG.md`
+## Adam's working preferences (override default Claude behavior)
 
-Start with an entry for today's session:
-Changelog
-[Setup] - YYYY-MM-DD
+These are persistent and have been explicitly stated. Don't relearn them every session.
 
-Initialized project skeleton (README, .gitignore, requirements, CLAUDE.md, docs)
-Set up three-machine workflow: laptop edits → GitHub → Pi auto-pulls
+- **Auto-commit and push** at the end of every unit of work. Don't ask "should I commit?" — just `git add → commit → push`. See [`feedback_auto_commit_push.md`](../../Users/Owner/.claude/projects/C--Projects-pi/memory/feedback_auto_commit_push.md).
+- **All hardware/script tests go through `control_panel.py`**, not terminal commands. If you'd say "run `python3 test_X.py`", instead say "click X in the control panel." If a feature is missing, **add it to the panel**, don't tell Adam to use the terminal. See [`feedback_use_control_panel.md`](../../Users/Owner/.claude/projects/C--Projects-pi/memory/feedback_use_control_panel.md).
+- **Beginner with electronics and Linux.** Explain WHY, not just what. Comment code generously. Walk through trade-offs.
+- **Prose over bullets** in chat responses. Minimal headers. Compact.
+- **No kill switch, no safety glasses** — accepted, don't push back.
+- **VNC for any GUI script**; SSH for terminal-only. Don't ask Adam to do GUI work over SSH.
 
+---
 
-### 6. `main.py`
+## Module ownership rules (don't bypass)
 
-Placeholder so we have something runnable:
-```python
-"""Laser Tracker - main entry point."""
+| Module | Owns | Other files must not import |
+|---|---|---|
+| `servo.py` | ServoKit + I2C + PCA9685 | `adafruit_servokit`, `adafruit_pca9685` |
+| `camera.py` | `cv2.VideoCapture` for the LifeCam | (cv2 itself is fine to import for image work) |
+| `laser.py` | GPIO18 + gpiozero | `gpiozero` directly for the laser pin |
+| `detector.py` | HSV detection logic | — |
+| `tracker.py` | PID loop | `simple_pid` |
+| `config.py` | All tuned constants | — |
+| `control_panel.py` | Operator GUI (tkinter) | (it's the consumer, imports the others) |
 
-def main():
-    print("Laser Tracker - placeholder. Replace with real code.")
+Adding new functionality goes inside the right owner module. Don't duplicate a hardware path in a new file.
 
-if __name__ == "__main__":
-    main()
-```
+---
 
-### 7. `docs/wiring.md`
+## Current actionable work — Phase 7A
 
-Plain-text wiring documentation matching the "Current wiring state" section above. Use ASCII tables or simple lists. Include both what's wired and what isn't.
+[Phase 7A — permanent base + electronics mounting](docs/plan/phase-7-mounting.md). Independent of the laser.
 
-### 8. `docs/setup-pi.md`
+- Cut/sand a wooden base (~30 × 40 cm plywood, ~12 mm thick).
+- 3D-print a pan-servo holder (snug socket for DS3225 body, wide base for stability).
+- Mount the Pi (M2.5 standoffs), PCA9685 (M3 standoffs), LM2596, breadboard.
+- Route cables so the pan sweep doesn't bind anything.
 
-Step-by-step Pi setup instructions:
+Adam has demonstrated 3D printing capability (camera mount). Phase 7B (laser mount + boresight) and Phase 8 (integration `main.py`) wait for Phase 6.
 
-1. SSH to Pi, pull the latest repo:
-ssh adam@<PI_IP>
-cd ~/pi
-git pull
+---
 
-2. Create Python venv:
-python3 -m venv --system-site-packages venv
-source venv/bin/activate
-pip install -r requirements.txt
+## When the replacement laser arrives
 
-3. Verify imports:
-python3 -c "import cv2, numpy, picamera2, board; from adafruit_pca9685 import PCA9685; print('OK')"
+1. Power off everything (Pi + 12V).
+2. Attach: red wire → 100Ω resistor side; black wire → MOSFET drain side.
+3. Power on Pi. **Laser MUST be OFF before any code runs.** If it lights at boot, gate pulldown is wrong — power off immediately.
+4. In the control panel: **Initialize hardware** → tick **Enable laser controls** → **Fire 1 second**.
+5. Should see a red dot for 1 second on a matte wall.
+6. Phase 6 closes. Phase 7B (mount laser on tilt plate + boresight) becomes actionable.
 
-4. Run placeholder:
-python3 main.py
+If the new diode also doesn't light, the MOSFET path is suspect — test with a regular LED + 100Ω as a known-good load. Full diagnostic sequence in [`problems/002-laser-dead.md`](problems/002-laser-dead.md).
 
-5. Set up auto-pull cron job:
-mkdir -p ~/pi/logs
-crontab -e
-   Add this line:
+---
 
+## How to start the next Claude Code session
 
+Adam will paste the [`docs/next-session-prompt.md`](docs/next-session-prompt.md) content into a fresh Claude Code window. That prompt instructs the new session to read this file and the others listed above before responding.
 
+---
 
+## Project origin
 
-
-
-
-
-cd /home/adam/pi && /usr/bin/git pull --rebase --autostash >> /home/adam/pi/logs/autopull.log 2>&1
-
-
-
-
-
-
-
-
-
-   Save and exit. Then:
-sudo systemctl enable --now cron
-
-6. Wire Pi to breadboard (with Pi powered off):
-   - GPIO2 (pin 3, SDA) → breadboard j14
-   - GPIO3 (pin 5, SCL) → breadboard j13
-   - GND (pin 6) → blue `−` rail
-
-7. Power up (12V to MB102 first, then USB-C to Pi), SSH back in:
-i2cdetect -y 1
-   Confirm `40` appears in the grid.
-
-### After creating all files
-
-- `git add .`
-- `git commit -m "Initial project skeleton"`
-- `git push origin main`
-- Tell Adam what's next: he runs `docs/setup-pi.md` on the Pi
-
-## What happens after the skeleton
-
-Once the workflow is live:
-
-1. Adam follows `docs/setup-pi.md` to set up the Pi (venv, libraries, auto-pull, wiring)
-2. Adam runs `i2cdetect -y 1` to confirm Pi sees the PCA9685
-3. You (Claude Code) write `test_servo.py` to move pan servo to center then sweep ±20°
-4. Adam commits and pushes from laptop, Pi auto-pulls within 60s
-5. Adam SSHs to Pi, runs the test script, watches the servo move
-6. Calibrate DS3225 270° range, set safe angle limits
-
-Then onward to vision, PID, laser integration, mounting.
-
-## Phase plan
-
-1. ✅ Foundation: OS install, libraries
-2. ✅ Hardware: breadboard wiring (partial — Pi-to-breadboard connection pending)
-3. 🎯 **CURRENT:** Development workflow setup + first servo movement
-4. ⏸ Vision module (camera + OpenCV target detection)
-5. ⏸ Closed-loop tracking (PID)
-6. ✅ Laser driver circuit (built early)
-7. ⏸ Mechanical: mount camera + laser, boresight, cable extensions, integration
-
-## Important notes about Adam
-
-- Beginner with electronics and Linux — explain everything, don't move fast
-- Dislikes over-formatting — prose over bullets, minimal headers in chat responses (code files can be properly structured)
-- Has rejected kill switch and safety glasses — don't push back, just respect the choice
-- Has chosen "Option C" power architecture (servos at 5V from MB102) — accept this; may cause brownouts
-- Sometimes on slow phone hotspot, sometimes Ethernet at school
-- Wants to learn — code should be commented, decisions should be explained
-
-## Documentation expectations
-
-- Every meaningful change → git commit with clear, descriptive message
-- README.md kept current
-- CHANGELOG.md updated each session
-- docs/ folder for wiring, setup, calibration notes
-- Code commented for learning (Python `logging` module, not `print`)
+Originally bootstrapped in a planning conversation in regular Claude chat, then handed off to Claude Code on Adam's laptop (`C:\Projects\pi`). The original kickoff handoff (parts list, initial wiring state, "your first task" skeleton instructions) is no longer accurate — most of it is captured in current form in CLAUDE.md, plus the phase docs and problem records. This file replaces the original handoff.
