@@ -94,31 +94,42 @@ def _draw_overlay(display, target, result):
         )
 
     # Servo + PID status. Two rows: pan info, tilt info.
+    # Layout depends on the tracker state: no result (held), coasting (no
+    # meaningful error), or normal tracking (have pixel error).
     pan = servo.current_pan()
     tilt = servo.current_tilt()
 
-    if result is not None:
-        cv2.putText(
-            display,
-            f"pan  {pan:6.1f}deg  err {result['pan_error']:+5d}px"
-            f"  corr {result['pan_correction']:+6.2f}deg",
-            (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1,
+    if result is None:
+        # No target this frame and not coasting — bracket holding position.
+        pan_line = f"pan  {pan:6.1f}deg"
+        tilt_line = f"tilt {tilt:6.1f}deg"
+        line_color = (200, 200, 200)
+    elif result.get("coasting"):
+        # Coasting — pan_error/tilt_error are None on purpose. Show the
+        # decaying correction so it's obvious what the bracket is doing.
+        pan_line = (
+            f"pan  {pan:6.1f}deg  COAST corr {result['pan_correction']:+6.2f}deg"
         )
-        cv2.putText(
-            display,
-            f"tilt {tilt:6.1f}deg  err {result['tilt_error']:+5d}px"
-            f"  corr {result['tilt_correction']:+6.2f}deg",
-            (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1,
+        tilt_line = (
+            f"tilt {tilt:6.1f}deg  COAST corr {result['tilt_correction']:+6.2f}deg"
         )
+        line_color = (0, 165, 255)  # orange — matches the status text above
     else:
-        cv2.putText(
-            display, f"pan  {pan:6.1f}deg",
-            (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1,
+        # Normal tracking (active or in-deadband). Pixel error is a real int.
+        pan_line = (
+            f"pan  {pan:6.1f}deg  err {result['pan_error']:+5d}px"
+            f"  corr {result['pan_correction']:+6.2f}deg"
         )
-        cv2.putText(
-            display, f"tilt {tilt:6.1f}deg",
-            (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1,
+        tilt_line = (
+            f"tilt {tilt:6.1f}deg  err {result['tilt_error']:+5d}px"
+            f"  corr {result['tilt_correction']:+6.2f}deg"
         )
+        line_color = (255, 255, 255)
+
+    cv2.putText(display, pan_line, (10, 50),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, line_color, 1)
+    cv2.putText(display, tilt_line, (10, 70),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, line_color, 1)
 
 
 def main() -> int:
