@@ -1,0 +1,32 @@
+flowchart LR
+    classDef src fill:#ffecb3,stroke:#ff8f00,color:#000,stroke-width:2px
+    classDef reg fill:#ffe0b2,stroke:#e65100,color:#000,stroke-width:2px
+    classDef rail fill:#fff9c4,stroke:#f57f17,color:#000,stroke-width:1px
+    classDef load fill:#c5e1a5,stroke:#558b2f,color:#000
+    classDef pi fill:#c8e6c9,stroke:#2e7d32,color:#000,stroke-width:2px
+
+    P12["12V 5A PSU<br/>60W"]:::src
+    Pusb["Pi USB-C<br/>5V 3A"]:::src
+    BK["LM2596 buck<br/>12V to 5V<br/>up to 3A"]:::reg
+    PiB["Pi 4B<br/>~600 mA"]:::pi
+    PiPin2["Pi GPIO pin 2<br/>5V tap"]:::pi
+    LR(("5V LOGIC rail<br/>~50 mA")):::rail
+    SR(("5V SERVO rail<br/>up to 1 A typical")):::rail
+    GND(("common GND")):::rail
+    Vcc["PCA9685 VCC"]:::load
+    Vp["PCA9685 V+"]:::load
+    PanS["Pan servo"]:::load
+    TiltS["Tilt servo"]:::load
+
+    P12 ==>|12V| BK
+    P12 -.->|GND| GND
+    Pusb ==>|USB-C 5V| PiB
+    PiB ==> PiPin2
+    PiPin2 ==>|~50 mA| LR
+    BK ==>|5.0V regulated| SR
+    BK -.-> GND
+    PiB -.->|GPIO pin 6| GND
+    LR --> Vcc
+    SR --> Vp
+    Vp --> PanS
+    Vp --> TiltS

@@ -1,0 +1,63 @@
+flowchart TB
+    classDef level0 fill:#fff3e0,stroke:#e65100,color:#000,stroke-width:3px
+    classDef level1 fill:#e3f2fd,stroke:#1565c0,color:#000,stroke-width:2px
+    classDef level2 fill:#e8f5e9,stroke:#2e7d32,color:#000,stroke-width:2px
+    classDef level3 fill:#fce4ec,stroke:#ad1457,color:#000,stroke-width:1px
+
+    SYS["Laser Tracker System<br/>Autonomous target acquisition + firing"]:::level0
+
+    POWER["Power subsystem"]:::level1
+    COMPUTE["Compute subsystem"]:::level1
+    SENSING["Sensing subsystem"]:::level1
+    ACTUATION["Actuation subsystem"]:::level1
+    EMITTER["Emitter subsystem"]:::level1
+    MECH["Mechanical subsystem"]:::level1
+
+    SYS --> POWER
+    SYS --> COMPUTE
+    SYS --> SENSING
+    SYS --> ACTUATION
+    SYS --> EMITTER
+    SYS --> MECH
+
+    PSU12["12V 5A wall PSU"]:::level2
+    LM2596_HW["LM2596 buck<br/>12V to 5.0V, 3A"]:::level2
+    USBC_HW["USB-C 5V 3A adapter"]:::level2
+    POWER --> PSU12
+    POWER --> LM2596_HW
+    POWER --> USBC_HW
+
+    PI_HW["Raspberry Pi 4B 8GB<br/>Bookworm 64-bit, Python 3.11"]:::level2
+    SDCARD["microSD storage"]:::level2
+    COMPUTE --> PI_HW
+    COMPUTE --> SDCARD
+
+    CAM_HW["LifeCam HD-3000 USB webcam<br/>640x480 BGR"]:::level2
+    SENSING --> CAM_HW
+
+    PCA_HW["PCA9685 PWM driver<br/>I2C 0x40, 16 channels @ 50 Hz"]:::level2
+    PAN_HW["DS3225 servo - PAN<br/>channel 0, 270 deg"]:::level2
+    TILT_HW["DS3225 servo - TILT<br/>channel 1, 270 deg"]:::level2
+    ACTUATION --> PCA_HW
+    PCA_HW --> PAN_HW
+    PCA_HW --> TILT_HW
+
+    LASER_HW["5mW 650nm bare diode"]:::level2
+    MOSFET_HW["IRLZ44N N-channel MOSFET<br/>+ 220R gate + 100k pulldown + 100R limiter"]:::level2
+    BB_HW["MB-102 breadboard"]:::level2
+    EMITTER --> LASER_HW
+    EMITTER --> MOSFET_HW
+    EMITTER --> BB_HW
+
+    BRACKET["Pan-tilt metal bracket"]:::level2
+    BASE["Wooden base 30x40 cm, 12 mm"]:::level2
+    MOUNT3D["3D-printed mounts<br/>camera holder, pan-servo base"]:::level2
+    MECH --> BRACKET
+    MECH --> BASE
+    MECH --> MOUNT3D
+
+    PCA_HW -.->|reads I2C from| PI_HW
+    LM2596_HW -.->|supplies V+ to| PCA_HW
+    USBC_HW -.->|supplies| PI_HW
+    PI_HW -.->|pin 2 supplies VCC to| PCA_HW
+    PI_HW -.->|GPIO18 drives| MOSFET_HW

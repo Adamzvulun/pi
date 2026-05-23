@@ -1,0 +1,41 @@
+flowchart TB
+    classDef power fill:#ffe4b5,stroke:#d2691e,color:#000,stroke-width:2px
+    classDef pi fill:#c8e6c9,stroke:#2e7d32,color:#000,stroke-width:2px
+    classDef driver fill:#bbdefb,stroke:#1565c0,color:#000,stroke-width:2px
+    classDef servo fill:#f8bbd0,stroke:#ad1457,color:#000,stroke-width:2px
+    classDef laser fill:#ffcdd2,stroke:#c62828,color:#000,stroke-width:2px
+    classDef camera fill:#d1c4e9,stroke:#4527a0,color:#000,stroke-width:2px
+    classDef rail fill:#fff9c4,stroke:#f57f17,color:#000,stroke-width:1px
+
+    PSU12["12V 5A PSU"]:::power
+    USBC["Pi USB-C 5V 3A"]:::power
+    LM2596["LM2596 buck<br/>12V to 5V, 3A"]:::power
+    Pi["Raspberry Pi 4B"]:::pi
+    PCA["PCA9685<br/>PWM @ I2C 0x40"]:::driver
+    PanServo["DS3225 PAN<br/>channel 0"]:::servo
+    TiltServo["DS3225 TILT<br/>channel 1"]:::servo
+    Cam["LifeCam HD-3000<br/>USB 640x480 BGR"]:::camera
+    MOSFET["IRLZ44N MOSFET"]:::laser
+    Laser["5mW 650nm laser"]:::laser
+    LogicRail([5V logic rail<br/>from Pi GPIO]):::rail
+    ServoRail([5V servo rail<br/>from LM2596]):::rail
+    GndRail([common GND rail]):::rail
+
+    PSU12 -->|12V| LM2596
+    USBC -->|5V USB-C| Pi
+    Pi -->|GPIO pin 2| LogicRail
+    LM2596 -->|5V regulated| ServoRail
+    LM2596 -.->|GND| GndRail
+    Pi -.->|GPIO pin 6| GndRail
+    LogicRail -->|VCC| PCA
+    ServoRail -->|V+| PCA
+    GndRail -->|GND| PCA
+    Pi -->|GPIO2 SDA| PCA
+    Pi -->|GPIO3 SCL| PCA
+    Pi -->|GPIO18| MOSFET
+    LogicRail -->|5V via 100R| Laser
+    Laser --> MOSFET
+    MOSFET -.->|source| GndRail
+    PCA -->|PWM ch0| PanServo
+    PCA -->|PWM ch1| TiltServo
+    Cam -.->|USB-A| Pi

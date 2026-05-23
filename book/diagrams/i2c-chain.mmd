@@ -1,0 +1,21 @@
+flowchart LR
+    classDef pi fill:#c8e6c9,stroke:#2e7d32,color:#000,stroke-width:2px
+    classDef pca fill:#bbdefb,stroke:#1565c0,color:#000,stroke-width:2px
+
+    subgraph PiGPIO["Pi GPIO header"]
+        direction TB
+        P3["Pin 3 - GPIO2 SDA"]:::pi
+        P5["Pin 5 - GPIO3 SCL"]:::pi
+        P6["Pin 6 - GND"]:::pi
+    end
+
+    subgraph PCAside["PCA9685"]
+        direction TB
+        SDA["SDA"]:::pca
+        SCL["SCL"]:::pca
+        PCAGND["GND"]:::pca
+    end
+
+    P3 -->|I2C data| SDA
+    P5 -->|I2C clock| SCL
+    P6 -.->|reference| PCAGND
