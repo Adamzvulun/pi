@@ -1,0 +1,32 @@
+% pandoc-template.tex — XeLaTeX template for the Hebrew project book.
+%
+% Currently the default pandoc XeLaTeX template handles the language settings
+% we pass via --variable=dir:rtl + lang:he-IL + mainfont:'David CLM'. This file
+% exists as a placeholder for any future customization (e.g. custom header
+% styling, page numbering, cover page typography). Pandoc will use its built-in
+% default template if --template isn't passed in build-pdf.sh.
+%
+% To activate this template, add to the pandoc invocation:
+%   --template "$TEMPLATE"
+%
+% Reference for pandoc's default template:
+%   https://github.com/jgm/pandoc-templates/blob/master/default.latex
+%
+% Minimal custom template skeleton (uncomment + extend if needed):
+%
+% \documentclass[$if(fontsize)$$fontsize$,$endif$$if(lang)$$babel-lang$,$endif$$if(papersize)$$papersize$paper,$endif$$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}
+%
+% \usepackage{fontspec}
+% \usepackage{polyglossia}
+% \setdefaultlanguage{hebrew}
+% \setotherlanguage{english}
+%
+% \setmainfont{David CLM}
+% \setsansfont{David CLM}
+% \setmonofont{DejaVu Sans Mono}
+%
+% \usepackage{bidi}
+%
+% \begin{document}
+% $body$
+% \end{document}
