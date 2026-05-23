@@ -153,13 +153,20 @@ def init() -> ServoKit:
     return kit
 
 
-def move_pan(kit: ServoKit, angle: float) -> float:
+def move_pan(kit: ServoKit, angle: float, ramp: bool = True) -> float:
     """
     Move pan to `angle`, clamped to the safe physical range [PAN_MIN, PAN_MAX].
 
     This is the SAFETY-CRITICAL function for pan. The clamp here is what
     prevents tracking code (or any caller) from driving the bracket into
     a hard stop. Do not bypass this function.
+
+    `ramp` controls whether the motion is smoothed in 2° steps with 50 ms
+    sleeps (the default) or commanded as a single PWM pulse change
+    (ramp=False). Use the default for calibration and cleanup. Tracking
+    code (`tracker.py`) passes ramp=False because the ramp delay would
+    block the main loop for hundreds of milliseconds per correction,
+    starving the camera capture and making the system feel laggy.
 
     Returns the actual angle commanded after clamping. If your tracker
     needs to know whether its request was clamped (so it can stop
@@ -178,14 +185,24 @@ def move_pan(kit: ServoKit, angle: float) -> float:
             angle, clamped, PAN_MIN, PAN_MAX,
         )
 
-    _pan_current = _ramp(kit, PAN_CHANNEL, _pan_current, clamped)
+    if ramp:
+        _pan_current = _ramp(kit, PAN_CHANNEL, _pan_current, clamped)
+    else:
+        # Instant move — single PWM command. Mechanical slew rate of the
+        # DS3225 still applies (~1°/12ms physical), so the bracket
+        # doesn't actually teleport; we just don't add a software delay
+        # on top of the natural servo motion.
+        kit.servo[PAN_CHANNEL].angle = clamped
+        _pan_current = clamped
+
     return _pan_current
 
 
-def move_tilt(kit: ServoKit, angle: float) -> float:
+def move_tilt(kit: ServoKit, angle: float, ramp: bool = True) -> float:
     """
     Move tilt to `angle`, clamped to the safe physical range
-    [TILT_MIN, TILT_MAX]. Same safety contract as move_pan.
+    [TILT_MIN, TILT_MAX]. Same safety contract and `ramp` semantics as
+    move_pan — pass ramp=False from tight per-frame loops.
     """
     global _tilt_current
 
@@ -199,7 +216,12 @@ def move_tilt(kit: ServoKit, angle: float) -> float:
             angle, clamped, TILT_MIN, TILT_MAX,
         )
 
-    _tilt_current = _ramp(kit, TILT_CHANNEL, _tilt_current, clamped)
+    if ramp:
+        _tilt_current = _ramp(kit, TILT_CHANNEL, _tilt_current, clamped)
+    else:
+        kit.servo[TILT_CHANNEL].angle = clamped
+        _tilt_current = clamped
+
     return _tilt_current
 
 

@@ -137,8 +137,13 @@ def update(
     new_pan = servo.current_pan() + pan_correction
     new_tilt = servo.current_tilt() + tilt_correction
 
-    actual_pan = servo.move_pan(kit, new_pan)
-    actual_tilt = servo.move_tilt(kit, new_tilt)
+    # ramp=False because the ramp's 50 ms/2° sleeps inside servo.py would
+    # block this loop for hundreds of milliseconds per correction. Without
+    # ramping, the PWM command changes instantly and the loop returns to
+    # capture the next frame immediately. The DS3225's own mechanical
+    # slew rate (~1°/12 ms) provides natural smoothing.
+    actual_pan = servo.move_pan(kit, new_pan, ramp=False)
+    actual_tilt = servo.move_tilt(kit, new_tilt, ramp=False)
 
     return {
         "pan_error": pan_error,

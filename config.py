@@ -62,22 +62,27 @@ FIRE_PIXEL_THRESHOLD: int = 15
 # corresponding Kp. The PID library handles negative gains correctly.
 KP_PAN: float = 0.05
 KI_PAN: float = 0.0
-KD_PAN: float = 0.01
+# Kd was 0.01 initially. Set to 0 because the derivative term amplifies
+# detector centroid jitter into visible bracket motion. The P-only response
+# tracks fine for the slow-moving targets this project handles.
+KD_PAN: float = 0.0
 
 KP_TILT: float = 0.05
 KI_TILT: float = 0.0
-KD_TILT: float = 0.01
+KD_TILT: float = 0.0
 
-# Maximum correction in degrees per PID update. Caps the swing if the target
-# suddenly appears at a frame edge — without this, a +320 px error with
-# Kp=0.05 would request a +16° jump on a single frame, which is jarring and
-# risks overshoot.
-PID_OUTPUT_LIMIT: float = 20.0
+# Maximum correction in degrees per PID update. Since tracking calls servos
+# with ramp=False (immediate motion), a 20° single-frame jump would be jarring
+# and could overload the LM2596 with current spikes. 10° caps per-frame swing
+# at a more reasonable amount; the DS3225's mechanical slew rate (~1°/12 ms)
+# means even 10° takes ~120 ms to physically complete, so the next frame's
+# correction picks up from a more recent state.
+PID_OUTPUT_LIMIT: float = 10.0
 
 # When the target's pixel error is within this distance of frame center on
 # BOTH axes, the tracker holds position instead of issuing tiny corrections.
-# Prevents jiggle from detector centroid jitter (the detected centroid moves
-# ±2-3 px frame-to-frame even when the target is still). Should stay smaller
-# than FIRE_PIXEL_THRESHOLD so the laser-fire check can still trigger from
-# inside the deadband.
-TRACKING_DEADBAND_PX: int = 8
+# Prevents jiggle from detector centroid jitter — in practice the LifeCam +
+# blue plastic bag combination jitters ~8-12 px frame-to-frame, so 15 catches
+# the centroid solidly. Matches FIRE_PIXEL_THRESHOLD so the fire-when-centered
+# logic in Phase 8 will trigger exactly when the tracker is in its hold state.
+TRACKING_DEADBAND_PX: int = 15
