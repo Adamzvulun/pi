@@ -1,5 +1,26 @@
 # Changelog
 
+## [Operator GUI] - 2026-05-23
+
+### Code added
+- `control_panel.py` — tkinter operator GUI. One window wraps:
+  - Status header (live pan/tilt angles + laser state, refreshed at 5 Hz)
+  - Servo controls (center button, pan/tilt sliders bounded by calibrated limits, "Move to slider values" button, "Recalibrate limits…" button that launches `calibrate_servo.py` in a terminal subprocess)
+  - Laser controls (hidden behind an "Enable laser controls" checkbox so a stray click can't fire; "Fire 1 second" has a safety confirmation dialog; "Force OFF" always works regardless of state)
+  - Tools (Start tracking test → launches `test_tracking.py`; Tune HSV detector → launches `tune_detector.py`; Camera smoke test → captures one frame in-process and logs the shape)
+  - System (Reload config / Show config values / Shutdown Pi / Reboot Pi — both with confirmation dialogs)
+  - Log pane (scrolls live `logging` output from anything running in the GUI process via a queue-backed logging handler)
+  - Big red emergency stop at the bottom (laser OFF + servos centered, no confirmation)
+- Hardware is lazily initialized via an explicit "Initialize hardware" button so just opening the GUI doesn't snap servos or claim GPIO18.
+- Servo controls disable themselves while a tracking subprocess is running so two processes don't fight over the PCA9685. When tracking starts, the GUI releases its own servo claim first.
+- Window close handler runs full cleanup: laser off, servos centered, devices released, subprocesses terminated. Same safety contract as the test scripts' `try/finally` blocks.
+- No new dependencies — tkinter is stdlib.
+
+### Docs
+- `README.md` mentions the control panel as the day-to-day operator interface.
+
+---
+
 ## [Phase 6 — Blocked on dead laser diode] - 2026-05-23
 
 ### What happened

@@ -43,4 +43,6 @@ python3 <script>.py
 
 `main.py` is still a placeholder — final tracking loop is built in [Phase 8](docs/plan/phase-8-integration.md). For Phase-by-phase testing scripts (`test_servo.py`, `calibrate_servo.py`, etc.), see [`docs/operating-guide.md`](docs/operating-guide.md).
 
+For day-to-day operation there's also `control_panel.py` — a tkinter GUI that wraps all the test scripts and hardware controls (center servos, slider-driven move, fire laser, launch tracking, reload config, shutdown Pi, emergency stop) in one window. Run it over VNC: `python3 control_panel.py`.
+
 The auto-pull cron job on the Pi keeps the code in sync with GitHub — just push from the laptop and wait up to 60 seconds.
