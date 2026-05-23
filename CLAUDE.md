@@ -73,6 +73,19 @@ Code is NEVER edited directly on the Pi.
 | Servo supply voltage | 5V regulated from LM2596 buck converter fed by 12V 5A PSU — provides up to ~3A, isolated from Pi rail (see `problems/001-servo-power.md`) |
 | PCA9685 VCC source | Pi GPIO 5V (pin 2) directly — MB102 no longer in the circuit |
 
+## Operator workflow — use the control panel
+
+`control_panel.py` is the canonical operator GUI for this project. Adam launches it from a desktop shortcut (installed via `scripts/install_desktop_shortcut.sh`) and runs all hardware tests, calibrations, and Pi-system commands through its buttons:
+
+- Tracking test → "Start tracking test…" button (subprocess-launches `test_tracking.py`)
+- Laser test → "Initialize hardware" + "Enable laser controls" + "Fire 1 second"
+- Servo recalibration → "Recalibrate limits…" button (subprocess-launches `calibrate_servo.py`)
+- HSV tuning → "Tune HSV detector…" button (subprocess-launches `tune_detector.py`)
+- Pi shutdown/reboot → GUI buttons (not `sudo shutdown`)
+- Emergency stop → big red button at the bottom
+
+When writing instructions, point at the GUI button, not a terminal command. If a feature is missing from the panel, ADD IT TO `control_panel.py` rather than telling the user to use the terminal. Terminal use is reserved for OS-level one-shots (`i2cdetect`, `lsusb`, `git pull`) and first-time setup that runs before the GUI is available.
+
 ## Safety rules (always follow these)
 
 - Software-enforced angle limits on both servos — never command past mechanical stops

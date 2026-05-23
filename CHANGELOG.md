@@ -1,5 +1,22 @@
 # Changelog
 
+## [Desktop shortcut for the control panel] - 2026-05-23
+
+### Added
+- `scripts/install_desktop_shortcut.sh` — one-time installer that drops a "Laser Tracker" `.desktop` launcher on the Pi's desktop (`~/Desktop/laser-tracker.desktop`). Double-click launches `control_panel.py` via the venv's Python; working directory and `DISPLAY` handled automatically. Script resolves project paths from its own location so it doesn't depend on `/home/adam/pi` being hardcoded.
+
+### Policy
+- `CLAUDE.md` gains a new "Operator workflow — use the control panel" section. From now on, hardware tests / calibrations / Pi-system commands are run from the GUI buttons, not from terminal commands. Missing features become control panel improvements rather than terminal-command workarounds.
+- `README.md` "How to run" mentions the install script + desktop double-click as the standard launch path.
+
+### How to install on the Pi
+```bash
+bash ~/pi/scripts/install_desktop_shortcut.sh
+```
+After ~60 s for the Pi to pull the script, run that once. The icon appears on the desktop; on first launch Bookworm may prompt "Trust and Launch."
+
+---
+
 ## [Recenter-after-coast + early-end on servo clamp] - 2026-05-23
 
 ### Fixes
