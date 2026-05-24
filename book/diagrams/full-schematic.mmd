@@ -1,0 +1,56 @@
+flowchart TB
+    classDef power fill:#ffe0b2,stroke:#e65100,color:#000
+    classDef pi fill:#c8e6c9,stroke:#2e7d32,color:#000
+    classDef driver fill:#bbdefb,stroke:#1565c0,color:#000
+    classDef actuator fill:#f8bbd0,stroke:#ad1457,color:#000
+    classDef sensor fill:#e1bee7,stroke:#6a1b9a,color:#000
+    classDef mosfet fill:#ffcdd2,stroke:#c62828,color:#000
+    classDef res fill:#fff,stroke:#000,color:#000
+    classDef gnd fill:#e0e0e0,stroke:#424242,color:#000
+
+    PSU12["12V/5A wall PSU"]:::power
+    LM2596["LM2596 buck<br/>set to 5.0V"]:::power
+    USBC["USB-C 5V/3A<br/>(Pi power)"]:::power
+
+    Pi["Raspberry Pi 4B<br/>Bookworm 64-bit"]:::pi
+    PCA["PCA9685 (I2C 0x40)<br/>16-ch PWM driver"]:::driver
+
+    PAN["DS3225 PAN<br/>(channel 0)"]:::actuator
+    TILT["DS3225 TILT<br/>(channel 1)"]:::actuator
+
+    CAM["LifeCam HD-3000<br/>USB UVC"]:::sensor
+
+    R220["220Ω<br/>gate resistor"]:::res
+    R100k["100kΩ<br/>pulldown"]:::res
+    R100["100Ω<br/>current limiter"]:::res
+    MOSFET["IRLZ44N<br/>N-Channel MOSFET"]:::mosfet
+    LASER["Laser diode<br/>5mW 650nm"]:::actuator
+
+    GND[("Common GND")]:::gnd
+
+    PSU12 ==>|12V| LM2596
+    LM2596 ==>|5.0V/3A| PCA
+    LM2596 ==> GND
+
+    USBC ==>|5V/3A| Pi
+
+    Pi -->|Pin 2: 5V VCC| PCA
+    Pi -->|Pin 3: SDA| PCA
+    Pi -->|Pin 5: SCL| PCA
+    Pi -->|Pin 6: GND| GND
+    PCA --> GND
+
+    PCA -->|Ch 0 PWM 50Hz| PAN
+    PCA -->|Ch 1 PWM 50Hz| TILT
+
+    CAM -->|USB 2.0 UVC| Pi
+
+    Pi -->|Pin 12 GPIO18 3.3V| R220
+    R220 --> MOSFET
+    MOSFET -.->|gate| R100k
+    R100k -.-> GND
+
+    Pi -->|Pin 4: 5V| R100
+    R100 --> LASER
+    LASER --> MOSFET
+    MOSFET --> GND

@@ -1,0 +1,12 @@
+flowchart TB
+    Start([START]) --> Init[servo.init<br/>camera.init<br/>tracker.init]
+    Init --> Capture[camera.capture_frame]
+    Capture --> Detect[detector.detect<br/>BGR → HSV → contour → centroid]
+    Detect --> Update[tracker.update<br/>5-state FSM]
+    Update --> Draw[draw overlay<br/>cv2.imshow]
+    Draw --> WaitKey{cv2.waitKey == 'q' ?}
+    WaitKey -- NO --> Capture
+    WaitKey -- YES --> Cleanup[finally:<br/>tracker.stop<br/>camera.release<br/>destroyAllWindows]
+    Cleanup --> End([END])
+
+    Update -.-> StateBox["FSM states:<br/>Tracking (PID active)<br/>Locked (deadband)<br/>Coasting (~1s after loss)<br/>Recentering (return home)<br/>Holding (no info)"]
