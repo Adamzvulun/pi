@@ -1,0 +1,13 @@
+{
+  "name": "laser-tracker-book-docx-build",
+  "version": "1.0.0",
+  "description": "Build script that converts the 19 Hebrew Markdown chapters into a single .docx file.",
+  "main": "build.js",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "docx": "^9.6.1",
+    "markdown-it": "^14.2.0"
+  }
+}
