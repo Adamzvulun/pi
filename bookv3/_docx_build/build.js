@@ -6,10 +6,16 @@
  *
  * Spec (from the rubric in docs/מחוון.pdf):
  *   - RTL Hebrew throughout
- *   - Font: David (fallback Arial), 12pt body
+ *   - Font: Arial, 12pt body  (changed from David per Adam, 2026-05-24)
  *   - Header on every page: "עוקב לייזר אוטונומי — אדם זבולון"
  *   - Footer on every page: page number (centered)
  *   - Auto-generated TOC at the start, 3 levels deep (H1/H2/H3)
+ *
+ * Math formulas are NOT rendered here — markdown-it doesn't parse LaTeX,
+ * and docx has no math support that works cross-platform. Block formulas
+ * have been extracted to bookv3/formulas/ as .tex files; the chapters
+ * contain markers like `[נוסחה 01 — ...]` where Adam manually pastes a
+ * rendered PNG screenshot after building. See bookv3/formulas/README.md.
  */
 
 const fs = require("fs");
@@ -42,8 +48,7 @@ const {
 const CHAPTERS_DIR = path.join(__dirname, "..", "chapters");
 const OUTPUT_PATH = path.join(__dirname, "..", "export", "laser-tracker-book.docx");
 
-const FONT = "David";
-const FONT_FALLBACK = "Arial";
+const FONT = "Arial";
 const BODY_SIZE = 24; // half-points => 12pt
 const HEADER_TEXT = "עוקב לייזר אוטונומי — אדם זבולון";
 
@@ -532,12 +537,12 @@ docChildren.push(coverField("שם המנחה", "משה זזק"));
 docChildren.push(coverField("תאריך הגשה", "מאי 2026"));
 docChildren.push(
   new Paragraph({
-    bidirectional: false,
+    bidirectional: true,
     alignment: AlignmentType.CENTER,
     spacing: { before: 80, after: 80 },
     children: [
       new TextRun({
-        text: "מאגר קוד פתוח: ",
+        text: "מאגר קוד פתוח:",
         font: { name: FONT },
         size: 22,
         bold: true,
