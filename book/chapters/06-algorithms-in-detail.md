@@ -383,99 +383,28 @@ Holding ← target lost while in deadband (no direction to coast)
 ```
 :::
 
-### 6.4.2 פסאודו־קוד
+### 6.4.2 חישוב Coast Decay
 
-::: {dir=ltr}
-```python
-def update(pan_pid, tilt_pid, kit, target_pos):
-    global _last_pan_correction, _last_tilt_correction
-    global _coast_frames_remaining, _recentering
+יהי $d$ מקדם הדעיכה לפריים (`COAST_DECAY = 0.95`). ה־decay לאחר
+$n$ פריימים:
 
-    # --- TARGET LOST BRANCH ---
-    if target_pos is None:
-        # 1. נסיון Coast
-        last_was_meaningful = (
-            abs(_last_pan_correction) >= COAST_MIN_CORRECTION_DEG
-            or abs(_last_tilt_correction) >= COAST_MIN_CORRECTION_DEG
-        )
-        if _coast_frames_remaining > 0 and last_was_meaningful:
-            requested_pan = servo.current_pan() + _last_pan_correction
-            requested_tilt = servo.current_tilt() + _last_tilt_correction
-            actual_pan = servo.move_pan(kit, requested_pan, ramp=False)
-            actual_tilt = servo.move_tilt(kit, requested_tilt, ramp=False)
+$$c_n = c_0 \cdot d^{\,n}$$
 
-            pan_clamped  = abs(actual_pan - requested_pan) > 0.5
-            tilt_clamped = abs(actual_tilt - requested_tilt) > 0.5
-            if pan_clamped and tilt_clamped:
-                _coast_frames_remaining = 0
-            else:
-                _last_pan_correction *= COAST_DECAY
-                _last_tilt_correction *= COAST_DECAY
-                _coast_frames_remaining -= 1
-                return {"coasting": True, ...}
-
-        # 2. Recenter
-        if RECENTER_AFTER_COAST and not _recentering:
-            if last_was_meaningful and not already_centered():
-                _recentering = True
-            _reset_coast()
-
-        if _recentering:
-            pan_step = clamp(PAN_CENTER - current_pan, -STEP_DEG, STEP_DEG)
-            tilt_step = clamp(TILT_CENTER - current_tilt, -STEP_DEG, STEP_DEG)
-            servo.move_pan(kit, current_pan + pan_step, ramp=False)
-            servo.move_tilt(kit, current_tilt + tilt_step, ramp=False)
-            if reached_center:
-                _recentering = False
-            return {"recentering": True, ...}
-
-        # 3. Holding
-        return None
-
-    # --- TARGET ACQUIRED BRANCH ---
-    if _recentering:
-        _recentering = False
-
-    pan_error  = target_pos[0] - FRAME_CENTER_X
-    tilt_error = target_pos[1] - FRAME_CENTER_Y
-    pan_correction  = pan_pid(pan_error)
-    tilt_correction = tilt_pid(tilt_error)
-
-    if in_deadband(pan_error, tilt_error):
-        _reset_coast()
-        return {"in_deadband": True, ...}
-
-    servo.move_pan(kit, servo.current_pan() + pan_correction, ramp=False)
-    servo.move_tilt(kit, servo.current_tilt() + tilt_correction, ramp=False)
-
-    _last_pan_correction = pan_correction
-    _last_tilt_correction = tilt_correction
-    _coast_frames_remaining = COAST_MAX_FRAMES
-
-    return {"pan_error": ..., "pan_correction": ..., "pan_angle": ..., ...}
-```
-:::
-
-### 6.4.3 חישוב Coast Decay
-
-ה־decay לאחר $n$ פריימים:
-
-$$c_n = c_0 \cdot (\text{COAST\_DECAY})^n$$
-
-עם $\text{COAST\_DECAY} = 0.95$ ו־$n = 30$:
+עם $d = 0.95$ ו־$n = 30$:
 
 $$c_{30} = c_0 \cdot 0.95^{30} \approx c_0 \cdot 0.215$$
 
 אחרי 30 פריימים התיקון יורד ל־~22% מהמקדם המקורי. הברקט לא נעצר
 חד אלא הדרגתי. שיא של ~1 שנייה של "אינרציה" שמדמה ראייה אנושית.
 
-### 6.4.4 חישוב Recenter Time
+### 6.4.3 חישוב Recenter Time
 
-עם $\text{RECENTER\_STEP\_DEG} = 2°$ ו־30 fps:
+יהי $s$ צעד ה־Recenter לפריים (`RECENTER_STEP_DEG = 2°`). עם $s = 2°$
+ו־30 fps:
 
-- מהירות recenter: 60°/sec
-- זמן לחזרה ממקסימום סטיית פאן: $170° / 60 = 2.83$s
-- מקסימום סטיית טילט: $90° / 60 = 1.5$s
+- מהירות recenter: $60°/\mathrm{sec}$
+- זמן לחזרה ממקסימום סטיית פאן: $170° / 60 = 2.83\,\mathrm{s}$
+- מקסימום סטיית טילט: $90° / 60 = 1.5\,\mathrm{s}$
 
 בפועל זה לרוב פחות (לא מגיעים לקצוות לעיתים קרובות).
 
