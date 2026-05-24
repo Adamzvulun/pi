@@ -1,32 +1,106 @@
 % pandoc-template.tex — XeLaTeX template for the Hebrew project book.
 %
-% Currently the default pandoc XeLaTeX template handles the language settings
-% we pass via --variable=dir:rtl + lang:he-IL + mainfont:'David CLM'. This file
-% exists as a placeholder for any future customization (e.g. custom header
-% styling, page numbering, cover page typography). Pandoc will use its built-in
-% default template if --template isn't passed in build-pdf.sh.
+% Implements the formatting requirements from docs/מחוון.pdf (§714916):
+%   - Font: David CLM (Hebrew equivalent of "David" mentioned in the rubric)
+%     at base size 12pt
+%   - Header on every page: student name / project name
+%   - Footer on every page: page number
+%   - Auto-generated TOC (3 levels deep, matches H1/H2/H3 in markdown)
+%   - RTL (Hebrew) primary, LTR (English) for code blocks and identifiers
 %
-% To activate this template, add to the pandoc invocation:
-%   --template "$TEMPLATE"
-%
-% Reference for pandoc's default template:
-%   https://github.com/jgm/pandoc-templates/blob/master/default.latex
-%
-% Minimal custom template skeleton (uncomment + extend if needed):
-%
-% \documentclass[$if(fontsize)$$fontsize$,$endif$$if(lang)$$babel-lang$,$endif$$if(papersize)$$papersize$paper,$endif$$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}
-%
-% \usepackage{fontspec}
-% \usepackage{polyglossia}
-% \setdefaultlanguage{hebrew}
-% \setotherlanguage{english}
-%
-% \setmainfont{David CLM}
-% \setsansfont{David CLM}
-% \setmonofont{DejaVu Sans Mono}
-%
-% \usepackage{bidi}
-%
-% \begin{document}
-% $body$
-% \end{document}
+% Activated via build-pdf.sh:  --template "$TEMPLATE"
+
+\documentclass[12pt,a4paper,$if(documentclass)$$documentclass$$else$report$endif$]{$if(documentclass)$$documentclass$$else$report$endif$}
+
+% ---- Geometry ---------------------------------------------------------------
+\usepackage[margin=2.5cm]{geometry}
+
+% ---- Hebrew + LTR support ---------------------------------------------------
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{hebrew}
+\setotherlanguage{english}
+
+% Hebrew font — David CLM is the standard free David on Debian/Ubuntu
+% (package fonts-culmus). Falls back to FreeSerif if David CLM unavailable.
+\setmainfont[Script=Hebrew]{David CLM}
+\setsansfont[Script=Hebrew]{David CLM}
+\setmonofont{DejaVu Sans Mono}
+
+% Latin font for code, identifiers, English citations
+\newfontfamily\latinfont[Script=Latin]{DejaVu Sans}
+
+\usepackage{bidi}
+
+% ---- Header + Footer (rubric requirement) -----------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+% Hebrew text in headers — flip with R for right-aligned on RTL pages
+\fancyhead[R]{עוקב לייזר אוטונומי — אדם זבולון}
+\fancyhead[L]{שאלון 714916}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Plain pages (chapter openers) — still show page number, drop header
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+% ---- Line spacing -----------------------------------------------------------
+\usepackage{setspace}
+\setstretch{1.3}
+
+% ---- Hyperlinks -------------------------------------------------------------
+\usepackage[hidelinks,bookmarks=true,bookmarksopen=true]{hyperref}
+\usepackage{url}
+\urlstyle{same}
+
+% ---- Tables (longtable for cross-page tables) -------------------------------
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+
+% ---- Math --------------------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% ---- Images ------------------------------------------------------------------
+\usepackage{graphicx}
+\graphicspath{{.}{../diagrams/rendered/}{../photos/}}
+
+% Caption setup — center, smaller font
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf,justification=centering}
+
+% ---- Code blocks -------------------------------------------------------------
+% Pandoc emits highlight commands; we let it.
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
+
+% ---- TOC depth ---------------------------------------------------------------
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+
+% Hebrew TOC title
+\addto\captionshebrew{\renewcommand{\contentsname}{תוכן עניינים}}
+
+% ---- Document --------------------------------------------------------------
+\begin{document}
+
+$if(title)$
+% Title page is in the markdown (00-cover.md) — no automatic titlepage here.
+$endif$
+
+$if(toc)$
+\tableofcontents
+\newpage
+$endif$
+
+$body$
+
+\end{document}

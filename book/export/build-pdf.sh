@@ -89,16 +89,17 @@ echo "[build-pdf] Running pandoc -> $OUTPUT_PDF"
 
 pandoc \
     --pdf-engine=xelatex \
+    --template "$TEMPLATE" \
     --variable=mainfont="David CLM" \
     --variable=dir:rtl \
     --variable=lang:he-IL \
     --variable=geometry:margin=2.5cm \
-    --variable=fontsize:11pt \
+    --variable=fontsize:12pt \
     --variable=documentclass:report \
     --variable=linestretch:1.3 \
     --variable=toc-title:"תוכן עניינים" \
     --toc \
-    --toc-depth=2 \
+    --toc-depth=3 \
     --number-sections \
     --resource-path="$BOOK_DIR:$RENDERED_DIR:$BOOK_DIR/photos" \
     --output "$OUTPUT_PDF" \
