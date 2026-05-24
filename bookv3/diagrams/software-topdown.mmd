@@ -1,0 +1,67 @@
+flowchart TB
+    classDef entry fill:#fff3e0,stroke:#e65100,color:#000,stroke-width:3px
+    classDef owner fill:#e3f2fd,stroke:#1565c0,color:#000,stroke-width:2px
+    classDef config fill:#fce4ec,stroke:#ad1457,color:#000,stroke-width:2px
+    classDef external fill:#e8f5e9,stroke:#2e7d32,color:#000,stroke-width:1px
+    classDef test fill:#f3e5f5,stroke:#6a1b9a,color:#000,stroke-width:1px
+
+    MAIN["main.py<br/>final integration entry"]:::entry
+    GUI["control_panel.py<br/>operator GUI (tkinter)"]:::entry
+
+    SERVO["servo.py<br/>ServoKit / PCA9685 owner"]:::owner
+    CAMERA["camera.py<br/>cv2.VideoCapture owner"]:::owner
+    DETECTOR["detector.py<br/>HSV detection owner"]:::owner
+    TRACKER["tracker.py<br/>PID + coast + recenter owner"]:::owner
+    LASER["laser.py<br/>GPIO18 owner via gpiozero"]:::owner
+
+    CONFIG["config.py<br/>single source of truth for<br/>HSV ranges, PID gains,<br/>servo limits, coast knobs"]:::config
+
+    SERVOKIT[("adafruit-circuitpython-<br/>servokit + pca9685 + blinka")]:::external
+    OPENCV[("cv2 - OpenCV<br/>video, HSV, contours")]:::external
+    SPID[("simple-pid")]:::external
+    GPIOZERO[("gpiozero")]:::external
+    NUMPY[("numpy")]:::external
+
+    TEST_S["test_servo.py"]:::test
+    TEST_T["test_tracking.py"]:::test
+    TEST_L["test_laser.py"]:::test
+    CAL_S["calibrate_servo.py"]:::test
+    TUNE_D["tune_detector.py"]:::test
+
+    MAIN --> SERVO
+    MAIN --> CAMERA
+    MAIN --> DETECTOR
+    MAIN --> TRACKER
+    MAIN --> LASER
+
+    GUI --> SERVO
+    GUI --> LASER
+    GUI -. subprocess .-> TEST_T
+    GUI -. subprocess .-> TUNE_D
+    GUI -. subprocess .-> CAL_S
+
+    TRACKER --> SERVO
+    TRACKER --> SPID
+
+    DETECTOR --> OPENCV
+    DETECTOR --> NUMPY
+    CAMERA --> OPENCV
+
+    SERVO --> SERVOKIT
+    LASER --> GPIOZERO
+
+    SERVO -.- CONFIG
+    DETECTOR -.- CONFIG
+    TRACKER -.- CONFIG
+    LASER -.- CONFIG
+    CAMERA -.- CONFIG
+
+    TEST_S --> SERVO
+    TEST_T --> CAMERA
+    TEST_T --> DETECTOR
+    TEST_T --> TRACKER
+    TEST_T --> SERVO
+    TEST_L --> LASER
+    CAL_S --> SERVO
+    TUNE_D --> CAMERA
+    TUNE_D --> DETECTOR

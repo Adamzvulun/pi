@@ -1,0 +1,2171 @@
+   
+
+                                                  644450: 
+                          '   : 
+
+                                                : 
+                                             325913580 : 
+
+                                                   : 
+             .      :
+  ­      ­    
+
+                                                                       
+
+4......................................................................................................................
+4................................................................................................................ 
+5....................................................................................................................... 
+5.............................................................................................................. 
+6....................................................................................................................
+6....................................................................................... - 
+7............................................................................................................. 
+7.........................................................................................   
+8..........................................................................     
+8.........................................................................     
+9........................................................................................................... 
+9....................................................................................    
+9............................................................................     
+10.......................................................................................   
+10................................................................................. ?    
+11 ............................................................................................. ' 
+11 .......................................................................................... ' 
+12..................................................................................Complementary Filter
+13...................................................................     
+14......................................................................... Kalman Filter  
+14................................................... Kalman Filter-    
+15............................................................................MPU6050-  
+16...................................................................... Flex Sensor    
+17...........................    flex sensor-  
+19.............................................................................    
+23.....................................................................................................  
+23.........................................................................................   
+24.............................................................................................   
+24..................................................................................................... 
+25........................................................................... PWM   
+
+                                                        2
+  ­      ­    
+27........................................................................................  
+27..........................................................................................   
+27..............................................................................    
+28.....................................................................................   
+28......................................................................................  
+31.......................................................................................   
+32........................................................................................ / 
+32..........................................................................................:  
+33........................................................................................................... 
+33...............................................................................................:  
+34............................................................................................................  
+34.......................................................................................................... 
+48...........................................................................................................  
+
+                                                       3
+  ­      ­    
+
+                                                                             
+
+                    .           
+    Servo MG996R       6/5  
+
+            -   Adafruit  Servo Module PCA9685 
+           ,HC05   ,    Arduino Uno  
+
+                                                                            .Bluetooth  
+        Arduino Nano       
+
+       '       .     flex sensor
+                       MPU6050
+                                                       .HC05  Bluetooth   
+
+   .            "" 
+  (flex sensor)         ,  
+
+          . ASCII-     , 
+    Complementary Filter-  MPU6050-   
+
+      .         ASCII     
+    ,Flex Sensor- MPU6050        , 
+ .HC05      Arduino Uno/Nano   
+             
+              . 
+.               
+
+                                                                        
+
+              ,          
+          .       ,   
+              
+
+                                                          .      
+ -              
+
+    Servo   ,       Flex Sensor- MPU6050
+                                                                    .   MG996R 
+
+      Bluetooth    HC05-      
+                  .            
+
+                                                       4
+  ­      ­    
+
+                                                                              
+
+     .        
+     .)(        
+
+    .          .     
+         ,  .       
+
+                                                                    .     
+
+       .           
+     ,        ,     ,
+
+                                                                                   .   
+
+     ;     ,   ,      
+         .             
+
+ (           
+          .)(    )
+               . 
+          " "  ,  .  
+                                                                                                       . 
+
+             
+      ,       .
+
+                                                          .     
+
+                                                                                    
+
+        ,30-         ,  ·
+
+         ,1961-  ''  Unimate-   
+         ,     . 
+     ,      
+
+                                                                                                .
+   · , '   1962       
+
+            1979  .      
+           ,2012  .   ,  
+        80             
+        .      ,     
+     FDA- .   1985      ·
+       Automated Educational Substitute Operator (AESOP)-   
+           ,2000  .1990   
+         ,FDA-        '
+
+                                               .    
+
+                                                       5
+  ­      ­    
+
+                                                                                         
+
+                ­  /  ·
+                                                                                            
+
+     ,  ,  -      Cobot- ­ Cobot ·
+                                         .  , , ,  ,
+
+    ,  ,   - Cylindrical robot /  ·
+  .       .   
+   , ,  ,   -   /  ·
+   .       .    ,
+      ,  ,    ­ SCARA  ·
+
+       .           .
+     ,  ,  , ,   ­   ·
+
+             .        . 
+          ­   ·
+
+                   .         .
+        ,      ­   ·
+
+                                                                                 . 
+
+                                             - 
+
+                                         .    ·
+                                                 .   ·
+
+                                         .    ·
+
+       
+       
+    Cobots ,
+    
+
+                                   .
+
+                                      6
+   ­      ­    
+
+                                                                                     
+
+          ,   ,     -   ·
+     , .  ,'  , ,  
+
+     .           
+     ,      , 
+
+                                                                                       . 
+.      
+
+                                                      
+
+                                                        7
+  ­      ­    
+
+                                         
+
+                                         
+
+                                                      8
+  ­      ­    
+
+                                                                    
+
+                                    .  ,        
+                    
+
+                             .   ,       
+                 
+             . 
+
+                                                                                                           .
+
+                                                   
+
+                                             :        
+
+                                                           
+
+         .MPU6050-          
+            MPU- 
+
+             .   ,      ,
+  .        '     
+
+      ,      '   - '
+     ""="" " ,"="" : Gyroscope,  (' 
+      ) 1852-        
+       , .       ,  
+              ." "
+
+                                                                             .    
+          MPU        Arduino IDE-
+       ,         Complementary Filter
+
+                                                                   .   "   
+
+                                                       9
+  ­      ­    
+
+ MPU6050  '   ,   MPU   '
+          .Z- X, Y :       
+             ' .)s/°(     
+                                                                                .   
+                                                                               
+
+        ,   ,MPU6050    
+        .    
+
+                                                                                          :MPU6050- 
+     -MPU6050    :   )1
+
+             .   
+                . 
+
+                                                                          .  
+  ,     ,    : )2
+
+           .     
+                                               .      
+
+     .         :   )3
+  .      ,     
+
+             .          
+         ,       :  )4
+   .        .  
+
+                   .         
+                                                                       ?    
+
+         .'       -MPU6050   
+.     ,        
+
+                                                      10
+  ­      ­    
+                                                                                  ' 
+
+     ,    ,MPU6050  
+'       .    
+
+                                                                                              :MPU6050 
+  ,    ,   ' : .1
+     .    ,      
+
+                         .         
+              '  : .2
+            .     ,
+
+               .          
+ (X,Y,Z)       ' :   .3
+
+               ,     
+  ,       .   
+
+                                                                   .    
+      .      : .4
+
+             .        
+                                                                                ' 
+
+      ,   MPU6050- '
+                .          .
+
+                                                       11
+  ­      ­    
+                                                                        Complementary Filter
+
+                
+       -MPU6050,    .     ,
+          ,    ' 
+         .    
+
+         -low-pass filter    ,  .  
+                  ,      
+
+             .     '
+                                                                                .  
+                                                                                 :  
+
+              :  .1
+         '  ,      .
+
+              . 
+                                                                     .     
+
+            ,     ' :  .2
+                 .  
+
+                               .         ,
+        :    .3
+    .Kalman filter-  ,     
+ .          
+  ,         :  .4
+
+                                    .        
+
+                                                       12
+  ­      ­    
+
+                                 
+ ( - ) + ( +   ) = 
+
+                         .    ·
+
+              .     ·
+
+     .'        ·
+
+     .        c ·
+
+  '      ,1- 0      ·
+                                                                                    . 
+
+                                     : 
+
+                         :     
+
+              =30 :   ·
+
+               =10/sec :'  ·
+
+                         =0.01 sec :  ·
+
+                         =0.98 :  ·
+
+         :'    
+
+      = 10  0.01 = 0.1°
+
+              :     
+
+180      180
+ =   2(-, ) =   2(-0.5,0.866) = 30°
+
+     :       
+
+ = ( +   ) + (1 - )  
+ = 0.98  (0 + 0.01  0.1) + 0.02  30
+ = 0.001 + 0.6
+ = 0.601°
+
+           .     
+                    .    
+
+                 .    '
+                       .           ,'
+
+     13
+   ­      ­    
+
+                                                                 Kalman Filter  
+.            Kalman Filter
+
+   .            
+           ,       
+                                                                                             . 
+
+     ,             
+                .   
+                                                                                                         . 
+
+                                             Kalman Filter-    
+    .          :  .1
+
+                                         .       
+              ,     :  .2
+       ,       .  
+
+                                                                         .  
+           ,     :  .3
+
+                   .  
+                                                             .   
+
+               :  .4
+              .    ,
+                                                                         .   
+
+    ,         :   .5
+                                                .     
+
+,      :      , 
+       ,     .     
+                                                                                           . 
+
+                                                       14
+  ­      ­    
+                                                                   MPU6050-  
+
+                         .I2C   Arduino Nano-   MPU6050 
+     -     I2C (Inter-Integrated Circuit)  - I2C
+         80-     .      
+
+              .     ) NXP Semiconductors-( 
+ -SDA   .) (-SCL  ) (: SDA     I2C 
+
+     .    -SCL    ,   
+
+     .      I2C, 
+           .     
+                                                                                                      . 
+    -SDA     )     ,  
+     ,     7        ) SCL
+
+       .    / 
+                        .  ),    -SDA   (
+
+            ,  
+     SDA          . 
+
+   (    ,  .   
+                                      .    )  SCL -SDA  
+
+                                                       15
+  ­      ­    
+  ,     ,     I2C
+
+      .    -     
+       , - 5   - 100       ,
+
+    ,    ,  .    
+                                                              .     
+
+                                                    Flex Sensor    
+
+     ,  .           
+   .         ,
+
+     .     ,   ,   
+
+                  
+                threshold
+
+                                                                            .    
+        VCC-       10      
+
+                                                           :   pin-   GND
+
+                                                       16
+  ­      ­    
+
+                   flex sensor-  
+
+          ,     flex sensor- 
+                                     .         
+
+                                                      17
+  ­      ­    
+              
+
+                                               .        
+
+               
+                                                                          :    
+
+                                                      18
+  ­      ­    
+
+                                                            
+
+             .   Bluetooth   HC-05-
+                                                                                    .   
+
+  ,  ,  ,      
+                                                                                .   
+
+ , ,    , 100-       
+                                                                                      . 
+
+. (PAN)      IEEE 802.15.1,    
+               .    (FHSS) -     
+
+       .       
+                                                                                         .)UART(  
+
+           Bluetooth 
+                                                                                                   . Bluetooth
+
+                                                                                                , 6  
+  Pin Key/EN-  .AT   '     :EN/Key .1
+   .      .     , 
+  9600- 38400bps    HC-05      
+
+                                                                                        . 
+                                                                   :   HC-05 
+                                                    .    :  .1
+    .HC-05     AT    :  .2
+                                            .)UART(      
+                                                               .  V 3.3  V 5  :VCC .2
+                                                                    .    :GND .3
+                  (    :TXD .4
+                                               )TXD      Bluetooth
+       (     :RXD .5
+
+                                                                                 .)Bluetooth 
+                                                     .       :State .6
+
+                                                       19
+  ­      ­    
+                
+                                                                                                           .
+
+    Master    AT-       
+      ,Slave        
+
+                                                                                                 : AT
+
+ :  Arduino Nano- Arduino Uno-       
+
+                                                      20
+   ­      ­    
+   RX- TX-  Arduino Uno       
+
+   Software Serial  Arduino IDE       
+                             . TX- RX-        
+                                                    :   Arduino    
+
+,Arduino          SoftwareSerial 
+         .)"SoftwareSerial"  (     
+
+       .bps 115200         
+                                                                      .    
+                                                                           :   
+
+                        .    ,     *
+           ,)Serial communication(    
+       .      - 
+
+                                                                .      ,
+          ,        , 
+
+                                  .    -     
+  .          ,-
+
+                                      .I2C- SPI ,UART     
+
+                                                       21
+  ­      ­    
+      .-       UART
+     .)RX(    (TX)    :
+      .     ,      , 
+
+      ,-       ,
+      - ,    .    
+              ,       
+                                                                                         . 
+
+                                                      22
+  ­      ­    
+
+                                                                 
+
+        ,     
+                                                                                     .   
+
+                                                                     
+
+                                                   :       
+
+:            
+
+                           
+           Wrist1\      Wrist2\
+
+Elbow\                   Gripper\
+
+  Shoulder\
+
+        Base\
+
+                    23
+  ­      ­    
+
+                                                                         
+
+         MG996R  Servo   6  
+                                                                                                      . MG995
+
+                       .     IC    PCB  
+                                                                                         
+
+  20  pulse     20ms  PWM Period-    
+                                                                                                  . 
+
+                                                      24
+  ­      ­    
+                                                                   PWM   
+                                                                          .PWM     
+
+              Pulse Width Modulation  PWM
+  pulses       ,PWM  . 
+
+                                                                                  .)(  
+            modulation signal- .)comparator(    PWM-
+        sawtooth wave-  non-sinusoidal wave-  , 
+
+               .    PWM       .  
+
+.""      ,modulation signal-   sawtooth signal- 
+                          .           
+
+  "ON"  PWM signal-    ,  PWM-  Duty Cycle-
+.duty cycle   "ON"      .   "OFF"  
+    .100%  duty cycle      ,"ON"   
+
+                                                                                                  : 
+       ,  .      
+
+                                                              .pulse-  "ON"-    
+                                                                               :PWM-  frequency-
+
+        pulse-  .period  PWM-    PWM-  
+                                                                                               . 
+
+                                                       :  PWM-     
+                                                                                 .1/Time Period = 
+
+                                                              .On Time + Off Time = Time Period-
+
+                                                       25
+  ­      ­    
+      , .     PWM-    
+
+ ,50%     . 5      5     ,100%
+                                                                                  . 2.5   
+
+     pulse   pulse  .   PWM-     Servo-
+        90      Servo  .repetition rate- ,
+
+                                                                        . 180    
+         servo-       
+
+                                                                         .     
+     ,      PWM- ,Servo      
+
+                            .   )rotor(  ,     
+         pulse-  ,)ms(  20  pulse   Servo- 
+ . 90      1.5ms  pulse ­   . 
+      -   1.5ms-  . 0-        1.5ms-
+
+                                                            . 180     Servo
+
+      ,      ,    Servo- 
+Servo-    .    Servo-  Servo-  
+
+   :    Servo ,  .Servo-      
+                                        .  Servo-    pulse  
+
+     pulse-   Adafruit_PWMServoDriver    
+                                         . 100- 600  ) 4096 ( 
+
+        ,      pulse     
+                            . -   pulse-        
+
+                                                       26
+  ­      ­    
+
+                                                                    
+
+       900   7.2v       
+                   .         4200mah- 7.2v
+
+                       
+   7.2-  6        LM317    
+
+     .4200mah-  8           ,
+       ,         
+                  180
+
+                                                           . 360      
+
+                                                                      
+
+    ,  PWM (Pulse Width Modulation)   PCA9685 
+    ,   16         .I2C- 
+
+                                   .LED   ,  ,   
+          6-       
+
+                                                                             .  Arduino Uno-
+  Arduino IDE-      ,    
+
+         .   pulse-       Adafruit_PWMServoDriver
+
+                                                             
+
+      ,   HC05     
+            .   software serial-      , 
+
+                                                      27
+  ­      ­    
+
+                                                    
+
+                                                                  
+
+        ,MPU6050-     
+                       .     ,yaw- roll ,pitch-   
+
+       (accel, gyro, temp)     :3-4  ·
+                                                             . ' , 
+
+      calibration offsets-    :7-9  ·
+                                                          .  gyro-  bias- 
+
+      atan2     pitch- :12-13  ·
+   .   roll- .z-  y-     x-   
+                                  .  deltaTime-   :16-18  ·
+
+    yaw- roll ,pitch-      :21-23  ·
+      .      ,)Delta Time(   gyro- 
+
+      gyro-        :26-28  ·
+                                                                                               .
+
+                                                         . delay  "  :31  ·
+
+                                                      28
+  ­      ­    
+
+           .            
+                             .     Wrist2    L  ·
+                                   .    Wrist2    R  ·
+                              .) (   Wrist1    U  ·
+                               .) (   Wrist1    D  ·
+
+                     .) (    Shoulder    C  ·
+           .) (     Shoulder    c  ·
+
+                                                      29
+  ­      ­    
+
+   .            
+              .Gripper-          F  ·
+                .Gripper-          f  ·
+                                            . Base-     T  ·
+                                           . Base-     t  ·
+                                          . Elbow-     P  ·
+                                          . Elbow-     p  ·
+
+                                                      30
+  ­      ­    
+
+                                                                   
+
+           pulse-      
+      100  MIN pulse- 600  MAX pulse-  -   ,
+
+                              . pulse-      map  
+
+     increment-     wrist2-     
+ -  setPWM-      .constrain-    
+
+                        .   angleToPulse      pulse
+   -  increment            
+
+                   .   delay- .   min- max   constrain
+
+                                                      31
+  ­      ­    
+
+                                                    / 
+
+   ,          ,
+       ,           
+                                                                 .   "  
+                                        .        
+                         
+             . "          
+       .            
+
+                                                     :  
+
+                                                                        : 6 ­ Servo MG996R .1
+
+                                                                                   :1  ­ PCA9685 .2
+
+                                                                          :1  ­ Arduino Uno  .3
+
+                                                                                    : 2 ­ HC05 .4
+
+                                                                              : 2 ­ MPU6050 .5
+
+                                                                        : 3/4 ­ Flex sensor .6
+                                                                                  :Arduino Nano  .7
+
+                                                                                      :1  ­ LM317 .8
+
+                                                      32
+  ­      ­    
+
+                                                                     
+
+                                                                                              :Flex Sensor- .1
+                      /https://lastminuteengineers.com/flex-sensor-arduino-tutorial ·
+
+                                                                                          :Servo MG996R- .2
+         https://www.electronicoscaldas.com/datasheet/MG996R_Tower-Pro.pdf ·
+
+                                                                                                 :PCA9685- .3
+                      https://robojax.com/learn/arduino/?vid=robojax_PCA9685-V1 ·
+
+                                                                :MPU6050- complementary filter- .4
+                                     https://www.youtube.com/watch?v=7VW_XVbtu9k ·
+                        https://www.nxp.com/docs/en/application-note/AN3461.pdf ·
+       https://stackoverflow.com/questions/55866808/attitude-estimation-from- ·
+
+                                                 accelerometer-and-gyroscope-of-an-imu
+                  https://ahrs.readthedocs.io/en/latest/filters/complementary.html ·
+
+                               https://github.com/MarkSherstan/MPU-6050-9250-I2C- ·
+                                        CompFilter/blob/master/Arduino/main/main.ino
+                                                                                           :   .5
+
+                                      /https://studymind.co.uk/notes/potential-dividers ·
+                                                                                   :HC05 ­   .6
+
+              https://s3-sa-east-1.amazonaws.com/robocore-lojavirtual/709/HC- ·
+                                                                        05_ATCommandSet.pdf
+
+                                     https://www.youtube.com/watch?v=BXXAcFOTnBo ·
+                                                                                                  :  .7
+
+                                     https://www.youtube.com/watch?v=NqL9n3avBbY ·
+                                     https://www.youtube.com/watch?v=hTZ2z_C9dSU ·
+
+                                                                                                   :  .8
+https://www.ti.com/lit/ds/symlink/lm317.pdf?ts=1716559041492&ref_url=https ·
+
+                                            %253A%252F%252Fwww.google.com%252F
+
+                                                          :  
+
+                                                      33
+  ­      ­    
+
+                                             
+
+                                               
+
+#include <Wire.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+
+#define MPU6050_ACCEL_FS_SEL 16384.0 // Sensitivity
+
+scale factor for accelerometer (+/- 2g)
+
+#define MPU6050_GYRO_FS_SEL 131.0 // Sensitivity
+
+scale factor for gyroscope (+/- 250 deg/s)
+
+#define NUM_SAMPLES 5000       // Number of
+
+samples for calibration
+
+const float VCC = 5;      // voltage at Ardunio 5V
+
+line
+
+const float R_DIV = 10000.0; // resistor used to
+
+create a voltage divider
+
+const float flatResistance = 25000.0; // resistance
+
+when flat
+
+const float bendResistance = 62500.0; // resistance at
+
+45 deg
+
+Adafruit_MPU6050 mpu;
+Adafruit_MPU6050 mpu2;
+
+// Variables for first gyro calibration
+float PGYROOFFSETX = 0.0;
+float PGYROOFFSETY = 0.0;
+float PGYROOFFSETZ = 0.0;
+
+// Variables for second gyro calibration
+float PGYROOFFSETX2 = 0.0;
+
+                          34
+   ­      ­    
+
+float PGYROOFFSETY2 = 0.0;
+float PGYROOFFSETZ2 = 0.0;
+
+// Variables for angle calculation first MPU6050
+float pitch1 = 0.0;
+float roll1 = 0.0;
+float yaw1 = 0.0;
+
+// Variables for angle calculation second MPU6050
+float pitch2 = 0.0;
+float roll2 = 0.0;
+float yaw2 = 0.0;
+
+// Constants for complementary filter
+float alpha = 0.98; // Weight for gyroscope data
+unsigned long lastTime1 = 0;
+unsigned long lastTime2 = 0;
+float dt = 0.01; // Sampling interval (100 Hz)
+
+//Create flex Sensors
+int ADCpinkie = 0; //Pinkie flex
+int ADCfinger = 0; //finger flex
+int ADCthumb = 0; //thumb flex
+
+float anglePinkie = 0.0;
+float angleFinger = 0.0;
+float angleThumb = 0.0;
+
+float Vpinkie = 0.0;
+float Vfinger = 0.0;
+float Vthumb = 0.0;
+
+                                                       35
+   ­      ­    
+
+float Rpinkie = 0.0;
+float Rfinger = 0.0;
+float Rthumb = 0.0;
+
+int pinkie_Data = A3;
+int finger_Data = A2;
+int thumb_Data = A1;
+
+int thumb_high = 11;
+int thumb_low = 7;
+int finger_high = 15;
+int finger_low = 15;
+int pinkie_high = 20;
+int pinkie_low = 10;
+
+//Stop Caliberating the Flex Sensor when complete
+bool bool_caliberate = false;
+
+//How often to send values to the Robotic Arm
+int response_time = 100;
+
+void setup() {
+   pinMode(3, OUTPUT);
+   Serial.begin(9600);
+   while (!Serial) {
+      delay(10);
+   }
+
+   if (!mpu.begin() || !mpu2.begin(0x69)) {
+      Serial.println("Failed to find MPU6050 chip");
+      while (1) {
+          delay(10);
+      }
+
+   }
+
+                                                       36
+   ­      ­    
+
+   mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
+   mpu.setGyroRange(MPU6050_RANGE_250_DEG);
+   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+
+   mpu2.setAccelerometerRange(MPU6050_RANGE_2_G);
+   mpu2.setGyroRange(MPU6050_RANGE_250_DEG);
+   mpu2.setFilterBandwidth(MPU6050_BAND_21_HZ);
+
+   // Perform gyro calibration - I don't use this now
+   // calibrateGyros();
+   delay(1000);
+}
+
+void loop() {
+   digitalWrite(3, HIGH); //Use basic LED as visual
+
+indicator if glove working
+
+   //debug_flex(); //Debug Mode on/off
+
+   //get values for first mpu having address of 0x68 -
+default
+
+   getmpu1filter();
+
+   delay(10);
+
+   //get values for second mpu having address of 0x69
+   getmpu2filter();
+
+   delay(10);
+
+   send_mpu_data();
+
+   get_flex_values();
+
+                                                       37
+   ­      ­    
+
+   delay(20);
+
+   send_flex_data();
+}
+
+void send_flex_data(){
+   // Pinkie - (Elbow)
+   if (anglePinkie < pinkie_high && anglePinkie >=
+
+pinkie_low) {
+      Serial.print("P");
+      delay(response_time);
+
+   }
+   if (anglePinkie >= pinkie_high) {
+
+      Serial.print("p");
+      delay(response_time);
+   }
+
+   // thumb 1 - thumb (Base Rotation)
+   if (angleThumb >= thumb_high) {
+
+      Serial.print("T");
+      delay(response_time);
+   }
+
+   if (angleThumb >= thumb_low && angleThumb <
+thumb_high) {
+
+      Serial.print("t");
+      delay(response_time);
+   }
+
+   // finger 1 - Claw Bend/Open
+
+                                                       38
+   ­      ­    
+
+   if (angleFinger >= finger_high) {
+      Serial.print("f");
+      delay(response_time);
+
+   }
+
+   if (angleFinger <= finger_low) {
+      Serial.print("F");
+      delay(response_time);
+
+   }
+   else {
+
+      delay(5);
+   }
+}
+
+void get_flex_values(){
+   // read the values from Flex Sensors to Arduino
+   ADCpinkie = analogRead(pinkie_Data);
+   ADCfinger = analogRead(finger_Data);
+   ADCthumb = analogRead(thumb_Data);
+
+   Vpinkie = ADCpinkie * VCC / 1023.0;
+   Vfinger = ADCfinger * VCC / 1023.0;
+   Vthumb = ADCthumb * VCC / 1023.0;
+
+   Rpinkie = R_DIV * (VCC / Vpinkie - 1.0);
+   Rfinger = R_DIV * (VCC / Vfinger - 1.0);
+   Rthumb = R_DIV * (VCC / Vthumb - 1.0);
+
+   anglePinkie = map(Rpinkie, flatResistance,
+bendResistance, 0, 45.0);
+
+   angleFinger = map(Rfinger, flatResistance,
+bendResistance, 0, 45.0);
+
+                                                       39
+   ­      ­    
+
+   angleThumb = map(Rthumb, flatResistance,
+bendResistance, 0, 45.0);
+}
+
+void debug_flex() {
+   //Sends value as a serial monitor to port
+   //Thumb
+   Serial.print("Thumb: ");
+   Serial.print(angleThumb);
+   Serial.print("\t");
+
+   //Thumb Params
+   Serial.print("thumb High: ");
+   Serial.print(thumb_high);
+   Serial.print("\t");
+   Serial.print("T Low: ");
+   Serial.print(thumb_low);
+   Serial.print("\t");
+
+   //Finger
+   Serial.print("finger: ");
+   Serial.print(angleFinger);
+   Serial.print("\t");
+
+   //Finger Params
+   Serial.print("finger High: ");
+   Serial.print(finger_high);
+   Serial.print("\t");
+   Serial.print("finger Low: ");
+   Serial.print(finger_low);
+   Serial.print("\t");
+
+   //Pinkie (Claw Further)
+   Serial.print("Pinkie: ");
+
+                                                       40
+   ­      ­    
+
+   Serial.print(anglePinkie);
+   Serial.print("\t");
+
+   //Pinkie Params
+   Serial.print("Pinkie High: ");
+   Serial.print(pinkie_high);
+   Serial.print("\t");
+   Serial.print("Pinkie Low: ");
+   Serial.print(pinkie_low);
+   Serial.print("\t");
+   Serial.println();
+}
+
+void send_mpu_data(){
+   //Move Left
+   if ( (roll1 * 180 / M_PI) >= 40 && ((pitch1 * 180 /
+
+M_PI) >= -25 && (pitch1 * 180 / M_PI) <= 25)) {
+      Serial.print("L");
+      delay(response_time);
+
+   }
+
+   //Move Right
+   if ( (roll1 * 180 / M_PI) <= -80 && ((pitch1 * 180 /
+M_PI) >= -25 && (pitch1 * 180 / M_PI) <= 25)) {
+
+      Serial.print("R");
+      delay(response_time);
+   }
+
+   //Claw Up
+   if ( (pitch1 * 180 / M_PI) >= 45 ) {
+
+      Serial.print("U"); // G
+      delay(response_time);
+   }
+
+                                                       41
+   ­      ­    
+
+   //Claw Down
+   if ( (pitch1 * 180 / M_PI) <= -45 ) {
+
+      Serial.print("D"); // U
+      delay(response_time);
+   }
+
+   //Move to me
+   if ( pitch2 * 180 / M_PI >= 45) { //|| yaw1 * 180 /
+M_PI >= -0.17) {
+
+      Serial.print("C");
+      delay(response_time);
+   }
+
+   //Move from me
+   if ( pitch2 * 180 / M_PI <= -45) { // || yaw1 * 180
+/ M_PI <= -0.55
+
+      Serial.print("c");
+      delay(response_time);
+
+   }
+}
+
+void getmpu1filter(){
+   // Read accelerometer and gyroscope data
+   sensors_event_t accel, gyro, temp;
+   mpu.getEvent(&accel, &gyro, &temp);
+
+   // Apply gyro calibration offsets
+   gyro.gyro.x -= PGYROOFFSETX;
+   gyro.gyro.y -= PGYROOFFSETY;
+   gyro.gyro.z -= PGYROOFFSETZ;
+
+                                                       42
+   ­      ­    
+
+   // Calculate angle from accelerometer data
+   // pitch1 = atan2(accel.acceleration.y,
+sqrt(pow(accel.acceleration.x, 2) +
+pow(accel.acceleration.z, 2))); 2nd option
+   // roll1 = atan2(-accel.acceleration.x,
+accel.acceleration.z); 2nd option
+
+   pitch1 = atan2(-accel.acceleration.x,
+sqrt(pow(accel.acceleration.y, 2) +
+pow(accel.acceleration.z, 2)));
+
+   roll1 = atan2(accel.acceleration.y,
+accel.acceleration.z);
+
+   // Calculate change in time
+   unsigned long currentTime = millis();
+   float deltaTime = (currentTime - lastTime1) /
+1000.0; // Convert to seconds
+   lastTime1 = currentTime;
+
+   // Calculate angle change from gyroscope data
+   float gyro_pitch = gyro.gyro.x * (deltaTime /
+MPU6050_GYRO_FS_SEL);
+   float gyro_roll = gyro.gyro.y * (deltaTime /
+MPU6050_GYRO_FS_SEL);
+   float gyro_yaw = gyro.gyro.z * (deltaTime /
+MPU6050_GYRO_FS_SEL);
+
+   // Combine angles using complementary filter
+   pitch1 = alpha * (pitch1 + gyro_pitch) + (1 - alpha)
+* pitch1;
+   roll1 = alpha * (roll1 + gyro_roll) + (1 - alpha) *
+roll1;
+   yaw1 += gyro_yaw;
+
+                                                       43
+   ­      ­    
+
+/* Print filtered angles - debug
+   Serial.print(250);
+   Serial.print("Pitch Angle: ");
+   Serial.print(",");
+   Serial.print(pitch1 * 180 / M_PI); // Convert to
+
+degrees
+   Serial.print(" Roll Angle: ");
+   Serial.print(",");
+   Serial.print(roll1 * 180 / M_PI); // Convert to
+
+degrees
+   Serial.print(" Yaw Angle: ");
+   Serial.print(",");
+   Serial.print(yaw1 * 180 / M_PI); // Convert to
+
+degrees
+*/
+
+   // Add a small delay
+   delay(dt * 1000); // Convert to milliseconds
+}
+
+void getmpu2filter(){
+   // Read accelerometer and gyroscope data
+   sensors_event_t accel, gyro, temp;
+   mpu2.getEvent(&accel, &gyro, &temp);
+
+   // Apply gyro calibration offsets
+   gyro.gyro.x -= PGYROOFFSETX2;
+   gyro.gyro.y -= PGYROOFFSETY2;
+   gyro.gyro.z -= PGYROOFFSETZ2;
+
+   // Calculate angle from accelerometer data
+
+                                                       44
+   ­      ­    
+
+   // pitch2 = atan2(accel.acceleration.y,
+sqrt(pow(accel.acceleration.x, 2) +
+pow(accel.acceleration.z, 2))); 2nd option
+
+   // roll2 = atan2(-accel.acceleration.x,
+accel.acceleration.z); 2nd option
+
+   pitch2 = atan2(-accel.acceleration.x,
+sqrt(pow(accel.acceleration.y, 2) +
+pow(accel.acceleration.z, 2)));
+
+   roll2 = atan2(accel.acceleration.y,
+accel.acceleration.z);
+
+   // Calculate change in time
+   unsigned long currentTime = millis();
+   float deltaTime = (currentTime - lastTime2) /
+1000.0; // Convert to seconds
+   lastTime2 = currentTime;
+
+   // Calculate angle change from gyroscope data
+   float gyro_pitch = gyro.gyro.x * (deltaTime /
+MPU6050_GYRO_FS_SEL);
+   float gyro_roll = gyro.gyro.y * (deltaTime /
+MPU6050_GYRO_FS_SEL);
+   float gyro_yaw = gyro.gyro.z * (deltaTime /
+MPU6050_GYRO_FS_SEL);
+
+   // Combine angles using complementary filter
+   pitch2 = alpha * (pitch2 + gyro_pitch) + (1 - alpha)
+* pitch2;
+   roll2 = alpha * (roll2 + gyro_roll) + (1 - alpha) *
+roll2;
+   yaw2 += gyro_yaw;
+
+/* Print filtered angles - debug
+
+                                                       45
+   ­      ­    
+
+   Serial.print(250);
+   Serial.print("Pitch Angle: ");
+   Serial.print(",");
+   Serial.print(pitch2 * 180 / M_PI); // Convert to
+degrees
+   Serial.print(" Roll Angle: ");
+   Serial.print(",");
+   Serial.println(roll2 * 180 / M_PI); // Convert to
+degrees
+   Serial.print(" Yaw Angle: ");
+   Serial.print(",");
+   Serial.println(yaw2 * 180 / M_PI); // Convert to
+degrees
+*/
+
+   // Add a small delay
+   delay(dt * 1000); // Convert to milliseconds
+}
+
+void calibrateGyros() {
+   float gyroOffsetX = 0.0, gyroOffsetY = 0.0,
+
+gyroOffsetZ = 0.0, gyroOffsetX2 = 0.0, gyroOffsetY2 =
+0.0, gyroOffsetZ2 = 0.0;
+
+   for (int i = 0; i < NUM_SAMPLES; i++) {
+      sensors_event_t accel, gyro, temp, accel2, gyro2,
+
+temp2;
+      mpu.getEvent(&accel, &gyro, &temp);
+      mpu2.getEvent(&accel2, &gyro2, &temp2);
+
+      gyroOffsetX += gyro.gyro.x;
+      gyroOffsetY += gyro.gyro.y;
+
+                                                       46
+   ­      ­    
+
+      gyroOffsetZ += gyro.gyro.z;
+      gyroOffsetX2 += gyro2.gyro.x;
+      gyroOffsetY2 += gyro2.gyro.y;
+      gyroOffsetZ2 += gyro2.gyro.z;
+
+      if(i%100 == 0) Serial.print(".");
+
+      delay(3); // Delay for stability
+   }
+
+   //Calculate average offset values
+   gyroOffsetX /= NUM_SAMPLES;
+   gyroOffsetY /= NUM_SAMPLES;
+   gyroOffsetZ /= NUM_SAMPLES;
+
+   gyroOffsetX2 /= NUM_SAMPLES;
+   gyroOffsetY2 /= NUM_SAMPLES;
+   gyroOffsetZ2 /= NUM_SAMPLES;
+
+   PGYROOFFSETX = gyroOffsetX;
+   PGYROOFFSETY = gyroOffsetY;
+   PGYROOFFSETZ = gyroOffsetZ;
+
+   PGYROOFFSETX2 = gyroOffsetX2;
+   PGYROOFFSETY2 = gyroOffsetY2;
+   PGYROOFFSETZ2 = gyroOffsetZ2;
+
+   // Print the calibration offsets
+   Serial.print("Gyro Offset X: ");
+Serial.println(gyroOffsetX);
+   Serial.print("Gyro Offset Y: ");
+Serial.println(gyroOffsetY);
+   Serial.print("Gyro Offset Z: ");
+Serial.println(gyroOffsetZ);
+
+                                                       47
+   ­      ­    
+
+   Serial.print("Gyro-2 Offset X: ");
+Serial.println(gyroOffsetX2);
+
+   Serial.print("Gyro-2 Offset Y: ");
+Serial.println(gyroOffsetY2);
+
+   Serial.print("Gyro-2 Offset Z: ");
+Serial.println(gyroOffsetZ2);
+}
+
+                                       
+
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+#include <SoftwareSerial.h>
+
+#define RX_PIN 10
+#define TX_PIN 11
+
+SoftwareSerial BluetoothSerial(RX_PIN, TX_PIN); // RX,
+TX for Bluetooth module
+
+#define SERVOMIN 100 // This is the 'minimum' pulse
+length count (out of 4096)
+#define SERVOMAX 600 // This is the 'maximum' pulse
+length count (out of 4096)
+
+Adafruit_PWMServoDriver pwm =
+Adafruit_PWMServoDriver();
+
+const int base_pin = 8;
+const int shoulder_pin = 15;
+const int elbow_pin = 4;
+const int wrist1_pin = 7;
+const int wrist2_pin = 0;
+
+                   48
+   ­      ­    
+
+const int gripper_pin = 12;
+
+//initial parking position of the motor
+const int base_servo_pos = 90;
+const int shoulder_servo_pos = 45;
+const int elbow_servo_pos = 45;
+const int wrist1_servo_pos = 180;
+const int wrist2_servo_pos = 90;
+const int gripper_servo_pos = 90;
+
+//Keep track of the current value of the motor
+positions
+int current_base_servo_pos = base_servo_pos;
+int current_shoulder_servo_pos = shoulder_servo_pos;
+int current_elbow_servo_pos = elbow_servo_pos;
+int current_wrist1_servo_pos = wrist1_servo_pos;
+int current_wrist2_servo_pos = wrist2_servo_pos;
+int current_gripper_servo_pos = gripper_servo_pos;
+
+//Degree of robot servo sensitivity - Intervals
+int base_servo_pos_increment = 5;
+int shoulder_servo_pos_increment = 5;
+int elbow_servo_pos_increment = 5;
+int wrist1_servo_pos_increment = 5;
+int wrist2_servo_pos_increment = 5;
+
+int gripper_servo_min = 80;
+int gripper_servo_max = 0;
+
+int wrist2_servo_min = 0;
+int wrist2_servo_max = 180;
+
+int wrist1_servo_min = 0;
+int wrist1_servo_max = 180;
+
+                                                       49
+   ­      ­    
+
+int elbow_servo_min = 0;
+int elbow_servo_max = 180;
+
+int shoulder_servo_min = 0;
+int shoulder_servo_max = 180;
+
+int base_servo_min = 0;
+int base_servo_max = 180;
+
+char state = 0; // Changes value from ASCII to char
+int response_time_fast = 5;
+int response_time_4 = 2;
+int loop_check = 0;
+int response_time = 100; //20
+int action_delay = 600;
+
+//Posiion of motor for example demos
+int Pos;
+
+void setup() {
+   Serial.begin(9600);
+   BluetoothSerial.begin(9600);
+   pwm.begin();
+   pwm.setPWMFreq(60); // Analog servos run at ~60 Hz
+
+updates
+   delay(3000);
+   // wakeUp();
+   start_pos();
+
+}
+
+                                                       50
+   ­      ­    
+
+void loop() {
+   if (BluetoothSerial.available() > 0) { // Checks
+
+whether data is coming from the serial port
+
+      state = BluetoothSerial.read(); // Reads the data
+from the serial port
+
+      Serial.print(state); // Prints out the value sent
+
+      //Move (Base Rotation) Stepper Motor Left
+      if (state == 't') {
+
+          baseRotateLeft();
+          delay(response_time_fast);
+      }
+
+      //Move (Base Rotation) Stepper Motor Right
+      if (state == 'T') {
+
+          baseRotateRight();
+          delay(response_time_fast);
+      }
+
+      //Move Shoulder Down
+      if (state == 'c') {
+
+          shoulderServoForward();
+          delay(response_time_fast);
+
+      }
+
+      //Move Shoulder Up
+      if (state == 'C') {
+
+          shoulderServoBackward();
+          delay(response_time_fast);
+      }
+
+                                                       51
+  ­      ­    
+
+     //Move Elbow Down
+     if (state == 'p') {
+
+         elbowServoForward();
+         delay(response_time_fast);
+
+     }
+
+     //Move Elbow Up
+     if (state == 'P') {
+
+         elbowServoBackward();
+         delay(response_time_fast);
+
+     }
+
+     //Move Wrist 1 UP
+     if (state == 'U') {
+
+         wristServoUp();
+         delay(response_time_fast);
+     }
+
+     //Move Wrist 1 Down
+     if (state == 'D') {
+
+         wristServoDown();
+         delay(response_time_fast);
+     }
+
+     //Move Wrist 2 Clockwise
+     if (state == 'R') {
+
+         wristServoCW();
+         delay(response_time_fast);
+     }
+
+                                                      52
+   ­      ­    
+
+      //Move Wrist 2 Counter-CW
+      if (state == 'L') {
+
+          wristServoCCW();
+          delay(response_time_fast);
+      }
+
+      //Open Claw Grip
+      if (state == 'F') {
+
+          gripperServoOpen();
+          delay(response_time_fast);
+      }
+
+      //Close Claw Grip
+      if (state == 'f') {
+
+          gripperServoClose();
+          delay(response_time_fast);
+      }
+
+   }
+
+}
+
+//Boiler plate function - These functions move the
+servo motors in a specific direction for a duration.
+
+void gripperServoClose() {
+   pwm.setPWM(gripper_pin, 0,
+
+angleToPulse(gripper_servo_min, "gripper"));
+   delay(response_time_fast); //Delay the time takee to
+
+turn the servo by the given increment
+   Serial.println(gripper_servo_min);
+
+}
+
+                                                       53
+   ­      ­    
+
+void gripperServoOpen() {
+   pwm.setPWM(gripper_pin, 0,
+
+angleToPulse(gripper_servo_max, "gripper"));
+   delay(response_time_fast);
+   Serial.println(gripper_servo_max);
+
+}
+
+void wristServoCW() {
+   current_wrist2_servo_pos = current_wrist2_servo_pos
+
+- wrist2_servo_pos_increment;
+   current_wrist2_servo_pos =
+
+constrain(current_wrist2_servo_pos, wrist2_servo_min,
+wrist2_servo_max);
+
+   pwm.setPWM(wrist2_pin, 0,
+angleToPulse(current_wrist2_servo_pos, "Wrist 2"));
+
+   delay(response_time_4);
+   Serial.print("Wrist 2 - Right: ");
+   Serial.println(current_wrist2_servo_pos);
+}
+
+void wristServoCCW() {
+   current_wrist2_servo_pos = current_wrist2_servo_pos
+
++ wrist2_servo_pos_increment;
+   current_wrist2_servo_pos =
+
+constrain(current_wrist2_servo_pos, wrist2_servo_min,
+wrist2_servo_max);
+
+   pwm.setPWM(wrist2_pin, 0,
+angleToPulse(current_wrist2_servo_pos, "Wrist 2"));
+
+   delay(response_time_4);
+   Serial.print("Wrist 2 - Left: ");
+   Serial.println(current_wrist2_servo_pos);
+}
+
+void wristServoDown() {
+
+                                                       54
+   ­      ­    
+
+   current_wrist1_servo_pos = current_wrist1_servo_pos
++ wrist1_servo_pos_increment;
+
+   current_wrist1_servo_pos =
+constrain(current_wrist1_servo_pos, wrist1_servo_min,
+wrist1_servo_max);
+
+   pwm.setPWM(wrist1_pin, 0,
+angleToPulse(current_wrist1_servo_pos, "Wrist 1"));
+
+   delay(response_time);
+   Serial.print("Wrist 1 - Down: ");
+   Serial.println(current_wrist1_servo_pos);
+}
+
+void wristServoUp() {
+   current_wrist1_servo_pos = current_wrist1_servo_pos
+
+- wrist1_servo_pos_increment;
+   current_wrist1_servo_pos =
+
+constrain(current_wrist1_servo_pos, wrist1_servo_min,
+wrist1_servo_max);
+
+   pwm.setPWM(wrist1_pin, 0,
+angleToPulse(current_wrist1_servo_pos, "Wrist 1"));
+
+   delay(response_time);
+   Serial.print("Wrist 1 - Up: ");
+   Serial.println(current_wrist1_servo_pos);
+}
+
+void elbowServoForward() {
+   current_elbow_servo_pos = current_elbow_servo_pos -
+
+elbow_servo_pos_increment;
+   current_elbow_servo_pos =
+
+constrain(current_elbow_servo_pos, elbow_servo_min,
+elbow_servo_max);
+
+   pwm.setPWM(elbow_pin, 0,
+angleToPulse(current_elbow_servo_pos, "Elbow"));
+
+   delay(response_time);
+
+                                                       55
+   ­      ­    
+
+   Serial.print("Elbow - Down: ");
+   Serial.println(current_elbow_servo_pos);
+}
+
+void elbowServoBackward() {
+   current_elbow_servo_pos = current_elbow_servo_pos +
+
+elbow_servo_pos_increment;
+   current_elbow_servo_pos =
+
+constrain(current_elbow_servo_pos, elbow_servo_min,
+elbow_servo_max);
+
+   pwm.setPWM(elbow_pin, 0,
+angleToPulse(current_elbow_servo_pos, "Elbow"));
+
+   delay(response_time);
+   Serial.print("Elbow - Up: ");
+   Serial.println(current_elbow_servo_pos);
+}
+
+void shoulderServoForward() {
+   current_shoulder_servo_pos =
+
+current_shoulder_servo_pos -
+shoulder_servo_pos_increment;
+
+   current_shoulder_servo_pos =
+constrain(current_shoulder_servo_pos,
+shoulder_servo_min, shoulder_servo_max);
+
+   pwm.setPWM(shoulder_pin, 0,
+angleToPulse(current_shoulder_servo_pos, "Shoulder"));
+
+   delay(response_time);
+   Serial.print("Shoulder - Stretch: ");
+   Serial.println(current_shoulder_servo_pos);
+}
+
+void shoulderServoBackward() {
+
+                                                       56
+   ­      ­    
+
+   current_shoulder_servo_pos =
+current_shoulder_servo_pos +
+shoulder_servo_pos_increment;
+
+   current_shoulder_servo_pos =
+constrain(current_shoulder_servo_pos,
+shoulder_servo_min, shoulder_servo_max);
+
+   pwm.setPWM(shoulder_pin, 0,
+angleToPulse(current_shoulder_servo_pos, "Shoulder"));
+
+   delay(response_time);
+   Serial.print("Shoulder - Bend: ");
+   Serial.println(current_shoulder_servo_pos);
+}
+
+void baseRotateLeft() {
+   current_base_servo_pos = current_base_servo_pos -
+
+base_servo_pos_increment;
+   current_base_servo_pos =
+
+constrain(current_base_servo_pos, base_servo_min,
+base_servo_max);
+
+   pwm.setPWM(base_pin, 0,
+angleToPulse(current_base_servo_pos, "Base"));
+
+   delay(response_time);
+   Serial.print("Base - Left: ");
+   Serial.println(current_base_servo_pos);
+}
+
+void baseRotateRight() {
+   current_base_servo_pos = current_base_servo_pos +
+
+base_servo_pos_increment;
+   current_base_servo_pos =
+
+constrain(current_base_servo_pos, base_servo_min,
+base_servo_max);
+
+   pwm.setPWM(base_pin, 0,
+angleToPulse(current_base_servo_pos, "Base"));
+
+                                                       57
+   ­      ­    
+
+   delay(response_time);
+   Serial.print("Base - Right: ");
+   Serial.println(current_base_servo_pos);
+}
+
+void wakeUp() {
+
+   //Pre-Program Function - Wake Up Robot on Start
+
+   // pwm.setPWM(base_pin, 0, 0);
+   pwm.setPWM(shoulder_pin, 0, angleToPulse(0,
+"shoulder"));
+   pwm.setPWM(elbow_pin, 0, angleToPulse(0, "Elbow"));
+   // pwm.setPWM(wrist1_pin, 0, 47);
+   // pwm.setPWM(wrist2_pin, 0, 63);
+   // pwm.setPWM(gripper_pin, 0, 63);
+
+   if (loop_check == 0) {
+      // //base move full
+      for (Pos = 0; Pos < 180; Pos++)
+      {
+
+          pwm.setPWM(base_pin, 0, angleToPulse(Pos,
+"base"));
+
+          delay(response_time);
+      }
+
+      //base move center cw
+      for (Pos = 180; Pos > 90; Pos--)
+      {
+
+          pwm.setPWM(base_pin, 0, angleToPulse(Pos,
+"base"));
+
+          delay(response_time);
+
+                                                       58
+   ­      ­    
+
+      }
+
+      // //base move center ccw
+      // for (Pos = 0; Pos <= 90; Pos++)
+      // {
+      // pwm.setPWM(base_pin, 0, angleToPulse(Pos,
+"base"));
+      // delay(response_time);
+      // }
+
+      //Shoulder Raise
+      for (Pos = 0; Pos < 45; Pos++)
+      {
+
+          pwm.setPWM(shoulder_pin, 0, angleToPulse(Pos,
+"Shoulder"));
+
+          delay(response_time);
+      }
+
+      // //Move Elbow Backwards
+      for (Pos = 0; Pos < 45; Pos++)
+      {
+
+          pwm.setPWM(elbow_pin, 0, angleToPulse(Pos,
+"Elbow"));
+
+          delay(response_time);
+      }
+
+      //Move Wrist 1 Forward
+      for (Pos = 180; Pos > 150; Pos--)
+      {
+
+          pwm.setPWM(wrist1_pin, 0, angleToPulse(Pos,
+"Wrist 1"));
+
+                                                       59
+   ­      ­    
+
+          delay(response_time_fast);
+      }
+
+      //Move Wrist 2 Backwards
+      for (Pos = 90; Pos > 0; Pos--)
+      {
+
+          if(Pos == 45){
+             pwm.setPWM(gripper_pin, 0, angleToPulse(0,
+
+"gripper"));
+             delay(response_time_fast+95);
+             pwm.setPWM(gripper_pin, 0, angleToPulse(80,
+
+"gripper"));
+             delay(response_time_fast+95);
+
+          }
+          pwm.setPWM(wrist2_pin, 0, angleToPulse(Pos,
+"Wrist 2"));
+          delay(response_time_fast);
+      }
+
+      //Move Wrist 2 Backwards
+      for (Pos = 0; Pos < 180; Pos++)
+      {
+
+          if(Pos == 45){
+             pwm.setPWM(gripper_pin, 0, angleToPulse(0,
+
+"gripper"));
+             delay(response_time_fast+55);
+             pwm.setPWM(gripper_pin, 0, angleToPulse(80,
+
+"gripper"));
+             delay(response_time_fast+55);
+
+          }
+          pwm.setPWM(wrist2_pin, 0, angleToPulse(Pos,
+"Wrist 2"));
+          delay(response_time_fast);
+      }
+
+                                                       60
+   ­      ­    
+
+      //Move Wrist 2 Center
+      for (Pos = 180; Pos > 90; Pos--)
+      {
+
+          pwm.setPWM(wrist2_pin, 0, angleToPulse(Pos,
+"Wrist 2"));
+
+          delay(response_time_fast);
+      }
+
+      //Move Wrist 1 Forward
+      for (Pos = 150; Pos < 180; Pos++)
+      {
+
+          pwm.setPWM(wrist1_pin, 0, angleToPulse(Pos,
+"Wrist 1"));
+
+          delay(response_time_fast);
+      }
+
+      //Move Elbow Forward
+      for (Pos = 45; Pos > 0; Pos--)
+      {
+
+          pwm.setPWM(elbow_pin, 0, angleToPulse(Pos,
+"Elbow"));
+
+          delay(response_time_fast);
+      }
+
+      loop_check = 0;
+
+   }
+}
+
+void start_pos(){
+   pwm.setPWM(shoulder_pin, 0, angleToPulse(0,
+
+"shoulder"));
+   pwm.setPWM(elbow_pin, 0, angleToPulse(0, "Elbow"));
+
+                                                       61
+   ­      ­    
+
+   pwm.setPWM(wrist1_pin, 0, angleToPulse(180, "Wrist
+1"));
+
+   if (loop_check == 0) {
+      // //base move full
+      for (Pos = 0; Pos <= 90; Pos++)
+      {
+
+          pwm.setPWM(base_pin, 0, angleToPulse(Pos,
+"base"));
+
+          delay(response_time);
+      }
+
+      //Shoulder Raise
+      for (Pos = 0; Pos <= 45; Pos++)
+      {
+
+          pwm.setPWM(shoulder_pin, 0, angleToPulse(Pos,
+"Shoulder"));
+
+          delay(response_time);
+      }
+
+      //Move Wrist 2 Backwards
+      for (Pos = 90; Pos >= 0; Pos--)
+      {
+
+          if(Pos == 45){
+             pwm.setPWM(gripper_pin, 0, angleToPulse(0,
+
+"gripper"));
+             delay(response_time_fast+55);
+             pwm.setPWM(gripper_pin, 0, angleToPulse(90,
+
+"gripper"));
+             delay(response_time_fast+55);
+
+          }
+
+                                                       62
+   ­      ­    
+
+          pwm.setPWM(wrist2_pin, 0, angleToPulse(Pos,
+"Wrist 2"));
+
+          delay(response_time_fast);
+      }
+
+      //Move Wrist 2 Backwards
+      for (Pos = 0; Pos <= 180; Pos++)
+      {
+
+          if(Pos == 135){
+             pwm.setPWM(gripper_pin, 0, angleToPulse(0,
+
+"gripper"));
+             delay(response_time_fast+55);
+             pwm.setPWM(gripper_pin, 0, angleToPulse(90,
+
+"gripper"));
+             delay(response_time_fast+55);
+
+          }
+          pwm.setPWM(wrist2_pin, 0, angleToPulse(Pos,
+"Wrist 2"));
+          delay(response_time_fast);
+      }
+
+      //Move Wrist 2 Center
+      for (Pos = 180; Pos >= 90; Pos--)
+      {
+
+          pwm.setPWM(wrist2_pin, 0, angleToPulse(Pos,
+"Wrist 2"));
+
+          delay(response_time_fast);
+      }
+
+      loop_check = 0;
+   }
+
+   pwm.setPWM(gripper_pin, 0, angleToPulse(0,
+"gripper"));
+
+                                                       63
+   ­      ­    
+
+}
+
+int angleToPulse(int ang, String name) {
+     int pulse = map(ang, 0, 180, SERVOMIN, SERVOMAX);
+     Serial.print("Angle: ");
+     Serial.print(ang);
+     Serial.print(" pulse: ");
+     Serial.print(pulse);
+      Serial.print(" part: ");
+     Serial.println(name);
+     return pulse;
+
+}
+             }
+
+             loop_check = 0;
+      }
+}
+
+int angleToPulse(int ang, String name) {
+      int pulse = map(ang, 0, 180, SERVOMIN, SERVOMAX);
+      Serial.print("Angle: ");
+      Serial.print(ang);
+      Serial.print(" pulse: ");
+      Serial.print(pulse);
+      Serial.print(" part: ");
+      Serial.println(name);
+      return pulse;
+
+}
+
+                                                       64
+

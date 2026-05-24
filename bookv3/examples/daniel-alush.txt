@@ -1,0 +1,1531 @@
+" -   
+
+                        , 
+
+                                                                                   : 
+                                                                                215176850 : 
+                                                                         '  : 
+
+                                                                                       644450 : 
+                                                                                          : 
+                                                                                     714916 : 
+                                                ,graphic equalizer-  : 
+        : 
+
+3                     
+
+3        
+
+3        
+
+4         
+
+4         
+
+4            
+
+4         
+
+5       -  
+
+5           
+
+5         
+
+6          
+
+7        
+
+7       DSP-  
+
+7         -
+
+7        -
+
+7          
+
+8       WAV    -
+
+8         -
+
+8         
+
+8       )  , (  -
+
+8       FIR, IIR  -
+
+9       Biquad   -
+
+9          -
+
+10       )equalizer(  
+
+10         -
+
+10       -  -
+
+11       
+
+11        
+
+11        
+
+12         
+
+13         
+
+13      SPI  
+
+14      I2S  
+
+14      I2C  
+
+14      ADC-   
+
+15       
+
+15   high-level block diagram-   
+
+16         
+
+16      ESP-IDF-   -
+
+     1
+16         -
+
+18      
+
+18        -
+
+19       -
+
+19       -
+
+19        -  
+
+19        -
+
+21     DSP  -    -
+
+22        -
+
+23         
+
+23          -
+
+24       -
+
+26        
+
+26     DSP     -
+
+26          -
+
+27        
+
+27        
+
+27       
+
+27       -
+
+28        -
+
+28         -
+
+28         
+
+29                  
+
+29       
+
+29         
+
+29       -
+
+29      /   -
+
+29      
+
+    2
+                                                  
+
+                                                                                                       
+             ,    
+    ,wav     )equalizer(     . 
+              ESP32-S3 -
+   ,microSD   wav   /    .
+               ,     
+      ,)DSP(         .
+
+           .     -       
+
+                                                                                                      
+
+,              
+        , . wav     5   )equalizer( 
+
+    .   ESP32-S3 -    ,  
+           ,micro SD          
+
+       ,      ,    -  
+                                                           .       
+
+   micro SD    :    -    
+      ,I2S       max98357a class D  ,   SPI
+
+SSD1306  ,  ADC        B10k  
+         .   I2C   OLED
+
+                               .    , ,    
+
+         ,5.0.4  Espressif IoT Development Framework-ESP-IDF  C-  
+       -      .FreeRTOS       
+       .     ,  wav  
+     , esp-dsp    ,Biquad     IIR 
+ ,      ,  .     
+        ,       ,   
+           .     , 
+       ,          
+
+                                                                                        .    
+
+  .     ,     , 
+        DSP   ESP-IDF   
+
+       ,Arduino IDE         
+     . 44.1-          
+
+         .          
+                , -     
+
+      .ESP32S3-            
+
+                                                               3
+            , wav     
+                                                              .       ,
+
+                                                                                             
+             
+
+  .           ,    
+        -         ,   
+
+      .  ,         
+         .          
+
+                                                   .  -      
+
+                                                                                           
+                                                                                     :     
+  ESP32S3         5      -
+                                                                    .      ,
+             ,microSD   wav        -
+
+                                                                                                 . 
+  (      ,       -
+
+             ,)dB- ,    
+                                                                      .     
+
+                                                                    
+                
+
+  .      ,  DSP  ,    
+       )SPI, I2S, I2C, ADC(          
+
+(       ,   .    
+            -         ,) ,
+                                                                                                                     .
+
+                                                                                             
+                                                                               :     
+                      .44.1    , 16    , pcm wav   -
+peaking/notch  biquad IIR   ,  5      -
+         .       shelving-
+                                                            .)3   - 9 -> 9( 
+                                  . max98357A  I2S       -
+               ,     -
+
+                                                                                                                  .
+                                                                                                                    
+
+                                                               4
+                                                                                                :   
+ ,wav     ,     wav    -
+
+            .   44.1-     16 
+                                                                                                           .
+
+   -       , 3     -
+                                                      .microSD     
+                                                                            -  
+
+    ,     ,       
+                                                     :  ,     
+
+            (    ,ESP-IDF    C   -
+        ,)mutual exclusions- FreeRTOS  
+
+                              .         ,
+      ,)  , ,-( -  -
+
+           .)ADC(   )SPI, I2S, I2C(
+                                                                                   .  
+
+   ,)IIR, Biquad(   ,   -   -
+                                                 .    )frequency response(
+
+            -  -
+              , 
+
+                                                                                                        .
+                                                                               
+   .C     ESP32-S3   )firmware-(
+  ,5.4.1  Espressif IoT development framework - ESP-IDF   
+               .ESP32        FreeRTOS  , 
+
+                                                                                            
+
+                                                              5
+                                 
+:       
+
+       6
+                                             
+
+    .  )equalizer(          
+    ,    ,       
+
+                                                                .       
+
+                                                                      )DSP(   
+
+      (   ) (       DSP 
+  ,         . )
+
+           .    
+                                                                                    .  : 
+
+     -
+
+         ,      
+
+Fourier-        )(     
+
+ ) -  ,(           .Transform
+
+             
+
+. = 44100[]   -)(   
+
+2         )Nyquist Shannon sampling theorem( "
+
+      :)Aliasing(   ,) (     
+
+                                                                                                    
+
+ ,     " "      )  2 ·  (
+                  
+
+     .   aliasing    .    
+
+.40       20-  
+
+                                                                                                           -
+
+         ,       
+          .        , 
+          ' .        
+
+               ,       
+       16  -        ' .   
+
+                                                                         .  216 = 65536   ,
+        .''           
+     16  .       -     
+     8   ,         
+
+                                               .       ,  
+
+                                                                                        
+
+            ,  
+        ,wav      , 
+
+                                                                                            ;    
+
+7
+                                                                                         WAV    -
+     )metadata(       
+
+             ;wav        
+   .   )chunks(   )RIFF(    ,
+ ' ,)PCM(  ,    )'WAVE'(    RIFF   :
+.     chunks-      .   ,  ,
+
+            PCM-pulse code modulation  ,wav-    
+     , PCM- .     ,   
+
+        ,     .       
+                                .  PCM     wave-  .PCM    
+
+                                                                                                         -
+    ,       ,       )( 
+
+                        (      
+       ,  ,   )(   -)
+
+                                                                                                        .  
+     ,            
+
+         ,         
+             I2S               . 
+                                                                                                            . /
+
+                                                                                        
+
+             ,   
+                                                                  .       
+
+                                                    )  , (  -
+
+  ,       /   
+         )  ([]    .)(   
+                                        . '-     n  ,) ([]
+
+     ,)frequency response(          
+      /   |()| :          
+
+()-  )phase response(   .)(     ,  
+   ,    -       ,   
+
+                                                             .         
+
+                                                                              FIR, IIR  -
+
+    ,finite impulse response   ,       
+          -           
+
+    )[], [ - 1]...(     []    infinite impulse response
+     -   ,     -)[], [ - 1]...(  
+                                                                            .      
+
+                                                               8
+       ,  ...    ,    IIR   
+
+                                                  12
+
+     ,  ...   ,  -        
+
+        12
+
+     .  -          
+                                      .    ,       
+
+/             IIR- 
+              -FIR          
+
+           ,    , '    .
+                                                                                                              .biquad 
+
+                          Biquad   -
+
+         ,  IIR     
+
+ .     '       .  
+
+               :         
+
+Difference(   ,          -
+
+                          :)equation in direct form I
+
+[] =  [] +  [ - 1] +  [ - 2] -  [ - 1] -  [ - 2]
+0  1     2           1    2
+
+.               
+
+Transfer function,(   ,        -
+
+                  :   z  )Z-domain
+
+      () = ()/()
+
+      () =  +  -1 +  -2
+      0     1     2
+
+      () = 1 +  -1 +  -2
+            1     2
+
+  ,              
+
+     ,         .   
+
+   biquad              
+
+                                                  . 
+
+                                                                         -
+
+               
+    Biquad            , 
+                                                                                                                   . 
+           )(  )(  :)peaking/notch(/  -
+
+    )Q(   )Band width(  .    
+        .       ,      
+                                             .        
+                                                         :)shelf(  -
+                   :   ,     /  ,-  
+
+  .     ,     /-   .1
+.     ,     /-   .2
+
+               9
+               ,         ) ,  ,  ,  ,  ( 
+
+                                                                                                                               01212
+
+       .   )    , ,    (
+                                                          .  ,    
+
+                                                                  )equalizer(  
+                 ,        
+               ,      -
+          , - ; 
+  .)equalizer(  ,      , . 
+        )bass, treble(/       
+
+                                                                                                                         .
+
+                                                                          -
+
+                 ,
+        ,          .  
+
+                           .      ,    ,)(  
+    .       ,) , (       
+     .''  -            
+                 
+
+                                   .       ,  -
+
+                                                                      -  -
+
+         ,            
+  ,400      ' .        
+    ,        . 16000 ,6300 ,2500 ,1000
+
+                                  .     ,      -
+    ,   -           , 
+
+                           
+              ,     , .
+
+                                                                                        .   
+
+                                                              10
+                                               
+
+                                                                                      
+
+                                                                                     : 
+                         .   , -      -
+
+                             .           -
+                                              .     micro SD    -
+                                                        SPI, I2C, ADC :     -
+                                                                        ESP32-S3    : 
+
+                                .     buffer-      -
+                                                                                   .     -
+
+                                         .I2S           -
+                                                                                                  : 
+
+                                                                   .       -
+                                                                .        -
+
+                                                                                              
+
+                                                                     :     
+                                                                        ESP32-S3 n16r8 wroom 1 :- 
+
+  firmware-   .    )CPU(    : -
+           ,   ,DSP   , 
+                                                                                                 . 
+                                                                                                         : -
+                                                                          32bit xtensa lx7 
+                                                                                  240    
+                                                                                                   16MB  
+                                                                                   8MB  PSRAM  
+
+                                                                                       SD    : 
+                                     SPI            : -
+
+                                                                                                           : -
+                                  .    FAT32     
+
+                                                                                          MAX98357A :  
+                                        .         : -
+
+                                                                                                           : -
+                            .   ,)93%- (   class D  
+
+                                                            I2S       
+                                . 5   4    3.2 '-   
+
+                                                    . 15- 3  ,GAIN     
+                                                        . 5.5   2.5     
+
+                                                              11
+                                                                                                            : 
+         .    ,         : -
+
+                                                                                                       : -
+                                                                                     .LHS-D6236T LG 
+                                                                           . 40  , 4  
+                                                                 .      
+                                                             ./     
+
+                                                                               B10K  : 
+     ,   :         : -
+
+                                           .     ,   
+                                                                                                       : -
+
+                                                        .       
+                                     .- 10        
+                     .      GND- VCC    
+
+                                                                                         OLED SSD1306  :
+                          .          : -
+
+                                                                                                       : -
+   ,        OLED 
+
+                                                                                                   . 
+                                                     ''0.96     128x64  
+
+                                                                                           I2C  
+
+                                                                                   
+        .  6       ,-    
+
+                        ESP32-S3  SD card module
+
+ESP32-S3       47        36        35    37             3.3V  GND
+                                                              GND
+SD mod    CS            MOSI       MISO  CLK            3.3V
+
+                         ESP32-S3  MAX98357a
+
+ ESP32-S3 14       13         12   N.C.  N.C.           3.3V  GND
+MAX98357a LRC                                           3.3V  GND
+                   BCLK       DIN  GAIN  SD
+
+                         ESP32-S3  SSD1306
+
+ESP32-S3           41              42             3.3V        GND
+SSD1306                                                       GND
+                   SCK             SDA            VDD
+
+                                   12
+                SP32-S3  Potentiometers
+
+    ESP32-S3    4            3.3V         GND
+                                         left-pin
+  Volume B10K   mid-pin      right-pin    GND
+ potentiometer                           left-pin
+                5            3.3V         GND
+       ESP32                             left-pin
+                mid-pin      right-pin
+    Gain B10K
+ potentiometer  6            3.3V
+
+       ESP32    mid-pin      right-pin
+
+Frequency B10K
+ potentiometer
+
+                                                                                 
+
+            ,           
+                                                        .   ,    
+
+                                                                                  SPI  
+
+ ,    )serial peripheral interface-  ( SPI :  
+               :     .)master and slave(   , 
+                                                                                        SCLK-  .1
+                                                                      )ESP32(   
+                                                                            .   
+                                                                    MOSI-  ,  .2
+                                                                               .   
+                                                                    MISO-  ,  .3
+                                                                                .   
+                                                                                         CS-  .4
+
+      .           ,   
+        .   CS-        :  
+  .SCLK     ,MOSI   )(SD-    /
+
+                                                                                          .   SD
+    ,MISO         SD-  ,)(  
+
+      . CS        .MOSI    , 
+     )FAT32(   ,    
+
+                                                                                                         . wav
+   ,         ,- ,  , 
+
+                                         .  -MISO-    -MOSI :  
+
+                         13
+                                                                                  I2S  
+
+                  I2S-inter IC Sound :  
+                                                        :      .
+                                                                                 BCLK bit clock- .1
+
+    .    )pulse(  .     
+                                         *    *   
+                                          WS, word select / LRC, left right clock-  .2
+
+.      ,  )  (    
+                                                                      SD, serial data-  .3
+
+                 ,    
+                                                                                                    .
+
+                                                                    :  
+                                                                          . 
+
+                                                       *    *  
+                                                                  
+                                                              16     
+                                                             ,    ,  DIN- 
+                                                                     .      
+
+                                                                                  I2C  
+
+       ,   I2C-inter integrated circuit :  
+                                                                                                        . 
+
+                                                                 SDA, serial data-  .1
+                                                                            .    
+
+                                                                      SCL, serial clock-  .2
+                                          .         
+
+                                                            :  
+                                                     , SCL-   SDA   : 
+
+                                                                 7    
+                                                       SDA   ,/
+
+                                                            ,    
+                                                       8    / .
+
+                                                           SDA    .  
+                                                                            .  , SCL-
+
+                                                               ADC-   
+
+   ,          : 
+                                                   .        
+
+                                                              14
+                                              
+
+                                     )high-level block diagram(   
+  ,          
+
+                                         :     ,     
+
+                                                                 :       
+    .       ,    :  .1
+ ,)SPI, I2C, I2S, ADC- (      
+    ,SD-      ,    
+
+                                                           . )mutex(   
+              : SD    .2
+            ,   ,wav
+
+                                                                                     .   
+            SD- /    .2 .1
+
+                         2.0      ,    
+          ,    .3
+
+                                                                             .      ,
+          :    .3 .1
+
+         .     ,
+                                                             15
+        .       
+                  
+                                                                                       . 
+
+    ,       ,     .3.2
+        -     
+
+                                                                                   .  
+            ,DSP -       ,    .4
+
+                                                       .    )buffer( -
+        ,     :      .4.1
+  .           
+
+                                                                                
+
+                   
+            .  
+
+                                                                                                                     . 
+
+                                                              )ESP-IDF(   -
+
+Arduino IDE   Espressif IoT Development Framework,ESP-IDF-  ,  
+                    .  
+
+       ,     ESP-IDF ,    
+    ESP-IDF-   .       
+
+                                                                                     :    
+   (         ,FreeRTOS-   -
+
+          .    , ,)     
+                            .         - 
+
+            ,low level-    ESP-IDF :    -
+  ,  ,   (     
+I2S       .   Arduino   )  
+
+                                                                                .   
+    ,menuconfig (       :  -
+
+      DSP     ,     )ESP_LOGI 
+                                                                                                       . 
+
+      , Espressif    :   -
+     .biquad      esp-dsp      ,
+              "    ,    , 
+                                                                              .    
+
+                                                                          -
+
+        -            
+   >-    :        .    
+     -         ,  >-  
+
+                        :        , 512  )buffer( , 44.1
+
+                                                              16
+  I2S-         .44100-1 * 32  0. 00072 
+                                    :      .   
+
+                biquad    :  -
+     ,          .
+    .           
+
+                   .     ,      
+   (   ,    :  -
+
+          .        )
+              ,     
+                    
+
+                                                                                        .  
+               :    -
+    (      )     (
+    ,         .) 
+ ,            -mutex- 
+
+                                                               .      
+
+                                                            17
+                                                
+
+                                                                                       
+      ,     ,       
+
+                               ESP32-S3       
+
+                                                                             -
+
+             ,app_main     
+  mount_sdcard  SD-      :    .ESP-IDF
+     ADC-  ,i2s_init    I2S    ,
+ ,find_wav_files  SD-   wav-      .init_adc
+
+             :         
+               control_update_task   , freertos    
+                                             .         xTaskCreate
+
+          wav-      :    app_main ,  
+   .      ,audio_play_wav      ,
+
+                            .            
+
+void app_main(void)
+{
+
+       mount_sdcard();
+       i2s_init();
+       init_adc();
+
+       static char wav_files[MAX_WAV_FILES][MAX_FILENAME_LEN];
+       int wav_count = find_wav_files("/sdcard", wav_files, MAX_WAV_FILES);
+       ESP_LOGI(TAG, "Found %zu WAV files", wav_count);
+       for (int i = 0; i < wav_count; i++){
+
+              char filepath[128];
+              snprintf(filepath, sizeof(filepath), "/sdcard/%s", wav_files[i]);
+              ESP_LOGI(TAG, "wav %d: %s", i, filepath);
+       }
+
+       s_band_gain_mutex = xSemaphoreCreateMutex();
+       xTaskCreate(parameters_update_task, "control_update_task", 4096, NULL, 5, NULL);
+
+       for (int i = 0; i < wav_count; i++) {
+              char filepath[128];
+              snprintf(filepath, sizeof(filepath), "/sdcard/%s", wav_files[i]);
+
+              ESP_LOGI(TAG, "Now playing: %s", filepath);
+              audio_play_wav(filepath);
+       }
+}
+
+                                                              18
+                                                                                 -
+
+                 :FreeRTOS           
+      .  app_main        :-  -
+
+          .audio_play_wav   wav       
+    DSP-    ,     , 
+    .I2S       ,   
+
+                                                               .       
+  ,        :     -
+(0  '     1  '     
+
+               .)menuconfig- Espressif    
+        ,      ,  ADC-
+   .      ,     
+       ,           
+
+                                                                                     .    
+
+                                                                                  -
+
+                          :          
+   .SD-  wav    16   PCM   :   -
+
+                          audio_buffer (      
+      DSP           .)audio_play_wav
+    ,     5 -  , 
+
+                 I2S          . 
+                                                                                .   max98357a
+
+           :     -
+                 :        .adc_oneshot_read
+
+     . -s_volume , -gain_idx ,  -freq_idx
+                    
+                       
+
+        .)     (
+      I2C  /   ,     
+                                                                                                           .
+
+                                                       -  
+
+              ,      
+                                                  .       ,
+
+                                                                         -
+
+  ,      ESP32-S3 -  , 
+                ,     
+
+  -            .  
+      ,      .       
+
+                                                              19
+  ) (  ,) (    ,)( :  ,  
+  
+
+    :python-      ,)(
+
+    :)shelf(    
+
+                 :)peaking(    
+    20
+  scipy       ,       
+3     ,)'  (    )frequency response(  
+  ,' (      ,        
+
+             ;      
+  ,wav       .)"        ,
+
+      .            
+                                                                                                    .  
+
+'                 '    
+
+                                                     )DSP  (    -
+
+             ,     
+           esp_dsp      , .   ,DSP-
+
+         ,     ,  
+    (int16_t        .float32  -
+
+         .DSP-          ,)16  
+         " /   ,      
+
+                                                                                     :  .  -
+                           .          : -
+             , 16     512     : -
+
+                                                                                                           .
+             ,    : -
+
+                                 .         
+
+void audio_filter_process(int16_t *samples, size_t sample_count)
+{
+
+       static float float_buffer[512];
+       for (size_t i = 0; i < sample_count; i++) {
+
+              float_buffer[i] = (float)samples[i] / 32768.0f;
+
+         21
+   }
+   float coeffs[5];
+   int band_gains_local[5];
+
+   if (xSemaphoreTake(s_band_gain_mutex, portMAX_DELAY) == pdTRUE) {
+
+        memcpy(band_gains_local, s_band_gains_db, sizeof(band_gains_local));
+
+        xSemaphoreGive(s_band_gain_mutex);
+
+   }
+
+   for (int i = 0; i < 5; i++){
+
+        memcpy(coeffs, biquad_coeffs[i][band_gains_local[i]], sizeof(coeffs));
+
+        dsps_biquad_f32(float_buffer, float_buffer, sample_count, coeffs,
+
+                 filter_state[i]);
+
+   }
+
+   for (size_t i = 0; i < sample_count; i++) {
+
+        float scaled = float_buffer[i] * s_volume * 32767.0f;
+
+        if (scaled > 32767.0f) scaled = 32767.0f;
+
+        else if (scaled < -32768.0f) scaled = -32768.0f;
+
+        samples[i] = (int16_t)scaled;
+
+   }
+
+}
+
+            int16_t      
+
+                                                                                .
+
+                                                                  -
+
+        ,   )fetch(  ,  - 
+
+                 path  audio_play_wav
+
+                                                   :      
+
+        .    wav  int16_t  512      .1
+
+      ,  ,         .2
+
+                                 .)   (  
+
+        .     max98357a   I2S     .3
+
+                             .        ,   
+
+      .      ,   wav     : -
+
+                                       .  wav     : -
+
+                                                                      . : -
+
+                                                          :audio_play_wav  
+
+void audio_play_wav(const char *filepath)
+
+{
+
+   FILE *fp = fopen(filepath, "r");
+
+   if (!fp) {
+
+        ESP_LOGE("WAV_PLAYER", "Failed to open file");
+
+        return;
+
+   }
+
+   wav_header_t header;
+
+   fread(&header, sizeof(header), 1, fp);
+
+                                            22
+   int16_t audio_buffer[512];
+
+   size_t bytes_read, bytes_written;
+
+   while ((bytes_read = fread(audio_buffer, 1, sizeof(audio_buffer), fp)) > 0) {
+
+        audio_filter_process(audio_buffer, bytes_read / 2);
+
+        i2s_channel_write(tx_channel, audio_buffer, bytes_read, &bytes_written, 
+
+                           portMAX_DELAY);
+
+   }
+
+   fclose(fp);
+
+}
+
+                                                                              
+
+     -       ,    
+    .            
+     ,          ,   
+
+             .          
+                                         .        :
+
+                                                     -
+
+                           
+
+               ,parameters_update_task
+
+        .   ,   , -
+
+                ,FLOAT   4095-  0- 
+
+        ."         MAPADC
+
+                                                :      
+
+             -    .1
+
+      -            ,
+
+               .       
+
+   ,                 ,
+
+                               .       
+
+           -      .2
+
+     ,    ,       
+
+   ,   .           
+
+                   
+
+        -  "           .
+
+            : -
+
+                                                .   
+
+                                                             . : -
+
+                                                             . : -
+
+                                                :parameters_update_task  
+
+void parameters_update_task(void* arg)
+
+{
+
+   int prev_gain_idx = 3;
+
+                                            23
+  int prev_freq_idx = 0;
+  int64_t gain_ts = esp_timer_get_time();
+  int64_t freq_ts = gain_ts;
+
+  while (1){
+
+  int adc_raw_volume, adc_raw_gain, adc_raw_freq;
+
+  if (adc_oneshot_read(s_adc_handle, POT_ADC_CHANNEL_VOLUME, &adc_raw_volume) == 
+
+  ESP_OK)
+
+  s_volume = (float)adc_raw_volume / 4095.0f;
+
+  // Read gain
+
+  if (adc_oneshot_read(s_adc_handle, POT_ADC_CHANNEL_GAIN, &adc_raw_gain) == 
+
+  ESP_OK)
+
+  gain_idx = map_adc_to_level(adc_raw_gain, 7);
+
+  // Read frequency
+
+  if (adc_oneshot_read(s_adc_handle, POT_ADC_CHANNEL_FREQ, &adc_raw_freq) == 
+
+  ESP_OK)
+
+  freq_idx = map_adc_to_level(adc_raw_freq, 5);
+
+  if (gain_idx != prev_gain_idx){
+         gain_ts = esp_timer_get_time();
+         prev_gain_idx = gain_idx;
+
+  }
+  if (freq_idx != prev_freq_idx){
+
+         freq_ts = esp_timer_get_time();
+         prev_freq_idx = freq_idx;
+  }
+
+  if (freq_ts < gain_ts){
+         if (xSemaphoreTake(s_band_gain_mutex, portMAX_DELAY) == pdTRUE){
+                s_band_gains_db[freq_idx] = gain_idx;
+                xSemaphoreGive(s_band_gain_mutex);
+         }
+
+  }
+
+              vTaskDelay(pdMS_TO_TICKS(250));
+              print_ascii_eq();
+       }
+
+}
+
+                                                                                      -
+
+      -          
+           .      
+
+ ,   .             , 
+                  .       , 
+
+)1-7(  )0-6(     .s_band_gains_db-    -
+
+                                               24
+          ,     .        
+        .   //  dB    -
+                  ,  
+
+                                                                                                              .I2C 
+                                                          .      : -
+                                              .       , : -
+
+                                                                        .    , : -
+
+void display_eq_status(void)
+{
+
+       char line_buffer[40];
+       int eq_levels[NUM_BANDS];
+       int band_gains_local[NUM_BANDS];
+
+if (xSemaphoreTake(s_band_gain_mutex, pdMS_TO_TICKS(50)) == pdTRUE) {
+       memcpy(band_gains_local, s_band_gains_db, sizeof(band_gains_local));
+       xSemaphoreGive(s_band_gain_mutex);
+
+} else {
+       ssd1306_display_text(&s_display_dev, 0, "EQ Mutex Busy!", 14, false);
+       ssd1306_show_buffer(&s_display_dev);
+       return;
+
+}
+
+for (int i = 0; i < NUM_BANDS; i++)
+       eq_levels[i] = band_gains_local[i] + 1;
+
+for (int level = MAX_HEIGHT; level > 0; level--) {
+       char* p = line_buffer;
+       int remaining_len = sizeof(line_buffer);
+       int written;
+
+if (level == MAX_HEIGHT)
+
+      written = snprintf(p, remaining_len, " 9dB - ");
+
+else if (level == (MAX_HEIGHT / 2) + 1)
+
+      written = snprintf(p, remaining_len, " 0dB-=-");
+
+else if (level == 1)
+
+      written = snprintf(p, remaining_len, "-9dB - ");
+
+else
+
+      written = snprintf(p, remaining_len, "        - ");
+
+p += written;
+
+remaining_len -= written;
+
+for (int band = 0; band < NUM_BANDS; band++) {
+       if (eq_levels[band] == level)
+              written = snprintf(p, remaining_len, "=");
+       else
+              written = snprintf(p, remaining_len, " ");
+         if (written >= remaining_len)
+                break;
+       p += written;
+
+                           25
+                     remaining_len -= written;
+              }
+              *p = '\0';
+
+              ssd1306_display_text(&s_display_dev, MAX_HEIGHT - level, line_buffer,
+strlen(line_buffer), false);
+
+       }
+
+       int current_gain_db = gain_levels_db[gain_idx];
+       const char* freq_str = freq_levels_hz_print[freq_idx];
+
+       snprintf(line_buffer, sizeof(line_buffer), "Vol:%2.0f%% F:%sHz ",
+                       s_volume * 100.0f,
+                       freq_str);
+
+       ssd1306_display_text(&s_display_dev, 7, line_buffer, strlen(line_buffer), false);
+
+       ssd1306_show_buffer(&s_display_dev);
+}
+
+                                                                                 
+     ,  -          
+
+                 ,DSP      
+                           .            
+
+                                                                  DSP     -
+
+                       biquad        
+    4-  5-  parameters_update_task-   .audio_filter_process
+20-  25-    , 5    .   float32  
+  10240-  12800-   , 512    -   
+
+        .      ,float <-> int     ,   .
+       "     240MHz   -      
+     .esp-dsp         
+
+                                                                                    .44.1kHz     
+
+                                                                       -
+
+                   
+    512        .)underrun(  I2S   
+
+      ,        ,    . 11.6-
+        FreeRTOS   .I2S        ,DSP
+
+  i2s_channel_write    ."  )  (   
+         -          portMAX_DELAY 
+                     
+                . 11.6 ,
+
+                                                              26
+     ,)      (     
+                                                                                          .    
+
+                                
+
+                      
+   ,     ,ESP32-S3 -   
+
+           ,   ,  ,    .   
+                                                             .      
+
+                                                                                      
+
+   ,           
+      , .       ,
+
+     ,Espressif IoT development framework: ESP-IDF  Arduino IDE-  
+                
+
+                                                                                                                    . 
+  ,   esp-dsp  ESP-IDF      
+
+             ,    .   
+           ,  .'      ,  , - 
+                     .            
+
+                                                                                             
+
+   ,             
+.           , 
+
+                                     -
+
+   .         
+ ,Arduino-     -biquad       ,Arduino IDE
+         -      
+      ,ESP32-S3-           
+     esp-dsp   ESP-IDF     .   
+                               :)   512    (  .  
+
+ESP-IDF     Arduino IDE
+
+esp-dsp    esp-dsp        
+
+ 1.9       4.1            22.6       
+ 2.6       7.3            34.9   
+
+                                
+
+ 9.6       23.4          -           
+
+10.3      42.1                     
+
+          
+
+                     27
+        ,esp-idf          ,
+        ,        ;     
+
+   ,    512    ,       
+                                                            .        
+
+                                                                              -
+
+            .        
+        .    ,     'esp-idf    
+      ,     , ,    
+   ,     ESP-IDF       .    
+        ,   wav-     
+
+                                                         .        
+
+                                                                     -
+
+          -        
+        .           
+    Bass~Mid range    '- '     (  
+
+      .       )Treble-     
+    .               
+
+     ,        ,  
+     .            DSP-   
+
+                                                                         
+                    
+   ,Arduino IDE     .   -   
+        ,     ,     
+  .          .   CPU   
+                    
+
+               .Espressif     esp-idf   ESP-IDF   
+        ,          
+ parameters_update_task  .        
+             ,      
+
+                ,   .   
+        Mutex       .    ,
+     ,   .            ,
+
+                   mutex
+                                       .mutex-         .SPI
+
+                                                              28
+                                                   
+
+                                                                                            
+
+              ,-      
+           .ESP32-S3 -  
+
+               44.1     16     wav  
+    IIR biquad    5          .microSD
+       .ESP-IDF   esp-dsp    ,
+
+         .      ,    
+        ,       
+    -       .  
+   .    ,        
+
+                     
+                                 .         
+
+                                                                     
+
+           ,      
+                                                                                      .    
+
+                                                                                   -
+
+        .      
+          (     DSP-        ,wav-
+
+           ,  I2S    .)  
+           . max98357a     
+
+                                                                                                  .ESP32-S3-  
+
+                                                             /   -
+
+     /microSD  wav     , 
+         Bluetooth    .  
+
+              ,  -    ,  .  - 
+                  .       )tiny-usb  (usb-type c  - 
+
+               ,      
+     ESP32-  Bluetooth- Wi-Fi-    .   ,
+    ,       .      / 
+
+                      .          
+
+                                                                                                       
+
+ wav               ,
+            DSP   ESP-IDF        .ESP32-S3 -
+
+      ,    5         ,
+                            
+
+                                                              29
+SPI, I2S,-          .
+     ,          .I2C, ADC
+      ,    ,  ' 
+          -       .
+                                                                                                                  . 
+
+                                                                        
+
+                                                        ,  
+                                                                            peekingFilterGunieaPig.ipynb
+
+                                                            30
+

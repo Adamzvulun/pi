@@ -1,0 +1,52 @@
+flowchart TB
+    classDef orch fill:#fff3e0,stroke:#e65100,color:#000
+    classDef logic fill:#bbdefb,stroke:#1565c0,color:#000
+    classDef hw fill:#c8e6c9,stroke:#2e7d32,color:#000
+    classDef cfg fill:#f8bbd0,stroke:#ad1457,color:#000
+    classDef bb fill:#e0e0e0,stroke:#424242,color:#000
+
+    subgraph Orchestration
+        TT["test_tracking.py"]:::orch
+        CP["control_panel.py"]:::orch
+        MAIN["main.py (future)"]:::orch
+    end
+
+    subgraph Logic
+        DET["detector.py<br/>detect / build_mask"]:::logic
+        TRK["tracker.py<br/>init / update / stop"]:::logic
+    end
+
+    subgraph Hardware Abstraction Owner Modules
+        SRV["servo.py<br/>init / move_pan / move_tilt /<br/>center / cleanup"]:::hw
+        CAM["camera.py<br/>init / capture_frame / release"]:::hw
+        LSR["laser.py<br/>init / fire / off / cleanup"]:::hw
+    end
+
+    CFG["config.py<br/>All calibrated constants"]:::cfg
+
+    subgraph Third-Party Libraries BB
+        CV2["cv2 + numpy"]:::bb
+        SK["ServoKit + Blinka"]:::bb
+        SP["simple-pid"]:::bb
+        GP["gpiozero"]:::bb
+        TK["tkinter"]:::bb
+    end
+
+    TT --> SRV
+    TT --> CAM
+    TT --> DET
+    TT --> TRK
+    CP --> SRV
+    CP --> CAM
+    CP --> LSR
+    CP --> TK
+
+    DET --> CV2
+    DET --> CFG
+    TRK --> SRV
+    TRK --> SP
+    TRK --> CFG
+    SRV --> SK
+    SRV --> CFG
+    CAM --> CV2
+    LSR --> GP

@@ -1,0 +1,23 @@
+flowchart LR
+    classDef io fill:#e3f2fd,stroke:#1565c0,color:#000,stroke-width:2px
+    classDef proc fill:#e8f5e9,stroke:#2e7d32,color:#000,stroke-width:2px
+    classDef ctrl fill:#fff3e0,stroke:#e65100,color:#000,stroke-width:2px
+    classDef hw fill:#fce4ec,stroke:#ad1457,color:#000,stroke-width:2px
+
+    Target["physical target<br/>(e.g. blue object)"]:::io
+    Cam["camera.capture_frame<br/>BGR 640x480 @ 30 Hz"]:::io
+    Det["detector.detect<br/>blur to HSV to inRange<br/>to morph to centroid"]:::proc
+    Err["pixel error<br/>(tx - cx, ty - cy)"]:::proc
+    Pid["tracker.update<br/>PID per axis<br/>+ coast + recenter"]:::ctrl
+    Servo["servo.move_pan/tilt<br/>clamped 50..220 / 115..205"]:::ctrl
+    Pca["PCA9685<br/>50 Hz PWM 500-2500 us"]:::hw
+    Mech["pan-tilt bracket<br/>changes camera FOV"]:::hw
+
+    Target -->|"light reflected"| Cam
+    Cam -->|"frame"| Det
+    Det -->|"(tx,ty) or None"| Err
+    Err -->|"setpoint = 0,<br/>input = error"| Pid
+    Pid -->|"delta pan/tilt in deg"| Servo
+    Servo -->|"angle"| Pca
+    Pca -->|"PWM pulse"| Mech
+    Mech -.->|"closes the loop"| Target
