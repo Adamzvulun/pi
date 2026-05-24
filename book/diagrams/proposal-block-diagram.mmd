@@ -1,0 +1,25 @@
+flowchart TB
+    classDef cpu fill:#c8e6c9,stroke:#2e7d32,color:#000
+    classDef ui fill:#bbdefb,stroke:#1565c0,color:#000
+    classDef driver fill:#fff3e0,stroke:#e65100,color:#000
+    classDef actuator fill:#f8bbd0,stroke:#ad1457,color:#000
+    classDef sensor fill:#e1bee7,stroke:#6a1b9a,color:#000
+
+    GUI["משתמש GUI"]:::ui
+    CPU["Raspberry Pi (CPU)<br/>עיבוד תמונה + בקרה"]:::cpu
+
+    PCA["PCA9685 (I2C)<br/>שולט בסרווים"]:::driver
+    GPIO["GPIO + MOSFET<br/>שליטה בלייזר"]:::driver
+    CAM["מצלמת Pi Camera v3"]:::sensor
+
+    PAN["סרוו PAN"]:::actuator
+    TILT["סרוו TILT"]:::actuator
+    LASER["מודול לייזר"]:::actuator
+
+    GUI --> CPU
+    CPU --> PCA
+    CPU --> GPIO
+    CPU --> CAM
+    PCA --> PAN
+    PCA --> TILT
+    GPIO --> LASER
