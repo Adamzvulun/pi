@@ -83,6 +83,15 @@ Dagre already routes edges *around* nodes — actual edge-through-block overlaps
 - **Place in:** **Chapter 9 — הסבר על הבקר** (`chapters/09-controller.md`), right after the time-budget section. Also a good headline figure for **Chapter 13** when discussing `simple-pid`.
 - **What it is:** The canonical "control loop" figure — sensor → controller → actuator → plant → back. Shows the pixel-error → angle-correction path.
 
+### 12. `electrical-schematic.svg` — full wiring schematic (SVG, reference-style)
+
+- **Format:** Hand-coded SVG (not Mermaid). Mermaid cannot render electrical symbols (resistors, MOSFET pins, ground glyphs, title block).
+- **Style:** Modelled on a traditional auto-wiring diagram — bordered drawing, orthogonal wires, junction dots, ground symbols, and a bottom title block with cells for *Drawn by / Checked / Date / Scale / Sheet No.*
+- **Data:** ✅ Matches `CLAUDE.md` hardware table. Pi pins shown (2 = 5V, 3 = SDA, 5 = SCL, 6 = GND, 4 = 5V for laser, 12 = GPIO18, 14 = GND); PCA9685 V+/VCC/SDA/SCL/GND on left, Ch 0/Ch 1 on right; DS3225 pan + tilt; LifeCam over USB; 220 Ω gate / 100 kΩ pulldown / 100 Ω current-limit; IRLZ44N MOSFET with G/D/S labels; 5 mW 650 nm laser diode symbol (anode triangle + cathode bar + emission arrows). Multiple GND symbols (one per grounded block) instead of a single bus — standard convention.
+- **Place in:** **Chapter 15 — תיעוד הפתרון** (`chapters/15-solution-documentation.md`), **§15.1 שרטוט חשמלי**, as the *main* wiring drawing. This is the proper reference-style schematic the מחוון asks for. The simpler Mermaid `full-schematic.mmd` can stay as a secondary block-level view, or be retired.
+- **What it is:** The complete electrical schematic of the build, drawn in the conventional style (component blocks + symbols + orthogonal wires + title block) so it reads like the wiring diagrams in the מחוון examples.
+- **Rendering:** Embed the `.svg` directly in the `.docx` (Pandoc supports SVG via librsvg) or convert to PNG: `magick convert electrical-schematic.svg electrical-schematic.png` or `rsvg-convert -w 1800 -o electrical-schematic.png electrical-schematic.svg`.
+
 ### 11. `control-flow.mmd` — main-loop / FSM
 
 - **Data:** ✅ All 5 FSM states present (Tracking / Locked / Coasting / Recentering / Holding) and match `tracker.py`. Loop structure (Init → Capture → Detect → Update → Draw → WaitKey) matches `test_tracking.py`. The dotted side-note for FSM states is a good touch.
@@ -104,6 +113,7 @@ Dagre already routes edges *around* nodes — actual edge-through-block overlaps
 | 9 | `laser-driver.mmd` | ch. 10 (laser section) | ✅ data correct |
 | 10 | `control-loop.mmd` | ch. 9 (after time budget) | ✅ data correct |
 | 11 | `control-flow.mmd` | ch. 15 §15.4 (replace inline) | ✅ data correct |
+| 12 | `electrical-schematic.svg` | ch. 15 §15.1 (primary wiring) | ✅ hand-drawn SVG, reference-style |
 
 ## How to render
 

@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" font-family="Arial, sans-serif" font-size="12">
+  <style>
+    .frame      { fill: none;    stroke: black; stroke-width: 1.5; }
+    .wire       { fill: none;    stroke: black; stroke-width: 1.5; }
+    .pwr        { fill: none;    stroke: black; stroke-width: 2.5; }
+    .gnd-wire   { fill: none;    stroke: black; stroke-width: 1.5; }
+    .block      { fill: #ffffff; stroke: black; stroke-width: 1.5; }
+    .res        { fill: #ffffff; stroke: black; stroke-width: 1.2; }
+    .label      { font-weight: bold; text-anchor: middle; }
+    .small      { font-size: 10px; text-anchor: middle; }
+    .pin        { font-size: 10px; }
+    .pin-end    { font-size: 10px; text-anchor: end; }
+    .pin-mid    { font-size: 10px; text-anchor: middle; }
+    .junction   { fill: black; }
+    .gnd line   { stroke: black; stroke-width: 1.5; }
+    .wlabel     { font-size: 10px; fill: #444; font-style: italic; }
+  </style>
+
+  <!-- white background -->
+  <rect x="0" y="0" width="1400" height="1000" fill="white"/>
+
+  <!-- outer drawing frame -->
+  <rect class="frame" x="20" y="20" width="1360" height="960"/>
+
+  <!-- =================================================== -->
+  <!-- POWER SOURCES                                        -->
+  <!-- =================================================== -->
+
+  <!-- 12V wall PSU -->
+  <rect class="block" x="40" y="60" width="140" height="70"/>
+  <text class="label" x="110" y="90">12V / 5A</text>
+  <text class="small" x="110" y="108">WALL PSU</text>
+  <text class="pin"   x="184" y="100">+</text>
+  <text class="pin"   x="184" y="124">−</text>
+
+  <!-- LM2596 buck converter -->
+  <rect class="block" x="240" y="60" width="160" height="70"/>
+  <text class="label" x="320" y="88">LM2596 BUCK</text>
+  <text class="small" x="320" y="105">12V → 5.0V</text>
+  <text class="small" x="320" y="120">3A max</text>
+  <text class="pin"   x="244" y="100">IN+</text>
+  <text class="pin-end" x="396" y="100">OUT 5V</text>
+  <text class="pin-mid" x="320" y="142">GND</text>
+
+  <!-- USB-C 5V adapter -->
+  <rect class="block" x="40" y="170" width="140" height="60"/>
+  <text class="label" x="110" y="195">USB-C 5V</text>
+  <text class="small" x="110" y="212">3A adapter</text>
+  <text class="pin-end" x="184" y="200">+</text>
+  <text class="pin-mid" x="110" y="244">GND</text>
+
+  <!-- =================================================== -->
+  <!-- COMPUTE: Raspberry Pi 4B                             -->
+  <!-- =================================================== -->
+
+  <rect class="block" x="220" y="270" width="280" height="280"/>
+  <text class="label" x="360" y="296">Raspberry Pi 4B (8GB)</text>
+  <text class="small" x="360" y="313">Bookworm 64-bit · Python 3.11</text>
+
+  <!-- top-edge USB ports -->
+  <text class="pin-mid" x="260" y="264">USB-C in</text>
+  <text class="pin-mid" x="380" y="264">USB-A (cam)</text>
+
+  <!-- right-edge GPIO pins -->
+  <text class="pin-end" x="495" y="313">Pin 2  · 5V</text>
+  <text class="pin-end" x="495" y="343">Pin 3  · SDA (GPIO2)</text>
+  <text class="pin-end" x="495" y="373">Pin 5  · SCL (GPIO3)</text>
+  <text class="pin-end" x="495" y="403">Pin 6  · GND</text>
+  <text class="pin-end" x="495" y="443">Pin 4  · 5V</text>
+  <text class="pin-end" x="495" y="483">Pin 12 · GPIO18</text>
+  <text class="pin-end" x="495" y="513">Pin 14 · GND</text>
+
+  <!-- =================================================== -->
+  <!-- PWM DRIVER: PCA9685                                  -->
+  <!-- =================================================== -->
+
+  <rect class="block" x="600" y="270" width="200" height="240"/>
+  <text class="label" x="700" y="296">PCA9685</text>
+  <text class="small" x="700" y="313">I²C 0x40 · 16-ch PWM</text>
+  <text class="small" x="700" y="328">50 Hz · 500–2500 µs</text>
+
+  <!-- left pin labels -->
+  <text class="pin" x="605" y="313">V+</text>
+  <text class="pin" x="605" y="343">VCC</text>
+  <text class="pin" x="605" y="373">SDA</text>
+  <text class="pin" x="605" y="403">SCL</text>
+  <text class="pin" x="605" y="443">GND</text>
+
+  <!-- right pin labels -->
+  <text class="pin-end" x="795" y="313">Ch 0</text>
+  <text class="pin-end" x="795" y="413">Ch 1</text>
+
+  <!-- =================================================== -->
+  <!-- ACTUATORS: pan + tilt servos                         -->
+  <!-- =================================================== -->
+
+  <rect class="block" x="880" y="280" width="160" height="70"/>
+  <text class="label" x="960" y="310">DS3225 PAN</text>
+  <text class="small" x="960" y="328">channel 0 · 270°</text>
+  <text class="pin"   x="884" y="320">PWM</text>
+
+  <rect class="block" x="880" y="378" width="160" height="70"/>
+  <text class="label" x="960" y="408">DS3225 TILT</text>
+  <text class="small" x="960" y="426">channel 1 · 270°</text>
+  <text class="pin"   x="884" y="418">PWM</text>
+
+  <!-- =================================================== -->
+  <!-- SENSOR: LifeCam USB camera                           -->
+  <!-- =================================================== -->
+
+  <rect class="block" x="1100" y="270" width="200" height="70"/>
+  <text class="label" x="1200" y="296">LifeCam HD-3000</text>
+  <text class="small" x="1200" y="314">USB UVC · 640×480 BGR</text>
+  <text class="pin"   x="1104" y="312">USB</text>
+
+  <!-- =================================================== -->
+  <!-- EMITTER: MOSFET driver + laser                       -->
+  <!-- =================================================== -->
+
+  <!-- 220Ω gate resistor (horizontal) -->
+  <rect class="res" x="560" y="580" width="80" height="24"/>
+  <text class="small" x="600" y="596">220 Ω</text>
+
+  <!-- IRLZ44N MOSFET body -->
+  <rect class="block" x="680" y="560" width="140" height="160"/>
+  <text class="label" x="750" y="588">IRLZ44N</text>
+  <text class="small" x="750" y="604">N-MOSFET</text>
+  <text class="small" x="750" y="619">(logic-level)</text>
+  <text class="pin-end" x="675" y="644">G</text>
+  <text class="pin-mid" x="750" y="555">D</text>
+  <text class="pin-mid" x="750" y="738">S</text>
+
+  <!-- 100kΩ pulldown (vertical) -->
+  <rect class="res" x="648" y="660" width="24" height="80"/>
+  <text class="small" x="660" y="704" transform="rotate(-90, 660, 704)">100 kΩ</text>
+
+  <!-- 100Ω current limiter (horizontal) -->
+  <rect class="res" x="880" y="580" width="80" height="24"/>
+  <text class="small" x="920" y="596">100 Ω</text>
+
+  <!-- LASER DIODE (red triangle + cathode bar + emission arrows) -->
+  <g>
+    <polygon points="1000,570 1000,620 1078,595" fill="#fff5f5" stroke="#c0392b" stroke-width="1.5"/>
+    <line x1="1078" y1="568" x2="1078" y2="622" stroke="#c0392b" stroke-width="2"/>
+    <!-- two emission arrows -->
+    <line x1="1028" y1="558" x2="1048" y2="538" stroke="#c0392b" stroke-width="1.2"/>
+    <polygon points="1048,538 1042,540 1046,544" fill="#c0392b"/>
+    <line x1="1048" y1="558" x2="1068" y2="538" stroke="#c0392b" stroke-width="1.2"/>
+    <polygon points="1068,538 1062,540 1066,544" fill="#c0392b"/>
+    <text class="label" x="1040" y="660">LASER 5mW 650nm</text>
+    <text class="small" x="1040" y="676">(anode L · cathode R)</text>
+  </g>
+
+  <!-- =================================================== -->
+  <!-- WIRES                                                -->
+  <!-- =================================================== -->
+
+  <!-- W1: 12V PSU + → LM2596 IN+ -->
+  <path class="pwr" d="M 180 95 L 240 95"/>
+  <text class="wlabel" x="210" y="88" text-anchor="middle">12V</text>
+
+  <!-- W2: LM2596 5V OUT → PCA9685 V+   (routes right of Pi, above) -->
+  <path class="pwr" d="M 400 95 L 560 95 L 560 310 L 600 310"/>
+  <text class="wlabel" x="480" y="88" text-anchor="middle">5V SERVO RAIL</text>
+
+  <!-- W3: USB-C 5V + → Pi USB-C input (top) -->
+  <path class="wire" d="M 180 200 L 260 200 L 260 270"/>
+  <text class="wlabel" x="220" y="194" text-anchor="middle">5V</text>
+
+  <!-- W4: Pi Pin 2 (5V LOGIC) → PCA9685 VCC -->
+  <path class="pwr" d="M 500 310 L 520 310 L 520 340 L 600 340"/>
+  <text class="wlabel" x="560" y="334" text-anchor="middle">5V VCC</text>
+
+  <!-- W5: Pi Pin 3 (SDA) → PCA9685 SDA -->
+  <path class="wire" d="M 500 340 L 530 340 L 530 370 L 600 370"/>
+  <text class="wlabel" x="565" y="364" text-anchor="middle">SDA</text>
+
+  <!-- W6: Pi Pin 5 (SCL) → PCA9685 SCL -->
+  <path class="wire" d="M 500 370 L 540 370 L 540 400 L 600 400"/>
+  <text class="wlabel" x="568" y="394" text-anchor="middle">SCL</text>
+
+  <!-- W7: Pi Pin 6 (GND) → PCA9685 GND -->
+  <path class="wire" d="M 500 400 L 550 400 L 550 440 L 600 440"/>
+  <text class="wlabel" x="572" y="434" text-anchor="middle">GND</text>
+
+  <!-- W8: PCA9685 Ch0 → Pan servo PWM -->
+  <path class="wire" d="M 800 310 L 840 310 L 840 315 L 880 315"/>
+  <text class="wlabel" x="845" y="304" text-anchor="middle">PWM 50 Hz</text>
+
+  <!-- W9: PCA9685 Ch1 → Tilt servo PWM -->
+  <path class="wire" d="M 800 410 L 840 410 L 840 413 L 880 413"/>
+  <text class="wlabel" x="845" y="404" text-anchor="middle">PWM 50 Hz</text>
+
+  <!-- W10: LifeCam USB → Pi USB-A (routes above PCA9685) -->
+  <path class="wire" d="M 1100 305 L 1100 244 L 380 244 L 380 270"/>
+  <text class="wlabel" x="700" y="238" text-anchor="middle">USB 2.0 (UVC video)</text>
+
+  <!-- W11: Pi Pin 4 (5V) → 100Ω → Laser anode -->
+  <path class="pwr" d="M 500 440 L 545 440 L 545 540 L 880 540 L 880 592"/>
+  <path class="pwr" d="M 960 592 L 1000 595"/>
+  <text class="wlabel" x="720" y="534" text-anchor="middle">5V (laser supply)</text>
+
+  <!-- W12: Pi Pin 12 (GPIO18) → 220Ω → MOSFET Gate -->
+  <path class="wire" d="M 500 480 L 522 480 L 522 592 L 560 592"/>
+  <path class="wire" d="M 640 592 L 660 592 L 660 640 L 680 640"/>
+  <text class="wlabel" x="540" y="574" text-anchor="middle">GPIO18</text>
+
+  <!-- W13: MOSFET Drain → Laser cathode -->
+  <path class="pwr" d="M 750 560 L 750 524 L 1078 524 L 1078 568"/>
+  <text class="wlabel" x="900" y="518" text-anchor="middle">drain → cathode</text>
+
+  <!-- W14: MOSFET Source → GND -->
+  <path class="wire" d="M 750 720 L 750 770"/>
+
+  <!-- W15: 100kΩ pulldown branches: junction at gate net → top of pulldown; bottom of pulldown → GND -->
+  <path class="wire" d="M 660 592 L 660 660"/>
+  <path class="wire" d="M 660 740 L 660 770"/>
+
+  <!-- W16: LM2596 GND → ground symbol -->
+  <path class="gnd-wire" d="M 320 130 L 320 158"/>
+
+  <!-- W17: USB-C GND → ground symbol -->
+  <path class="gnd-wire" d="M 110 230 L 110 256"/>
+
+  <!-- W18: Pi Pin 14 (GND) → ground symbol (routed below the 5V rail to avoid shorting it) -->
+  <path class="gnd-wire" d="M 500 510 L 515 510 L 515 558 L 480 558 L 480 580"/>
+
+  <!-- =================================================== -->
+  <!-- JUNCTION DOTS                                        -->
+  <!-- =================================================== -->
+
+  <!-- Gate net junction: pulldown branches off here -->
+  <circle class="junction" cx="660" cy="592" r="3.5"/>
+
+  <!-- =================================================== -->
+  <!-- GROUND SYMBOLS                                       -->
+  <!-- =================================================== -->
+
+  <!-- GND below MOSFET source -->
+  <g class="gnd" transform="translate(750, 770)">
+    <line x1="-16" y1="0"  x2="16" y2="0"/>
+    <line x1="-11" y1="6"  x2="11" y2="6"/>
+    <line x1="-6"  y1="12" x2="6"  y2="12"/>
+  </g>
+
+  <!-- GND below pulldown -->
+  <g class="gnd" transform="translate(660, 770)">
+    <line x1="-14" y1="0"  x2="14" y2="0"/>
+    <line x1="-10" y1="6"  x2="10" y2="6"/>
+    <line x1="-5"  y1="12" x2="5"  y2="12"/>
+  </g>
+
+  <!-- GND below LM2596 -->
+  <g class="gnd" transform="translate(320, 158)">
+    <line x1="-14" y1="0"  x2="14" y2="0"/>
+    <line x1="-10" y1="6"  x2="10" y2="6"/>
+    <line x1="-5"  y1="12" x2="5"  y2="12"/>
+  </g>
+
+  <!-- GND below USB-C 5V -->
+  <g class="gnd" transform="translate(110, 256)">
+    <line x1="-14" y1="0"  x2="14" y2="0"/>
+    <line x1="-10" y1="6"  x2="10" y2="6"/>
+    <line x1="-5"  y1="12" x2="5"  y2="12"/>
+  </g>
+
+  <!-- GND at end of Pi Pin 14 -->
+  <g class="gnd" transform="translate(480, 580)">
+    <line x1="-14" y1="0"  x2="14" y2="0"/>
+    <line x1="-10" y1="6"  x2="10" y2="6"/>
+    <line x1="-5"  y1="12" x2="5"  y2="12"/>
+  </g>
+
+  <!-- =================================================== -->
+  <!-- TITLE BLOCK                                          -->
+  <!-- =================================================== -->
+
+  <g>
+    <rect class="frame" x="40" y="880" width="1320" height="90"/>
+
+    <!-- vertical cell dividers -->
+    <line x1="640"  y1="880" x2="640"  y2="970" stroke="black" stroke-width="1.5"/>
+    <line x1="800"  y1="880" x2="800"  y2="970" stroke="black" stroke-width="1.5"/>
+    <line x1="960"  y1="880" x2="960"  y2="970" stroke="black" stroke-width="1.5"/>
+    <line x1="1100" y1="880" x2="1100" y2="970" stroke="black" stroke-width="1.5"/>
+    <line x1="1240" y1="880" x2="1240" y2="970" stroke="black" stroke-width="1.5"/>
+
+    <!-- header sub-row -->
+    <line x1="640" y1="910" x2="1360" y2="910" stroke="black" stroke-width="1"/>
+
+    <!-- title -->
+    <text x="340" y="920" text-anchor="middle" font-size="20" font-weight="bold" font-style="italic">WIRING DIAGRAM</text>
+    <text x="340" y="948" text-anchor="middle" font-size="14">AUTONOMOUS LASER TRACKER — Raspberry Pi 4B</text>
+
+    <!-- header cells -->
+    <text x="720"  y="900" text-anchor="middle" font-size="10">DRAWN BY</text>
+    <text x="880"  y="900" text-anchor="middle" font-size="10">CHECKED</text>
+    <text x="1030" y="900" text-anchor="middle" font-size="10">DATE</text>
+    <text x="1170" y="900" text-anchor="middle" font-size="10">SCALE</text>
+    <text x="1300" y="900" text-anchor="middle" font-size="10">SHEET NO.</text>
+
+    <!-- header values -->
+    <text x="720"  y="945" text-anchor="middle" font-size="11">Adam Zvulun</text>
+    <text x="880"  y="945" text-anchor="middle" font-size="11">—</text>
+    <text x="1030" y="945" text-anchor="middle" font-size="11">2026-05</text>
+    <text x="1170" y="945" text-anchor="middle" font-size="11">N/A</text>
+    <text x="1300" y="945" text-anchor="middle" font-size="11">1 / 1</text>
+  </g>
+
+</svg>
