@@ -154,15 +154,38 @@ LASER_FIRE_DURATION_S: float = 2.5
 # you can take a follow-up shot without losing the moment.
 LASER_COOLDOWN_S: float = 1.0
 
-# Widened deadband used by tracker.update() during laser FIRING and
-# COOLDOWN. While the laser dot is in the frame (or just was), the
-# camera's auto-exposure reduces gain to compensate, which dims the
-# blue target and shifts its HSV-detected centroid by ~10-30 px from
-# frame to frame. With the normal 15 px deadband, every one of those
-# shifts triggers a small servo correction → bracket dances. A wider
-# 40 px deadband absorbs the jitter without losing the ability to
-# track genuine large target moves.
+# Widened deadband available to tracker.update() via deadband_override.
+# Was used during laser FIRING/COOLDOWN to absorb auto-exposure jitter,
+# but with AE disabled in camera.init() (see CAMERA_EXPOSURE below) the
+# jitter is gone and we don't actually need this anymore. Kept as a
+# tuning knob — if AE control turns out to be unreliable on a future
+# camera, main.py can opt back in.
 FIRE_DEADBAND_PX: int = 40
+
+# ---- Camera exposure ------------------------------------------------------
+# The LifeCam HD-3000's auto-exposure reacts to the laser dot when it
+# appears in the frame — it drops the overall gain, which dims the blue
+# target's pixel values and shifts the HSV-detected centroid by 10-30 px
+# from frame to frame. That AE-driven jitter is what made the bracket
+# "dance" during firing. Solution: disable AE entirely and set a fixed
+# exposure value. With a stable image, the target's HSV signature stays
+# put, the centroid stops jittering, and normal-tight tracking works
+# even while the laser is on.
+#
+# V4L2/uvcvideo backend convention for CAP_PROP_AUTO_EXPOSURE:
+#   1 = manual mode  (the value we want)
+#   3 = aperture priority / auto
+#
+# CAMERA_EXPOSURE is the V4L2 "exposure_absolute" value. The LifeCam
+# HD-3000 typically accepts 5-2047. Lower = darker / faster shutter,
+# higher = brighter / slower. 250 is a reasonable starting point for
+# normal indoor room lighting; tune empirically:
+#   - if the image looks too dark, raise it (try 400-600)
+#   - if too bright / blown out, lower it (try 100-150)
+# After changing the exposure significantly, re-run tune_detector.py
+# because the target's HSV signature shifts with exposure.
+CAMERA_DISABLE_AUTO_EXPOSURE: bool = True
+CAMERA_EXPOSURE: int = 250
 
 # ---- Boresight offsets (Phase 7B) -----------------------------------------
 # Pixel delta between the camera's frame center (320, 240) and the actual

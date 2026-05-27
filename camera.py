@@ -20,6 +20,8 @@ from typing import Optional
 import cv2
 import numpy as np
 
+import config
+
 log = logging.getLogger(__name__)
 
 
@@ -33,6 +35,11 @@ def init(width: int = 640, height: int = 480, device_index: int = 0) -> cv2.Vide
     The driver may not honor the exact resolution requested — most webcams
     will select the closest supported mode. The actual resolution is logged
     so you can verify.
+
+    If config.CAMERA_DISABLE_AUTO_EXPOSURE is True, the camera's
+    auto-exposure is disabled and exposure is locked to
+    config.CAMERA_EXPOSURE. This keeps the image consistent during
+    laser firing — see config.py for rationale.
 
     Raises:
         RuntimeError: camera could not be opened (check USB connection and
@@ -49,6 +56,27 @@ def init(width: int = 640, height: int = 480, device_index: int = 0) -> cv2.Vide
 
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+    # Disable auto-exposure and lock to a fixed value. The LifeCam's AE
+    # reacts to the laser dot by dropping gain, which shifts the target's
+    # HSV signature and causes detector centroid jitter. With AE off, the
+    # image stays stable while firing and the tracker doesn't dance.
+    # V4L2 backend: CAP_PROP_AUTO_EXPOSURE = 1 means manual.
+    if config.CAMERA_DISABLE_AUTO_EXPOSURE:
+        ok_ae = cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
+        ok_ex = cap.set(cv2.CAP_PROP_EXPOSURE, config.CAMERA_EXPOSURE)
+        actual_ae = cap.get(cv2.CAP_PROP_AUTO_EXPOSURE)
+        actual_ex = cap.get(cv2.CAP_PROP_EXPOSURE)
+        log.info(
+            "Auto-exposure disabled (set_ae=%s set_ex=%s) — AE mode now %g, exposure %g",
+            ok_ae, ok_ex, actual_ae, actual_ex,
+        )
+        if actual_ex != config.CAMERA_EXPOSURE:
+            log.warning(
+                "Driver clamped/ignored exposure: requested %d, got %g. "
+                "Try a different value in config.CAMERA_EXPOSURE.",
+                config.CAMERA_EXPOSURE, actual_ex,
+            )
 
     # Read back actual resolution — log it so we can spot mismatches.
     actual_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))

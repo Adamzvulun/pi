@@ -237,19 +237,14 @@ def main() -> int:
                 log.info("Cooldown done — ARMED.")
 
             # -------- Capture + detect + track ----------------
+            # Tracking runs every frame in every state. Auto-exposure is
+            # disabled in camera.init(), so the laser dot no longer
+            # destabilizes the image — normal 15 px deadband works during
+            # FIRING too. The bracket follows the target whether the
+            # laser is on or off.
             frame = camera.capture_frame(cam)
             target = detector.detect(frame)
-
-            # While the laser is firing (and right after, during cooldown,
-            # while AE is recovering), widen the deadband so the small
-            # detector centroid jitter caused by auto-exposure changes
-            # doesn't trigger servo micro-corrections. The bracket still
-            # tracks genuine large target moves — just stops "dancing"
-            # on every-frame jitter.
-            firing_or_cooling = state in (S_FIRING, S_COOLDOWN)
-            deadband = config.FIRE_DEADBAND_PX if firing_or_cooling else None
-            result = tracker.update(pan_pid, tilt_pid, kit, target,
-                                    deadband_override=deadband)
+            result = tracker.update(pan_pid, tilt_pid, kit, target)
             locked = result is not None and result.get("in_deadband", False)
 
             # -------- Draw everything onto a copy of the frame
