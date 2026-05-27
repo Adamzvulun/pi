@@ -140,6 +140,20 @@ RECENTER_AFTER_COAST: bool = True
 # gives ~60°/sec recenter speed — full PAN range (170°) recovered in ~3 s.
 RECENTER_STEP_DEG: float = 2.0
 
+# ---- Laser firing (Phase 8) -----------------------------------------------
+# How long the laser stays ON per fire command in main.py. The original
+# spec was 0.5s — too short to be visually clear in a demo. 2.5s is long
+# enough for an audience to see the dot land, register that it hit the
+# target, and follow what just happened, without being so long that it
+# stresses the GPIO pin (laser module is ~10-15 mA, well within the
+# pin's safe sourcing limit even for sustained on-time).
+LASER_FIRE_DURATION_S: float = 2.5
+
+# Lockout after each fire — prevents trigger-spam during the demo. Long
+# enough that audience sees state transitions clearly, short enough that
+# you can take a follow-up shot without losing the moment.
+LASER_COOLDOWN_S: float = 1.0
+
 # ---- Boresight offsets (Phase 7B) -----------------------------------------
 # Pixel delta between the camera's frame center (320, 240) and the actual
 # point where the laser dot lands. Camera and laser are physically offset

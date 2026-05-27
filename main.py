@@ -89,9 +89,9 @@ S_ARMED    = "ARMED"
 S_FIRING   = "FIRING"
 S_COOLDOWN = "COOLDOWN"
 
-# Timing
-FIRE_DURATION_S: float = 0.5
-COOLDOWN_S:      float = 1.0
+# Timing — pulled from config.py so they're tunable without code edits
+FIRE_DURATION_S: float = config.LASER_FIRE_DURATION_S
+COOLDOWN_S:      float = config.LASER_COOLDOWN_S
 
 
 # ---- Overlay rendering ----------------------------------------------------
@@ -157,14 +157,13 @@ def _draw_banner(display, state, locked, cooldown_remaining):
 
 
 def _draw_aim_and_target(display, target, in_deadband):
-    """Cyan crosshair at the boresight-corrected aim point. Target marker."""
-    # The crosshair should mark the pixel where the laser will land — i.e.,
-    # frame_center + boresight_offset.
-    aim_x = config.FRAME_CENTER_X + config.BORESIGHT_X_OFFSET
-    aim_y = config.FRAME_CENTER_Y + config.BORESIGHT_Y_OFFSET
-    cv2.drawMarker(display, (aim_x, aim_y), (255, 255, 0),
-                   cv2.MARKER_CROSS, markerSize=28, thickness=2)
-    cv2.circle(display, (aim_x, aim_y), 3, (255, 255, 0), -1)
+    """Cyan crosshair at exact frame center (where the laser lands). Target marker."""
+    # Laser is physically aligned with the camera crosshair, so the aim
+    # point IS the frame center — no boresight offset to draw.
+    cv2.drawMarker(display, (config.FRAME_CENTER_X, config.FRAME_CENTER_Y),
+                   (255, 255, 0), cv2.MARKER_CROSS, markerSize=28, thickness=2)
+    cv2.circle(display, (config.FRAME_CENTER_X, config.FRAME_CENTER_Y),
+               3, (255, 255, 0), -1)
 
     if target is not None:
         target_color = (0, 255, 0) if in_deadband else (0, 200, 255)
@@ -205,13 +204,6 @@ def _draw_info_strip(display, target, result):
     (lw, _), _ = cv2.getTextSize(legend, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 1)
     cv2.putText(display, legend, (w - lw - 14, h - 35),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.55, (180, 180, 180), 1, cv2.LINE_AA)
-
-    # Boresight readout — small, lower-left. Helps the audience see that
-    # the system is compensating for the camera-laser physical offset.
-    bs = (f"boresight  dx={config.BORESIGHT_X_OFFSET:+d}  "
-          f"dy={config.BORESIGHT_Y_OFFSET:+d}")
-    cv2.putText(display, bs, (14, h - 12),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.42, (160, 160, 160), 1, cv2.LINE_AA)
 
 
 # ---- Main loop ------------------------------------------------------------

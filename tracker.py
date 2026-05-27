@@ -240,14 +240,14 @@ def update(
         _reset_recenter()
 
     target_x, target_y = target_pos
-    # Boresight compensation: the laser dot lands at (CENTER + dx, CENTER + dy)
-    # on the camera frame when the camera is aimed at a point. To make the
-    # laser hit the target instead of the camera's aim point, we drive the
-    # camera so the target appears at (CENTER − dx, CENTER − dy). That
-    # shifts the apparent aim point exactly by the laser's offset.
-    # Equivalently: add the offset to the raw error before PIDing.
-    pan_error = target_x - config.FRAME_CENTER_X + config.BORESIGHT_X_OFFSET
-    tilt_error = target_y - config.FRAME_CENTER_Y + config.BORESIGHT_Y_OFFSET
+    # Pixel error from frame center. The laser is physically aligned with
+    # the camera crosshair (laser taped on top of the camera, crosses
+    # aligned), so the laser lands where the camera aims — no boresight
+    # compensation needed. BORESIGHT_X_OFFSET / Y_OFFSET in config.py and
+    # calibrate_boresight.py remain available for future use if the
+    # physical alignment ever drifts.
+    pan_error = target_x - config.FRAME_CENTER_X
+    tilt_error = target_y - config.FRAME_CENTER_Y
 
     # Always run the PID — keeps its internal time-tracking and derivative
     # state consistent across frames. We may or may not USE the correction.
