@@ -97,11 +97,23 @@ def _launch_script(filename: str) -> subprocess.Popen:
 
     We use sys.executable so the GUI's interpreter (already in the venv)
     is reused — no `source venv/bin/activate` shell layer needed.
+
+    stdout/stderr from the child are appended to ~/pi/last-subprocess.log
+    so that crashes are debuggable after the fact, without forcing the
+    operator to close the GUI and re-run the script from a terminal.
+    The file is truncated (not appended) on each launch so it always
+    reflects the most recent subprocess run.
     """
-    log.info("Launching %s as subprocess", filename)
+    log_path = os.path.join(PROJECT_DIR, "last-subprocess.log")
+    log.info("Launching %s as subprocess (stdout/stderr → %s)", filename, log_path)
+    log_file = open(log_path, "w")
+    log_file.write(f"=== {filename} launched at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
+    log_file.flush()
     return subprocess.Popen(
-        [sys.executable, filename],
+        [sys.executable, "-u", filename],   # -u: unbuffered, so log is live
         cwd=PROJECT_DIR,
+        stdout=log_file,
+        stderr=subprocess.STDOUT,           # merge stderr into the same file
     )
 
 
@@ -613,6 +625,22 @@ class ControlPanel:
             if self.active_subprocess.poll() is not None:
                 rc = self.active_subprocess.returncode
                 log.info("Subprocess exited with code %d.", rc)
+
+                # On crash, dump the tail of the subprocess log into the
+                # GUI's log pane so the operator can see the traceback
+                # without leaving the panel.
+                if rc != 0:
+                    log_path = os.path.join(PROJECT_DIR, "last-subprocess.log")
+                    try:
+                        with open(log_path, "r") as f:
+                            tail = f.read().splitlines()[-30:]
+                        log.error("Subprocess crashed — last %d lines of %s:",
+                                  len(tail), log_path)
+                        for line in tail:
+                            log.error("  | %s", line)
+                    except Exception:
+                        log.exception("Could not read subprocess log at %s", log_path)
+
                 self.active_subprocess = None
 
                 # If we released the laser GPIO for a subprocess (boresight),
