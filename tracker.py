@@ -118,6 +118,7 @@ def update(
     tilt_pid: PID,
     kit,
     target_pos: Optional[Tuple[int, int]],
+    deadband_override: Optional[int] = None,
 ) -> Optional[Dict]:
     """
     One iteration of the tracking loop. Call once per camera frame.
@@ -126,6 +127,14 @@ def update(
     frame), this function returns None and does NOT update PID state —
     we don't want the integral or derivative term polluted by phantom
     "zero error" samples while we're not seeing the target.
+
+    deadband_override (optional) lets the caller widen the in-deadband
+    threshold for this single update. Used during laser firing — the
+    camera's auto-exposure response to the laser dot causes ~10-30 px
+    of detector centroid jitter, and the default 15 px deadband isn't
+    wide enough to absorb that. main.py passes ~40 px during fire so
+    micro-corrections don't make the bracket dance, while large real
+    target moves still get tracked.
 
     Returns a result dict on success so the caller can log/visualize:
         pan_error, tilt_error     — in pixels
@@ -256,11 +265,16 @@ def update(
 
     # Deadband: if the target is already very close to frame center on
     # BOTH axes, hold position instead of nudging the servos. Detector
-    # centroid jitter (~2-3 px frame-to-frame) would otherwise drive the
-    # bracket to micro-correct forever, producing visible jiggle.
+    # centroid jitter (~2-3 px frame-to-frame normally, much more when
+    # the laser is firing and the camera's AE response is active) would
+    # otherwise drive the bracket to micro-correct forever, producing
+    # visible jiggle. The caller can widen the deadband for a specific
+    # update via deadband_override — see docstring.
+    deadband_px = (deadband_override if deadband_override is not None
+                   else config.TRACKING_DEADBAND_PX)
     in_deadband = (
-        abs(pan_error) < config.TRACKING_DEADBAND_PX
-        and abs(tilt_error) < config.TRACKING_DEADBAND_PX
+        abs(pan_error) < deadband_px
+        and abs(tilt_error) < deadband_px
     )
 
     if in_deadband:

@@ -154,6 +154,16 @@ LASER_FIRE_DURATION_S: float = 2.5
 # you can take a follow-up shot without losing the moment.
 LASER_COOLDOWN_S: float = 1.0
 
+# Widened deadband used by tracker.update() during laser FIRING and
+# COOLDOWN. While the laser dot is in the frame (or just was), the
+# camera's auto-exposure reduces gain to compensate, which dims the
+# blue target and shifts its HSV-detected centroid by ~10-30 px from
+# frame to frame. With the normal 15 px deadband, every one of those
+# shifts triggers a small servo correction → bracket dances. A wider
+# 40 px deadband absorbs the jitter without losing the ability to
+# track genuine large target moves.
+FIRE_DEADBAND_PX: int = 40
+
 # ---- Boresight offsets (Phase 7B) -----------------------------------------
 # Pixel delta between the camera's frame center (320, 240) and the actual
 # point where the laser dot lands. Camera and laser are physically offset

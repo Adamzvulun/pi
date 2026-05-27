@@ -168,7 +168,7 @@ def _draw_aim_and_target(display, target, in_deadband):
                  (target[0], target[1] + 6), target_color, 1)
 
 
-def _draw_info_strip(display, target, result, state):
+def _draw_info_strip(display, target, result):
     """Bottom strip with pan/tilt angles, pixel error, key legend.
     All text is plain ASCII so the Hershey font has glyphs for it."""
     h, w = display.shape[:2]
@@ -179,11 +179,7 @@ def _draw_info_strip(display, target, result, state):
     tilt = servo.current_tilt()
     angles = f"pan {pan:6.1f}    tilt {tilt:6.1f}"
 
-    if state == S_FIRING:
-        info = f"{angles}    bracket hold"
-    elif state == S_COOLDOWN:
-        info = f"{angles}    cooling down"
-    elif result is not None and result.get("pan_error") is not None:
+    if result is not None and result.get("pan_error") is not None:
         info = (f"{angles}    err ({result['pan_error']:+4d},"
                 f" {result['tilt_error']:+4d}) px")
     elif result is not None and result.get("coasting"):
@@ -242,30 +238,26 @@ def main() -> int:
 
             # -------- Capture + detect + track ----------------
             frame = camera.capture_frame(cam)
+            target = detector.detect(frame)
 
-            # Pause detection and tracking while the laser is on. The
-            # laser dot lights up a saturated cluster in the frame that
-            # the HSV detector latches onto, and the auto-exposure
-            # response causes pixel jitter — both effects make the
-            # tracker chase phantoms and the bracket "dance" during
-            # the shot. We also hold through cooldown so the camera's
-            # auto-exposure has time to settle before we start moving
-            # again. The bracket stays exactly where it locked.
-            if state in (S_FIRING, S_COOLDOWN):
-                target = None
-                result = None
-                locked = False
-            else:
-                target = detector.detect(frame)
-                result = tracker.update(pan_pid, tilt_pid, kit, target)
-                locked = result is not None and result.get("in_deadband", False)
+            # While the laser is firing (and right after, during cooldown,
+            # while AE is recovering), widen the deadband so the small
+            # detector centroid jitter caused by auto-exposure changes
+            # doesn't trigger servo micro-corrections. The bracket still
+            # tracks genuine large target moves — just stops "dancing"
+            # on every-frame jitter.
+            firing_or_cooling = state in (S_FIRING, S_COOLDOWN)
+            deadband = config.FIRE_DEADBAND_PX if firing_or_cooling else None
+            result = tracker.update(pan_pid, tilt_pid, kit, target,
+                                    deadband_override=deadband)
+            locked = result is not None and result.get("in_deadband", False)
 
             # -------- Draw everything onto a copy of the frame
             display = frame.copy()
             cooldown_remaining = max(0.0, cooldown_until - now)
             _draw_banner(display, state, locked, cooldown_remaining)
             _draw_aim_and_target(display, target, locked)
-            _draw_info_strip(display, target, result, state)
+            _draw_info_strip(display, target, result)
             cv2.imshow(WINDOW_NAME, display)
 
             # -------- Handle key input ------------------------
