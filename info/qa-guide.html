@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laser Tracker — Oral Exam Q&amp;A Bank</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #1a212b;
+    --panel2: #232c38;
+    --ink: #e6edf3;
+    --muted: #9aa7b8;
+    --accent: #4dd0e1;
+    --accent2: #ffb84d;
+    --good: #66d18a;
+    --bad: #ff7676;
+    --code: #0d1117;
+    --border: #2a3441;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 22px 80px; }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px; margin-bottom: 22px;
+  }
+  h1 { margin: 0 0 6px; font-size: 28px; }
+  h2 {
+    margin: 36px 0 10px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    font-size: 22px;
+  }
+  h3 { margin: 22px 0 6px; color: var(--accent2); font-size: 17px; }
+  p, li { font-size: 14.5px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  code, pre { font-family: "JetBrains Mono", "Fira Code", Consolas, monospace; }
+  code { background: #1f2630; padding: 1px 5px; border-radius: 3px; font-size: 13px; }
+  pre {
+    background: var(--code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 12px 0;
+  }
+  .panel.tip  { border-left: 4px solid var(--accent); }
+  .panel.warn { border-left: 4px solid var(--accent2); }
+  .qa {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+  }
+  .qa .q {
+    color: var(--accent2);
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+  .qa .num {
+    color: var(--muted);
+    font-weight: 400;
+    margin-right: 8px;
+  }
+  .qa .a { margin: 4px 0 0 0; color: var(--ink); }
+  .qa .tag {
+    display: inline-block;
+    background: var(--panel2);
+    color: var(--muted);
+    font-size: 11px;
+    padding: 0 8px;
+    border-radius: 999px;
+    margin-left: 6px;
+    border: 1px solid var(--border);
+  }
+  .toc {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    columns: 2;
+    column-gap: 28px;
+  }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc ul { margin: 0; padding-left: 18px; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+  @media (max-width: 800px) { .toc { columns: 1; } }
+  .kbd {
+    background: #2a3441; border: 1px solid #3f4d5e;
+    border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 12px;
+  }
+  .ascii {
+    background: var(--code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    white-space: pre;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 12.5px;
+    color: #cdd9e5;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Q&amp;A Bank — Laser Tracker Oral Exam</h1>
+  <p class="muted">
+    Companion to <a href="exam-study-guide.html">exam-study-guide.html</a>.
+    Each entry has a one-paragraph "spoken" answer plus, where useful, a fallback line in case the examiner pushes harder.
+    Tags show what topic the question targets.
+  </p>
+</header>
+
+<div class="panel tip">
+  <strong>How to use this:</strong>
+  <ul>
+    <li>Read each question, <em>hide</em> the answer, and try to say yours out loud first.</li>
+    <li>If your answer is missing a key technical word the model answer uses (open-drain, push-pull, V4L2, pin_factory, BCM2711, etc.), add that word to your mental cache.</li>
+    <li>The "<strong>If pressed:</strong>" lines are follow-ups the examiner is likely to throw if your first answer is too short.</li>
+    <li>Hebrew translations are provided for the trickier technical terms inline.</li>
+  </ul>
+</div>
+
+<h2 id="toc">Contents</h2>
+<div class="toc">
+  <ul>
+    <li><a href="#general">A. General / opening questions</a></li>
+    <li><a href="#schematic">B. Electrical schematic &amp; wiring</a></li>
+    <li><a href="#power">C. Power &amp; current</a></li>
+    <li><a href="#i2c">D. I²C — the only digital bus in the project</a></li>
+    <li><a href="#pwm">E. PWM, PCA9685 &amp; servos</a></li>
+    <li><a href="#gpio">F. GPIO &amp; the laser</a></li>
+    <li><a href="#camera">G. Camera, USB, UVC, V4L2</a></li>
+    <li><a href="#detection">H. Detection &amp; OpenCV</a></li>
+    <li><a href="#pid">I. PID &amp; tracker</a></li>
+    <li><a href="#code">J. Code organisation</a></li>
+    <li><a href="#state">K. State machine</a></li>
+    <li><a href="#async">L. Async, threads, printing — the section the teacher flagged</a></li>
+    <li><a href="#protocols">M. Other protocols (SPI, I²S, OneWire, UART, ADC)</a></li>
+    <li><a href="#safety">N. Safety</a></li>
+    <li><a href="#paths">O. Signal paths through the system</a></li>
+    <li><a href="#curveball">P. Curveball / "what if" questions</a></li>
+  </ul>
+</div>
+
+<!-- ====================== A. GENERAL ====================== -->
+<h2 id="general">A. General / opening questions</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">A1.</span>Describe your project in one paragraph. <span class="tag">opener</span></div>
+  <div class="a">A. Autonomous laser tracker on a Raspberry Pi 4B. A USB webcam captures BGR frames; OpenCV finds a blue target by HSV colour thresholding; two PID controllers convert pixel error into pan/tilt angle corrections; those go over I²C to a PCA9685 chip that generates PWM signals for two DS3225 servos; and a 3 V laser module on GPIO18 fires on operator confirmation when the target is locked inside a 15-pixel deadband. The whole thing runs from a tkinter control panel that launches each test or the full demo as a subprocess.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">A2.</span>What problem does this project solve? <span class="tag">opener</span></div>
+  <div class="a">A. It's a teaching project demonstrating closed-loop control — combining computer vision, PID, embedded buses (I²C), PWM motor control, digital GPIO output, and operator safety logic into a single integrated system. The "useful" analogue is industrial automation: a vision system aiming a tool (welder, marker, sprayer) at a moving feature on a conveyor.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">A3.</span>What's the biggest single decision you made in the design? <span class="tag">opener</span></div>
+  <div class="a">A. Using the PCA9685 instead of the Pi's hardware PWM. The Pi only has two hardware PWM channels and Linux's scheduler causes software-PWM jitter; the PCA9685 generates 16 channels of jitter-free PWM in its own silicon and is controlled with a few I²C bytes per update. It also let me electrically isolate the servo power rail from the Pi — no servo current ever reaches the Pi's logic supply.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">A4.</span>What's a limitation of the current build?</div>
+  <div class="a">A. Two main ones. First, the camera and laser are taped to the bracket — a printed mount would be more repeatable. Second, the HSV detector picks one specific blue object; in a real industrial setting you'd swap that for an ML-based detector that handles arbitrary targets. The architecture supports the swap because detection is isolated in <code>detector.py</code>.</div>
+</div>
+
+<!-- ====================== B. SCHEMATIC ====================== -->
+<h2 id="schematic">B. Electrical schematic &amp; wiring</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">B1.</span>Walk me through the schematic. <span class="tag">core</span></div>
+  <div class="a">A. Power side: a 12 V 5 A external PSU feeds an LM2596 buck converter set to 5.0 V; its output drives the PCA9685's V+ rail which powers both DS3225 servos through the servo header pins. Logic side: the Pi's own 5 V pin (pin 2) drives the PCA9685's VCC for the chip's logic. The Pi talks to the PCA9685 over I²C — SDA on pin 3, SCL on pin 5, with a common ground on pin 6. The laser is a 3 V self-contained module: red wire to GPIO18 (pin 12), black to GND (pin 9). The webcam plugs in by USB. That's the whole electrical schematic.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">B2.</span>Why are there two separate 5 V rails on the PCA9685?</div>
+  <div class="a">A. The PCA9685 board has two electrically isolated power inputs: VCC for the chip's logic and V+ for the 16 servo header pins. They are NOT internally connected. We feed VCC from the Pi's 5 V (only ~50 mA, stable) and V+ from the LM2596 (up to 3 A for the servos). This way a 2 A servo stall current spike can't drop the chip's logic voltage and corrupt I²C transactions.
+    <br><br><strong>If pressed:</strong> common ground is mandatory — without a shared 0 V reference, the I²C signal levels are undefined.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">B3.</span>What is on the breadboard?</div>
+  <div class="a">A. Almost nothing in the current build. The original Phase 6 plan had an IRLZ44N MOSFET driver with gate resistor and pull-down to switch a bare laser diode, but when we got a self-contained 3 V laser module — which has its own driver and current-limiter inside — we removed the MOSFET. Now the laser is just two wires from the Pi header. The breadboard exists mostly as the ground rail tie point.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">B4.</span>Why a buck converter and not a linear regulator?</div>
+  <div class="a">A. A linear regulator dissipates <code>(V_in − V_out) · I</code> as heat. From 12 V to 5 V at 1 A that's 7 W — needs a heatsink and wastes energy. A buck converter switches the input on/off at ~150 kHz, stores energy in an inductor, and is ~90 % efficient — same load dissipates well under a watt and stays cool.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">B5.</span>Why isn't the Pi's own 5 V rail powering the servos?</div>
+  <div class="a">A. The Pi's USB-C adapter is rated 3 A, and the Pi itself draws ~600 mA – 1.4 A. Two DS3225 servos can pull 600 mA – 1 A in normal tracking and 4 A combined at stall — that would brown out the Pi. Even just running a single servo from the Pi rail tends to make the Pi reboot. Isolated supplies are the standard solution.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">B6.</span>How do you know the LM2596 is outputting 5.0 V and not 12 V?</div>
+  <div class="a">A. I set it before connecting anything: 12 V PSU into the LM2596 IN+/IN−, multimeter on OUT+/OUT−, turned the trimpot screw until the reading was exactly 5.00 V, then powered off and wired to the PCA9685's V+. If you skip this step and the trimpot happens to be high, you can send 12 V into the servos and destroy them instantly.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">B7.</span>Servo wire colours — which goes where?</div>
+  <div class="a">A. DS3225 has three wires: brown = GND, red = V+, orange = PWM signal. They plug into the PCA9685's channel header so that brown lines up with the GND row, red with the V+ row, and orange with the signal row. Reversing polarity will at best do nothing, at worst smoke the servo.</div>
+</div>
+
+<!-- ====================== C. POWER ====================== -->
+<h2 id="power">C. Power &amp; current</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">C1.</span>What's your power budget?</div>
+  <div class="a">A. 12 V × 5 A = 60 W of headroom from the PSU. Of that, the LM2596 takes whatever the servos need — normal tracking is 600 mA – 1 A at 5 V, so 3–5 W; even both stalled is around 20 W. The Pi has its own USB-C adapter pulling ~7 W peak. The laser is negligible at ~50 mW. So we're well under the 60 W ceiling at all times.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">C2.</span>What is the laser's current draw, and is the Pi GPIO strong enough?</div>
+  <div class="a">A. About 10–15 mA at 3.3 V. The Pi GPIO is rated 16 mA per pin recommended, 50 mA total across all pins. We're well inside spec on both counts — and the laser module has its own internal current limiter, so even if it tried to draw more, it can't.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">C3.</span>What is Ohm's law and where would you apply it here?</div>
+  <div class="a">A. V = I · R, and power P = V · I. Concrete application: the original bare-diode plan had a 100 Ω current-limiting resistor between the 5 V rail and the laser. With a typical diode forward drop of ~2.2 V, the resistor saw 2.8 V, so I = 2.8 / 100 = 28 mA — safe for a 5 mW diode. The current build doesn't need that resistor because the integrated 3 V module limits itself.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">C4.</span>What's the difference between "voltage" and "current"?</div>
+  <div class="a">A. Voltage is electric potential difference — what pushes electrons through a circuit. Current is the rate of electron flow. The analogy: voltage is the pressure in a pipe, current is the flow rate. A 12 V battery with a 5 A rating means it can push at 12 V of pressure with up to 5 A of flow before sagging. Power (watts) is the product — how much energy is being delivered per second.</div>
+</div>
+
+<!-- ====================== D. I2C ====================== -->
+<h2 id="i2c">D. I²C — the only digital bus in the project</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">D1.</span>What is I²C? <span class="tag">protocol</span></div>
+  <div class="a">A. Inter-Integrated Circuit. A 2-wire synchronous serial bus: SDA carries data, SCL carries the clock. One device acts as master and generates the clock; the others are slaves, each with a unique 7-bit address. Both lines are open-drain — devices can only pull LOW; external pull-up resistors restore HIGH. The PCA9685 board has these pull-ups soldered on board (typ. 10 kΩ).
+    <br><br><strong>If pressed:</strong> default speeds are 100 kHz (Standard mode), 400 kHz (Fast mode), 1 MHz (Fast+), 3.4 MHz (High-speed). Raspberry Pi OS uses 100 kHz by default for i2c-1.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">D2.</span>What's an I²C "transaction" — describe the bits on the wire.</div>
+  <div class="a">A. The master pulls SDA low while SCL is high — that's the START condition. It then clocks out the 7-bit address followed by a R/W bit. The addressed slave responds by pulling SDA low during the 9th clock — the ACK. Then either the master clocks out data bytes (write) or the slave does (read), each followed by an ACK from the receiver. The master ends with a STOP — releasing SDA while SCL is high.
+    <br><br><strong>If pressed:</strong> for our PCA9685 write to set channel 0, the master sends START · 0x40<<1|W · ACK · 0x06 (LED0_ON_L register) · ACK · then four data bytes (ON_L, ON_H, OFF_L, OFF_H) each followed by an ACK · STOP.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">D3.</span>What does "open-drain" mean?</div>
+  <div class="a">A. An output that can only pull the line LOW. It cannot drive HIGH; instead, an external pull-up resistor raises the line back to VCC when no device is pulling it. This is essential for I²C because every device on the bus can drive SDA — if they were push-pull, two devices trying to output opposite levels would short the supply through themselves. Open-drain means "many talkers, one wire, no shorts."</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">D4.</span>Why does I²C need pull-up resistors?</div>
+  <div class="a">A. Because open-drain outputs can only sink current. Without a pull-up, an idle bus would float at an undefined voltage — the receiver can't tell HIGH from LOW. The pull-ups (typically 4.7 kΩ – 10 kΩ to VCC) define the idle level as HIGH. They also set the bus's electrical time constant — smaller resistors charge the line faster but waste more current.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">D5.</span>What's the PCA9685's address and how do you change it?</div>
+  <div class="a">A. Default is 0x40. The board has six solder-bridge pads labelled A0–A5 that let you change the lower bits of the address — by shorting pads you can place a second PCA9685 at 0x41, a third at 0x42, etc. Maximum 64 boards on one bus (addresses 0x40 to 0x7F), though pull-up capacitance becomes a problem long before that.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">D6.</span>How would you verify the I²C bus is alive without running the program?</div>
+  <div class="a">A. <code>i2cdetect -y 1</code> from the Pi terminal. It scans every 7-bit address on bus 1 and prints whoever responds. With our setup the output shows a single <code>40</code> at row 40 / col 0 — that's the PCA9685 acknowledging. If you see nothing, the wiring is wrong (usually GND missing or SDA/SCL swapped).</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">D7.</span>Why I²C and not SPI?</div>
+  <div class="a">A. Three reasons. First, the PCA9685 is an I²C-only chip — we don't get to choose. Second, I²C needs 2 wires total, SPI needs 4 wires per slave. Third, we don't need SPI's speed — our updates are ~5 bytes a few times per second, well inside what 100 kHz I²C handles. SPI's MHz-class throughput is wasted here.</div>
+</div>
+
+<!-- ====================== E. PWM ====================== -->
+<h2 id="pwm">E. PWM, PCA9685 &amp; servos</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">E1.</span>What is PWM? <span class="tag">protocol</span></div>
+  <div class="a">A. Pulse-Width Modulation. A digital signal at a fixed frequency where the HIGH portion of each cycle (the pulse width) carries the analog information. Hobby servos expect 50 Hz — one cycle every 20 ms — and the pulse width encodes the angle: 500 µs = one end of the range, 2500 µs = the other end, 1500 µs = centre.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">E2.</span>Why not use the Pi's own PWM hardware?</div>
+  <div class="a">A. The Pi 4B's BCM2711 has only TWO hardware PWM channels. We need two channels for our two servos which would fit — but the PCA9685 gives us 16 channels for almost no extra wiring, the I²C cost is minimal, and we get electrical isolation between the servo rail and the Pi. Also, software-PWM via gpiozero suffers timing jitter under Linux's scheduler, which makes servos twitch visibly.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">E3.</span>How does the PCA9685 turn a register value into a PWM signal?</div>
+  <div class="a">A. The chip has a 25 MHz internal oscillator. It divides this to produce the configured PWM frequency (we set 50 Hz, period 20 ms). Each channel has a 12-bit counter — 4096 ticks per cycle. Each channel has two 12-bit registers, ON and OFF; the channel output goes HIGH when the counter reaches ON, LOW when it reaches OFF. For a 1500 µs pulse at 50 Hz, OFF ≈ 307 (1500 µs / 20 ms × 4096).</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">E4.</span>Pulse width vs duty cycle — what does the servo care about?</div>
+  <div class="a">A. The servo cares about the absolute pulse width, not the duty cycle. A 1500 µs pulse at 50 Hz happens to be 7.5 % duty cycle — but if you accidentally ran at 60 Hz, that same 7.5 % duty cycle would be a 1250 µs pulse, which the servo interprets as a different angle. That's why we explicitly tell ServoKit the pulse range and actuation range, not duty cycles.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">E5.</span>What does a DS3225 servo contain inside?</div>
+  <div class="a">A. A brushed DC motor, a high-ratio gear train (~270:1), a potentiometer geared to the output shaft, and a small PCB with an H-bridge driver and a controller chip. The controller continuously measures the incoming pulse width, maps it to a target angle, compares against the pot voltage, and drives the H-bridge to close the loop. So position control happens inside the servo every ~20 ms — the Pi just commands targets.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">E6.</span>What is "stall current" and why is it dangerous?</div>
+  <div class="a">A. Stall happens when the servo's motor is at full power but the output shaft can't move — typically when commanded past a mechanical hard stop. With no back-EMF, current draw spikes to roughly the supply voltage divided by the motor winding resistance — ~2 A for a DS3225 at 5 V. Sustained stall overheats the motor and the H-bridge transistors. Our software angle clamps in <code>servo.py</code> are the safety net that prevents stall.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">E7.</span>Why is <code>actuation_range = 270</code> important?</div>
+  <div class="a">A. ServoKit's default is 180 degrees. If we left it at 180 and asked for angle 200, it would clamp at 180 — we'd never reach our calibrated PAN_MAX of 220. Setting it to 270 maps the angle parameter (0–270) linearly across the pulse range (500–2500 µs), matching the DS3225's actual mechanical range.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">E8.</span>Why <code>ramp=False</code> in the tracking loop?</div>
+  <div class="a">A. The ramp helper in <code>servo.py</code> steps in 2 degree increments with 50 ms sleeps. A 20 degree correction would block the loop for half a second — meanwhile the camera buffers frames, the system feels laggy. With <code>ramp=False</code> we issue one PWM command and let the DS3225's own mechanical slew rate (~1 degree per 12 ms) provide the smoothing. The PID's ±10 degree output limit caps how big a single step can be.</div>
+</div>
+
+<!-- ====================== F. GPIO ====================== -->
+<h2 id="gpio">F. GPIO &amp; the laser</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">F1.</span>What is GPIO?</div>
+  <div class="a">A. General-Purpose Input/Output. A pin on the SoC that can be configured by software as a digital input (read 0 or 1) or output (drive 0 or 1). The Pi 4B has 28 GPIO pins on its 40-pin header. Each is CMOS push-pull at 3.3 V — it can both source and sink current.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">F2.</span>What does "BCM 18 = header pin 12" mean?</div>
+  <div class="a">A. Two different numbering schemes. BCM (Broadcom) numbers are how the SoC names its pins internally — GPIO0 through GPIO27. BOARD numbering is the physical position on the 40-pin header — pin 1, pin 2, etc. BCM 18 is physically the 12th pin on the header. gpiozero, RPi.GPIO and most software use BCM numbering; you only need BOARD numbers when you're physically wiring.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">F3.</span>Trace the laser path from the F keypress to the diode lighting up.</div>
+  <div class="a">A. The F key event is delivered to the OpenCV HighGUI window via X11/VNC. <code>cv2.waitKey(1)</code> in <code>main.py</code> returns the keycode. The state machine checks ARMED + LOCKED + not COOLDOWN. It then calls <code>laser.fire(laser_dev)</code>, which calls <code>laser_dev.on()</code> from gpiozero. gpiozero delegates to its pin_factory; on Bookworm that's lgpio, which calls into the kernel's gpiolib via <code>/dev/gpiochip0</code>. The kernel writes the GPSET register of the BCM2711, which switches the GPIO18 pad's push-pull stage to HIGH. The pin rises to 3.3 V, the laser module's internal driver enables the diode, beam comes out. 2.5 seconds later we call <code>laser.off()</code>, pin goes LOW, beam stops.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">F4.</span>Why no MOSFET on the laser?</div>
+  <div class="a">A. A MOSFET is needed when the load wants more current or higher voltage than the GPIO can provide. Our 3 V laser module needs 10–15 mA at 3.3 V — well within the GPIO's 16 mA limit — and has its own internal current limiter. There's nothing for a MOSFET to do. Earlier in the build we did design a MOSFET driver for a bare 5 mW diode, but when we got the integrated module that path was abandoned.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">F5.</span>What's a pull-down resistor, and where was it used here?</div>
+  <div class="a">A. A resistor from a signal line to GND that ensures the line defaults to LOW when nothing is actively driving it. In the original MOSFET driver design, we had a 100 kΩ pull-down on the MOSFET gate — so during the few milliseconds at boot when the GPIO is still high-impedance, the gate would stay LOW and the laser would stay OFF. The current direct-GPIO design doesn't need it because gpiozero's <code>LED(18)</code> drives the pin LOW immediately on construction.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">F6.</span>Why doesn't the laser turn on at boot before your code runs?</div>
+  <div class="a">A. Two reasons. First, the laser module needs around 2.5 V to light; the GPIO's high-impedance "floating" voltage at boot stays well below that threshold. Second, <code>laser.init()</code> explicitly drives the pin LOW before returning — so the very first thing the program does is guarantee the OFF state. The combination is robust enough that we don't need an external pull-down for this design.</div>
+</div>
+
+<!-- ====================== G. CAMERA ====================== -->
+<h2 id="camera">G. Camera, USB, UVC, V4L2</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">G1.</span>How does the camera connect, and what protocol does it use?</div>
+  <div class="a">A. A USB-A cable from the LifeCam HD-3000 into the Pi. It's a UVC (USB Video Class) device — a standardised USB device class for webcams. Because UVC is standardised, the Linux kernel's built-in <code>uvcvideo</code> driver handles it; no vendor driver needed. The kernel exposes it as <code>/dev/video0</code> through the V4L2 (Video4Linux 2) API.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">G2.</span>What is V4L2?</div>
+  <div class="a">A. The Linux kernel's API for video capture devices. Userspace programs open <code>/dev/video0</code> like any file and use <code>ioctl</code> calls to configure resolution, format, exposure, etc., then read frames. OpenCV's <code>cv2.VideoCapture</code> wraps this — it tries GStreamer first and falls back to V4L2 on Linux.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">G3.</span>What format does a frame have in memory?</div>
+  <div class="a">A. A numpy <code>ndarray</code> with shape (height, width, 3) — for our 640×480 stream that's (480, 640, 3), dtype <code>uint8</code>. The 3 channels are in B-G-R order (OpenCV convention, not R-G-B). Total per-frame size is 921,600 bytes, about 900 KB. At 30 fps that's ~27 MB/s of raw data flowing through Python.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">G4.</span>Why did you disable auto-exposure?</div>
+  <div class="a">A. When the laser fires, the bright dot appears in the frame. The camera's ISP runs its AE algorithm and drops gain to compensate. That dims everything else, including the blue target — its HSV signature shifts and the detected centroid jitters 10–30 px between frames. The PID treats that as real motion and the bracket "dances." Locking exposure removes the AE feedback loop entirely; image stays stable, centroid stays put, tracking stays clean during firing.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">G5.</span>How do you disable AE in code?</div>
+  <div class="a">A. Two V4L2 calls via OpenCV:
+    <pre>cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)  # 1 = manual
+cap.set(cv2.CAP_PROP_EXPOSURE, 250)</pre>
+    On the V4L2 backend, AE mode value 1 means manual; the actual exposure is then set to <code>exposure_absolute</code> in driver units. 250 was picked for typical indoor lighting.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">G6.</span>How does a CMOS image sensor work?</div>
+  <div class="a">A. Each pixel is a photodiode. During exposure, photons free electrons that accumulate as charge. At end of exposure the charge is read out row by row, amplified, and digitised by an on-chip ADC. A Bayer colour filter array means each pixel sees only one of R, G, B; the ISP de-mosaics by interpolating the missing channels from neighbours. Then auto-exposure, white-balance, gamma, sharpening, and finally an encoded YUV/MJPEG stream over USB.</div>
+</div>
+
+<!-- ====================== H. DETECTION ====================== -->
+<h2 id="detection">H. Detection &amp; OpenCV</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">H1.</span>Walk me through your detection algorithm.</div>
+  <div class="a">A. Six steps. Gaussian blur the BGR frame with a 5×5 kernel to smooth sensor noise. Convert BGR to HSV so we can threshold by hue. Apply <code>cv2.inRange</code> with our calibrated HSV bounds — produces a binary mask, 255 where the pixel is "blue," 0 elsewhere. Erode then dilate (morphological opening) to kill noise specks while preserving the real blob's size. Find external contours and pick the largest by area. Reject if too small (under 200 px). Compute centroid via image moments: cx = m10/m00, cy = m01/m00. Return (cx, cy).</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">H2.</span>Why HSV and not RGB? <span class="tag">important</span></div>
+  <div class="a">A. In HSV, colour lives in the hue channel and brightness lives in the value channel — they're separated. A "blue" object has roughly the same hue across a wide range of lighting; only its value changes. In RGB the entire vector shifts with lighting, so a threshold tuned at noon breaks under fluorescent light. HSV makes colour thresholding robust.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">H3.</span>What are the hue ranges in OpenCV?</div>
+  <div class="a">A. OpenCV uses hue 0–179 (not 0–360) so it fits in a single byte. Our blue range is 79–105. Red is the awkward one — it wraps around 0 and 179 — so a single inRange can't capture red without two masks OR'd together. That's why we picked blue, which sits in a single continuous band.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">H4.</span>What is morphological "opening"?</div>
+  <div class="a">A. Erosion followed by dilation. Erosion shrinks every white blob by one pixel ring — this completely removes isolated noise specks (which are smaller than the structuring element). Dilation grows blobs back by one ring, restoring the size of the real blob. Net effect: small noise gone, real targets unchanged. "Closing" is the opposite order and fills small holes.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">H5.</span>What are image moments?</div>
+  <div class="a">A. Statistical sums over the pixels of a region. The raw moment m_pq is Σ_x Σ_y x^p y^q I(x,y). For a binary mask, m00 is just the area. m10/m00 and m01/m00 give the centroid — the average x and y coordinate weighted by intensity. OpenCV computes them in C, we just call <code>cv2.moments(contour)</code> and pull three numbers.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">H6.</span>Why a minimum area threshold?</div>
+  <div class="a">A. To reject false positives. Background often has tiny blue specks — a piece of clothing, a poster, a reflection. Without a minimum area, the "largest contour" might be one of those rather than the actual target. 200 pixels (roughly a 14×14 px blob) is small enough to catch the target when it's far away but large enough to ignore typical noise.</div>
+</div>
+
+<!-- ====================== I. PID ====================== -->
+<h2 id="pid">I. PID &amp; tracker</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">I1.</span>What is a PID controller?</div>
+  <div class="a">A. A closed-loop control algorithm. It takes an error signal — desired value minus actual value — and produces a control output. Three terms: P (proportional, gain × current error), I (integral, gain × accumulated error over time), D (derivative, gain × rate of error change). Tuned together they drive the system to the setpoint with controlled speed, overshoot, and settling.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">I2.</span>Why two PIDs?</div>
+  <div class="a">A. Pan and tilt are mechanically independent axes. A pan correction doesn't affect tilt error and vice versa. Treating them as one MIMO problem is over-engineering. Two separate SISO controllers converge faster and are independently tuneable.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">I3.</span>Why Ki = 0 (no integral term)?</div>
+  <div class="a">A. We have no constant bias to correct — no gravity pulling the bracket off-target, no steady wind. An integral term would only wind up while the target is in the deadband (zero error feeds I as zero) or outside the FOV (no measurements), and then cause overshoot when tracking resumes. P-only is the right shape of controller for this problem.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">I4.</span>Why Kd = 0 (no derivative)?</div>
+  <div class="a">A. The detector centroid jitters a few pixels frame to frame even on a stationary target. Derivative gain amplifies that jitter directly into bracket motion — visible jiggle. Adding a low-pass filter to D could help, but with this dataset P-only is already smooth and fast enough that D isn't needed.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">I5.</span>How did you tune Kp?</div>
+  <div class="a">A. Empirically with <code>test_tracking.py</code>. Started at 0.05 (with ramp=True) — bracket oscillated wildly because ramp was hiding the real gain. Switched to ramp=False, dropped Kp to 0.01 — stable but slow. 0.02 — slightly jittery. 0.017 — sweet spot. The right number depends on the camera FPS, the lens degrees-per-pixel, and target speed; change any of those and you'd retune.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">I6.</span>What's the deadband for?</div>
+  <div class="a">A. A small region around frame centre where the tracker holds position instead of issuing tiny corrections. With detector jitter of ~8–12 px frame to frame, a tighter deadband would cause endless micro-corrections — visible jiggle. 15 px is wide enough to absorb jitter but narrow enough that lock is meaningful. It also doubles as the fire-permission threshold: laser only fires when the target is inside the deadband.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">I7.</span>What is "coast" mode?</div>
+  <div class="a">A. When the detector loses the target — typically because the user moved it too fast for the bracket — the tracker keeps applying the last PID correction for up to 30 frames (~1 s) with a 0.95 multiplicative decay each frame. The bracket carries forward in the same direction; if the target re-enters the FOV, normal tracking resumes. Without coast, fast targets that cross an edge are lost forever.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">I8.</span>What is "recenter" mode?</div>
+  <div class="a">A. If coast expires without re-acquiring, the tracker steps the bracket back to centre at 2 degrees per frame. This handles the case where a fast target left the FOV permanently — without recenter the bracket would stay parked in some corner forever and have no chance of seeing the target again.</div>
+</div>
+
+<!-- ====================== J. CODE ====================== -->
+<h2 id="code">J. Code organisation</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">J1.</span>Why is each piece of hardware wrapped in its own Python module?</div>
+  <div class="a">A. One-owner rule. Only <code>servo.py</code> imports <code>adafruit_servokit</code>; only <code>laser.py</code> imports <code>gpiozero</code> for the laser pin; only <code>camera.py</code> calls <code>cv2.VideoCapture</code>. This gives single points of safety enforcement (the servo clamps live in one place, the laser-off-on-exit pattern lives in one place), single points of hardware truth (calibrated limits in <code>servo.py</code>), and easy hardware swaps (replace camera.py to switch from USB to CSI without touching anything else).</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">J2.</span>What's in <code>config.py</code> and why?</div>
+  <div class="a">A. Every tuned numerical constant: HSV ranges, frame dimensions, PID gains, output limits, deadband, coast/recenter parameters, fire duration, cooldown, camera exposure, boresight offsets. Single source of truth so the tuning record matches what the code uses. Servo limits live in <code>servo.py</code> because they're hardware-specific safety values, not detection-tuning values.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">J3.</span>Why a try/finally pattern around hardware?</div>
+  <div class="a">A. To guarantee cleanup runs even if an exception fires or the user hits Ctrl+C. Especially critical for the laser — without a finally block, an exception during tracking could leave the laser ON indefinitely. Every script in the project wraps its main loop with <code>try: ... finally: laser.cleanup(...)</code>.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">J4.</span>What does the variable name rule about <code>laser_dev</code> protect against?</div>
+  <div class="a">A. Shadowing the module name. <code>laser = laser.init()</code> works once — but then <code>laser.cleanup(...)</code> fails because <code>laser</code> is now an <code>LED</code> object, not the module. By convention we always write <code>laser_dev = laser.init()</code> so the module name stays accessible.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">J5.</span>Walk me through one iteration of the main loop in <code>main.py</code>.</div>
+  <div class="a">A. (1) Read the clock for state transitions — finish FIRING after 2.5 s, exit COOLDOWN after 1 s. (2) <code>capture_frame</code>: blocking V4L2 read of the next BGR frame. (3) <code>detector.detect</code>: blur, HSV, mask, morphology, contour, moments → (x,y) or None. (4) <code>tracker.update</code>: compute pixel error, run PID, call <code>servo.move_pan/tilt</code> with ramp=False — those reach the PCA9685 over I²C. (5) Draw the overlay onto a copy of the frame and <code>cv2.imshow</code>. (6) <code>cv2.waitKey(1)</code> — checks for A/F/Q keypresses and yields back to the GUI for 1 ms. (7) Loop.</div>
+</div>
+
+<!-- ====================== K. STATE MACHINE ====================== -->
+<h2 id="state">K. State machine</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">K1.</span>List the states and what triggers each transition.</div>
+  <div class="a">A. DISARMED → ARMED on <span class="kbd">A</span>. ARMED → ARMED+LOCKED when both axes' pixel error drops below 15 px. ARMED+LOCKED → FIRING on <span class="kbd">F</span>. FIRING → COOLDOWN after FIRE_DURATION_S (2.5 s). COOLDOWN → ARMED after COOLDOWN_S (1 s). At any time <span class="kbd">A</span> while ARMED returns to DISARMED, and <span class="kbd">Q</span> exits.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">K2.</span>Does tracking happen in every state?</div>
+  <div class="a">A. Yes. Camera capture, detection, PID, and servo updates run every frame regardless of state. Only the laser is gated. So the bracket keeps following the target while DISARMED, while ARMED, during FIRING, and during COOLDOWN — there's no "pause" in tracking.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">K3.</span>What are the safety preconditions for firing?</div>
+  <div class="a">A. Three checks must all be true: state == ARMED (operator has armed), in_deadband == True (target is locked within 15 px), and we are NOT currently in FIRING or COOLDOWN. If any check fails, the F key logs a warning and is ignored.</div>
+</div>
+
+<!-- ====================== L. ASYNC ====================== -->
+<h2 id="async">L. Async, threads, printing — the section the teacher flagged</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">L1.</span>How does your GUI keep responsive while modules write log messages?</div>
+  <div class="a">A. Two pieces. Every module uses Python's <code>logging</code> module. <code>control_panel.py</code> installs a custom <code>logging.Handler</code> subclass — <code>_QueueHandler</code> — on the root logger; it formats each record and pushes the string onto a <code>queue.Queue</code>. Tkinter is single-threaded, so the GUI runs a periodic callback via <code>root.after(200, _tick)</code>. <code>_tick</code> drains the queue into the scrolling text widget, refreshes status labels, polls active subprocesses, then re-schedules itself. Background producers never touch the widgets directly — they always go through the queue.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">L2.</span>Why a <code>queue.Queue</code> specifically?</div>
+  <div class="a">A. Because it's thread-safe by design — its <code>put</code> and <code>get</code> operations acquire an internal lock. If multiple loggers from different threads or different parts of the code call into <code>_QueueHandler.emit</code>, the queue serialises them safely. Without the queue, two threads writing to a tk widget at the same time would crash or corrupt the display.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">L3.</span>Is <code>root.after()</code> a thread?</div>
+  <div class="a">A. No. It's cooperative scheduling on tkinter's main event loop. <code>after(200, _tick)</code> tells tk "200 ms from now, call _tick on this same thread." The event loop interleaves it with user events (button clicks, key presses) and widget redraws. There's only one thread — no race conditions, but also: if _tick runs slowly, the GUI freezes.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">L4.</span>What is synchronous vs asynchronous I/O?</div>
+  <div class="a">A. Synchronous = the caller blocks until the operation completes. <code>cap.read()</code>, every I²C write, <code>time.sleep</code> — all synchronous. Asynchronous = the call returns immediately and the work happens elsewhere; you find out later via a callback, polling, or by reading from a queue. In our project the main tracking loop is synchronous on purpose (tight timing), and the boundaries between the GUI and the background world — log records, subprocess launches — are asynchronous through queues and Popen.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">L5.</span>Why don't you use <code>print()</code>?</div>
+  <div class="a">A. Three reasons. (1) <code>print</code> writes straight to stdout — when the GUI launches <code>main.py</code> as a subprocess, that stdout is redirected to a file; the operator never sees it live. (2) <code>logging</code> has levels (DEBUG/INFO/WARNING/ERROR), timestamps, and module names baked in. (3) <code>logging</code> handlers are pluggable — the GUI's <code>_QueueHandler</code> captures every record across every module without changing any call site. Also, <code>print</code> is line-buffered when piped to a file, so subprocess crashes would only appear in chunks; we pass <code>python3 -u</code> to subprocesses to force unbuffered stdout for the log-tail feature.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">L6.</span>Why isn't <code>asyncio</code> used?</div>
+  <div class="a">A. <code>asyncio</code> shines when you have many concurrent I/O-bound tasks — network requests, web sockets. Our hot path is CPU-bound (OpenCV ops on numpy arrays) with one I/O operation per frame. Adding <code>asyncio</code> would add overhead and complexity for no benefit. The tk <code>after()</code> + <code>queue.Queue</code> + <code>subprocess.Popen</code> combination handles every async need this project actually has.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">L7.</span>What is the Python GIL and why does it matter?</div>
+  <div class="a">A. Global Interpreter Lock — CPython's design choice that only one thread executes Python bytecode at a time. So multi-threading does NOT speed up CPU-bound work (image processing). It DOES help I/O-bound work: a thread blocked in a system call releases the GIL while waiting. In our project we avoid threading entirely because OpenCV is already fast enough on one thread, and subprocesses give us real OS-level parallelism when we need it for cv2 tool windows.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">L8.</span>Why use <code>subprocess.Popen</code> for cv2 tools?</div>
+  <div class="a">A. Tkinter has its own event loop and OpenCV's HighGUI has its own — they don't play nicely in the same process. <code>cv2.imshow</code> from within tk's mainloop typically just hangs. Launching cv2 tools as separate processes via <code>subprocess.Popen</code> gives each tool its own OS process, its own event loop, and full isolation. We pipe stdout/stderr to a log file and poll <code>.returncode</code> from <code>_tick</code> to detect exit.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">L9.</span>What's the difference between a thread, a process, and a coroutine?</div>
+  <div class="a">A. A <strong>process</strong> is an OS-level container with its own memory, file descriptors, and PID. A <strong>thread</strong> is a unit of execution that shares memory and file descriptors with other threads in the same process. A <strong>coroutine</strong> (asyncio) is a function that voluntarily yields control at await points — no OS involvement; the Python interpreter schedules them. Processes are isolated and expensive. Threads share state and are cheap, but in CPython the GIL serialises CPU work. Coroutines are cheapest of all, but only useful for I/O-bound concurrency.</div>
+</div>
+
+<!-- ====================== M. OTHER PROTOCOLS ====================== -->
+<h2 id="protocols">M. Other protocols (SPI, I²S, OneWire, UART, ADC)</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">M1.</span>What is SPI and how does it differ from I²C?</div>
+  <div class="a">A. Serial Peripheral Interface. Four-wire synchronous bus: MOSI (master-out, slave-in), MISO (master-in, slave-out), SCK (clock), CS (chip select, one per slave). Full-duplex — data goes both directions simultaneously, which I²C cannot do. Faster, typically tens of MHz versus I²C's 100 kHz to 1 MHz. Downsides: one CS line per slave (wire count grows), no slave addressing on the bus (the CS line is the address). Common SPI devices: SD cards, OLED displays, fast ADCs.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">M2.</span>Does your project use SPI?</div>
+  <div class="a">A. No. The PCA9685 is an I²C-only chip; the laser is just a digital GPIO. Nothing in the project needs SPI's speed or full-duplex.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">M3.</span>What is I²S?</div>
+  <div class="a">A. Inter-IC Sound. A 3-wire bus carrying digital audio: SCK (bit clock), WS (word select / left-right channel select), SD (serial data). Used between audio CODECs, DACs, and microphones. Not relevant here — we have no audio.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">M4.</span>What is OneWire?</div>
+  <div class="a">A. A single-data-line bus (plus GND, with optional power on the same line — "parasite power"). Up to ~15 kHz. Each slave has a unique 64-bit ROM ID. Commonly used for DS18B20 temperature sensors and iButton tokens. Slow but cheap on pins. Not used here — we have no temperature monitoring.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">M5.</span>What is UART?</div>
+  <div class="a">A. Universal Asynchronous Receiver-Transmitter. Two-wire, point-to-point, full-duplex serial communication with no shared clock — both ends must agree on baud rate in advance. Common rates: 9600, 115200, 921600 baud. The Pi has two UARTs available on GPIO header pins. Used for GPS modules, Bluetooth dongles, microcontroller-to-Pi links, debug consoles. Not used in this project.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">M6.</span>What would change if you wanted to read an analog sensor like a temperature thermistor?</div>
+  <div class="a">A. The Pi has no built-in ADC, so I'd add one: ADS1115 over I²C (4 channels, 16-bit) or MCP3008 over SPI (8 channels, 10-bit). Then I'd read the digital value from the chip and convert it to voltage and then to temperature using the thermistor's resistance-vs-temperature curve. Alternative: use a digital temperature sensor like the DS18B20 over OneWire, which skips the ADC entirely.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">M7.</span>How does USB differ from I²C / SPI / UART?</div>
+  <div class="a">A. USB is a different class of bus entirely — packet-based, host-controlled, with enumeration, device classes (HID, UVC, mass storage), error recovery, and high speeds (480 Mbps for USB 2.0). It's a host-managed network with hubs. I²C/SPI/UART are simple peripheral buses for chip-to-chip communication on a single PCB. Our webcam talks USB and uses the UVC class profile so the kernel speaks to it without a custom driver.</div>
+</div>
+
+<!-- ====================== N. SAFETY ====================== -->
+<h2 id="safety">N. Safety</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">N1.</span>What stops the laser from coming on accidentally?</div>
+  <div class="a">A. Five layers. (1) <code>laser.init()</code> drives the pin LOW before returning, so the GPIO is in a known OFF state. (2) The GUI hides laser controls behind a deliberate "Enable laser controls" checkbox. (3) <code>main.py</code> starts in DISARMED state — <span class="kbd">A</span> must be pressed before any fire is even considered. (4) Even in ARMED, fire requires the target to be locked in the deadband — random keystrokes don't fire. (5) Every script wraps its main loop in try/finally so an exception or Ctrl+C still calls <code>laser.cleanup()</code>.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">N2.</span>What stops the servos from being driven into a hard stop?</div>
+  <div class="a">A. Software angle clamps inside <code>servo.move_pan</code> and <code>servo.move_tilt</code>. Every angle request — from PID, calibration, manual control, whatever — passes through these functions and is clamped to the calibrated mechanical range (pan 50–220 degrees, tilt 115–205 degrees). The clamp is the single safety enforcement point; no other code calls into ServoKit directly.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">N3.</span>What's the emergency stop?</div>
+  <div class="a">A. A big red button at the bottom of the control panel. It turns the laser OFF, centres both servos, releases the GPIO line, and resets the GUI to the un-initialised state. Equivalent of pulling the plug, but graceful.</div>
+</div>
+
+<!-- ====================== O. PATHS ====================== -->
+<h2 id="paths">O. Signal paths through the system</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">O1.</span>Trace the full signal path from photon to servo motion. <span class="tag">memorise</span></div>
+  <div class="a">A. Photon hits CMOS sensor → analog charge → on-chip ADC → ISP demosaics + AE/AWB → encoded over USB → kernel uvcvideo driver → V4L2 (<code>/dev/video0</code>) → <code>cv2.VideoCapture.read()</code> → numpy ndarray (480, 640, 3) BGR → <code>detector.detect</code>: blur, BGR→HSV, inRange mask, erode+dilate, contours, moments → (cx, cy) → <code>tracker.update</code>: subtract frame centre → pixel error → PID → degrees of correction → clamp to ±10° → <code>servo.move_pan/move_tilt</code> with safety clamp → ServoKit → adafruit_pca9685 → blinka → <code>/dev/i2c-1</code> → kernel I²C driver → I²C transaction at 0x40 → PCA9685 LEDn_ON/OFF registers → internal 25 MHz oscillator + counter → PWM pulse on signal pin → DS3225 controller compares pulse to pot feedback → H-bridge drives DC motor → gear reduction → output shaft rotates → bracket aim shifts → next frame.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">O2.</span>Trace the path from the F keystroke to the laser dot. <span class="tag">memorise</span></div>
+  <div class="a">A. F key event → X server / VNC → OpenCV HighGUI window → <code>cv2.waitKey(1)</code> returns 102 → state machine validates ARMED + LOCKED + not COOLDOWN → <code>laser.fire(laser_dev)</code> → <code>laser_dev.on()</code> (gpiozero LED) → gpiozero's pin_factory (LGPIOPin) → lgpio C library → <code>/dev/gpiochip0</code> → kernel gpiolib → BCM2711 GPIO controller GPSET register → physical pin 12 (GPIO18) rises to 3.3 V → laser module's internal driver enables the diode → 650 nm beam emitted. 2.5 s later <code>laser.off()</code> drives the pin LOW, beam stops, state transitions to COOLDOWN.</div>
+</div>
+
+<!-- ====================== P. CURVEBALLS ====================== -->
+<h2 id="curveball">P. Curveball / "what if" questions</h2>
+
+<div class="qa">
+  <div class="q"><span class="num">P1.</span>What if I unplugged the LM2596 mid-demo?</div>
+  <div class="a">A. The servos would lose power and the bracket would fall under gravity until something stops it. The Pi and PCA9685 logic would keep running — VCC comes from the Pi rail — so the program wouldn't crash. The next servo command would generate a PWM signal, but with no V+ supply, nothing moves. When you reconnect power, the servos would jump to whatever angle the chip was last commanding.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">P2.</span>What if the I²C bus dies mid-tracking?</div>
+  <div class="a">A. The next ServoKit call would raise an OSError. We don't catch it explicitly in the inner loop, so the exception would propagate up to <code>main.py</code>'s try/finally — laser turns OFF, servos cleanup attempts run (and probably fail), camera releases. The GUI would see the subprocess crash and tail the log into the log pane.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">P3.</span>What if you wanted to add a "fire-when-locked-for-N-seconds" auto-fire?</div>
+  <div class="a">A. Add a timestamp variable: when <code>in_deadband</code> becomes True, record now(). Each frame, check (now − lock_start_time) ≥ N and state == ARMED and not COOLDOWN; if so, fire automatically without the F key. About 6 lines of code in <code>main.py</code>.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">P4.</span>What if you wanted to track two targets at once?</div>
+  <div class="a">A. <code>detector.detect</code> would need to return a list of (x, y) tuples instead of just one. Then we'd need logic to decide which target to track — closest to centre? Largest? Most stable? Then the architecture handles it the same way. The harder problem is one laser can only point at one target — the operator needs UI to select.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">P5.</span>What if the target colour changed from blue to red?</div>
+  <div class="a">A. Red wraps around hue 0 / 179 in OpenCV. You'd need two HSV ranges and two inRange calls combined with bitwise OR — e.g. inRange(hsv, [0,76,0], [10,255,255]) | inRange(hsv, [170,76,0], [179,255,255]). The rest of the pipeline would work unchanged. We'd retune the saturation floor based on the new target's lighting.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">P6.</span>What if you replaced the USB camera with a Pi CSI camera?</div>
+  <div class="a">A. The only file that changes is <code>camera.py</code>. Its public API — <code>init</code>, <code>capture_frame</code>, <code>release</code> — stays identical, but inside we'd use <code>picamera2</code> instead of <code>cv2.VideoCapture</code>. Every other module — detector, tracker, main — is unaffected. That's exactly what the one-owner-per-hardware-module design is for.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">P7.</span>What if Kp were ten times higher?</div>
+  <div class="a">A. The bracket would overshoot every target — for a 100 px error it would command a 17 degree correction instead of 1.7 — and oscillate around the setpoint instead of settling on it. With our ±10° output limit it would slam to the limit on most corrections and act like a bang-bang controller. The visible behaviour: violent jerks, possibly hitting a software-clamped limit and stalling there.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">P8.</span>What if a passing person blocked the camera view mid-demo?</div>
+  <div class="a">A. Detector returns None for the frames they're blocked. Tracker enters coast mode — keeps applying the last PID correction for up to 30 frames (~1 s) with a decay. If the block lasts longer, coast expires and the tracker switches to recenter, bringing the bracket back to centre. When the person moves and the target reappears, normal PID resumes immediately.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">P9.</span>How would you make this safer for use around people?</div>
+  <div class="a">A. A few approaches. Physical: switch to a Class 1 (eye-safe) laser. Software: add a "no-fire zone" — face detection that gates fire if a person's face is in the frame near the target. Hardware: a physical interlock switch that must be held closed for fire to be possible. Procedural: laser safety goggles, marked safety zone, no demo with audience downrange.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">P10.</span>How is the Pi-side code deployed to the Pi?</div>
+  <div class="a">A. Three-machine workflow. Code is edited on the laptop in <code>C:\Projects\pi</code>. <code>git push</code> sends to GitHub. The Pi has a cron job that runs <code>git pull</code> once a minute, keeping <code>~/pi</code> in sync. To run, SSH in and start the control panel (or use the desktop shortcut over VNC). Code is never edited directly on the Pi — that keeps git history clean.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">P11.</span>What's the worst bug you found during development?</div>
+  <div class="a">A. The subprocess GPIO contention bug. Boresight tool launched from the GUI failed with "GPIO busy" even after <code>laser.cleanup()</code>. Root cause: gpiozero's pin_factory keeps the chip handle (<code>/dev/gpiochip0</code>) open at module level even after individual LED objects close. <code>subprocess.Popen</code> forks, the child inherits the open chip handle, and the kernel reports GPIO18 as still claimed. Fix: close the pin_factory entirely (<code>Device.pin_factory.close(); Device.pin_factory = None</code>) before forking, then sleep 300 ms to let kernel state settle.</div>
+</div>
+
+<div class="qa">
+  <div class="q"><span class="num">P12.</span>What if the demo room has different lighting than your tuning environment?</div>
+  <div class="a">A. Two things could break. (1) The fixed exposure might leave the image too dark or too bright — adjust <code>config.CAMERA_EXPOSURE</code> (default 250; try 100–600). (2) The HSV detection range was tuned at the original exposure; significant exposure changes shift the target's HSV signature. The workflow is: run <code>tune_detector.py</code> from the GUI under the new lighting, eyeball the HSV sliders until the target mask is clean, save. Then run the demo.</div>
+</div>
+
+<hr>
+<p class="muted">Final check: if any answer here is longer than you'd actually speak out loud, shorten the spoken version in your head — examiners want a clear, short version first and a deeper version on follow-up. Lead with the technical word (HSV, V4L2, open-drain, push-pull, pin_factory, BCM2711) so they know you have the vocabulary; expand if they ask.</p>
+
+</div>
+</body>
+</html>
