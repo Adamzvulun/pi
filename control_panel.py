@@ -321,6 +321,18 @@ class ControlPanel:
 
     # -- Widget state management -------------------------------------------
 
+    @staticmethod
+    def _set_enabled(widget, enabled: bool) -> None:
+        """Enable / disable any widget regardless of whether it's a ttk
+        widget (.state(['!disabled'|'disabled'])) or a classic tk widget
+        (.configure(state='normal'|'disabled')). The big colored demo +
+        e-stop buttons are tk.Button (for bg/fg styling) while every
+        other button in the panel is ttk.Button."""
+        if isinstance(widget, ttk.Widget):
+            widget.state(["!disabled" if enabled else "disabled"])
+        else:
+            widget.configure(state=("normal" if enabled else "disabled"))
+
     def _refresh_widget_states(self) -> None:
         """Recompute enabled/disabled for every gated widget."""
         hw_ready = self.kit is not None
@@ -333,12 +345,12 @@ class ControlPanel:
         )
 
         for w in self._hw_widgets:
-            w.state(["!disabled" if hw_ready else "disabled"])
+            self._set_enabled(w, hw_ready)
         for w in self._busy_widgets:
             # busy disables on top of hw — both must allow.
-            w.state(["!disabled" if (hw_ready and not busy) else "disabled"])
+            self._set_enabled(w, hw_ready and not busy)
         for w in self._laser_widgets:
-            w.state(["!disabled" if laser_ok else "disabled"])
+            self._set_enabled(w, laser_ok)
 
     # -- Event handlers ----------------------------------------------------
 
