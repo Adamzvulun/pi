@@ -38,16 +38,28 @@ exception is raised, Ctrl+C is pressed, or the loop exits unexpectedly.
 """
 
 import logging
+import time
 
 from gpiozero import LED
 
 log = logging.getLogger(__name__)
 
 # Physical pin 12 on the 40-pin header = BCM GPIO18.
-# Active HIGH through the IRLZ44N MOSFET gate (220Ω in series, 100kΩ
-# pulldown to GND on the gate to keep the laser OFF when the GPIO is
-# floating or undriven).
+# Currently driven directly at 3.3V from GPIO18 into a 3V laser module
+# with internal current limiter. Earlier hardware revision used an
+# IRLZ44N MOSFET driver (220Ω gate + 100kΩ pulldown on a 5V supply);
+# that path was abandoned when the bare diode failed and the project
+# switched to a self-driven 3V module. CLAUDE.md / problem 002 record
+# the transition.
 LASER_PIN: int = 18
+
+# When a parent process (e.g. control_panel.py) releases the laser pin
+# right before launching a subprocess that re-claims it, the lgpio
+# release isn't always visible to a child process started within a few
+# milliseconds. Retry a small number of times with backoff before giving
+# up — turns a race into a non-issue.
+_INIT_RETRIES: int = 5
+_INIT_RETRY_DELAY_S: float = 0.15
 
 
 def init() -> LED:
@@ -60,13 +72,34 @@ def init() -> LED:
     we still call .off() to make the intent explicit and defend against
     any future gpiozero default change.
 
+    Retries on `lgpio.error: 'GPIO busy'` — that error can occur briefly
+    when a parent process has just released the pin (its kernel claim
+    hasn't fully propagated yet). After _INIT_RETRIES attempts the
+    underlying exception is re-raised so the caller sees a real failure
+    if the pin is permanently held.
+
     Returns the device object. Pass it to every other function in this
     module. Keep the variable name `laser_dev` (never `laser`).
     """
-    laser_dev = LED(LASER_PIN)
-    laser_dev.off()
-    log.info("Laser initialized on GPIO%d (OFF)", LASER_PIN)
-    return laser_dev
+    last_exc = None
+    for attempt in range(1, _INIT_RETRIES + 1):
+        try:
+            laser_dev = LED(LASER_PIN)
+            laser_dev.off()
+            log.info("Laser initialized on GPIO%d (OFF)", LASER_PIN)
+            return laser_dev
+        except Exception as exc:  # lgpio.error in practice, but be permissive
+            last_exc = exc
+            msg = str(exc).lower()
+            if "busy" not in msg and "in use" not in msg:
+                # Not a contention error — fail fast.
+                raise
+            log.warning("GPIO%d busy on attempt %d/%d — retrying in %.2fs",
+                        LASER_PIN, attempt, _INIT_RETRIES, _INIT_RETRY_DELAY_S)
+            time.sleep(_INIT_RETRY_DELAY_S)
+    # All retries exhausted — re-raise the last error so caller sees it.
+    assert last_exc is not None
+    raise last_exc
 
 
 def fire(laser_dev: LED) -> None:
