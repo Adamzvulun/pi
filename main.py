@@ -59,7 +59,6 @@ Safety:
 """
 
 import logging
-import math
 import sys
 import time
 from typing import Optional
@@ -110,50 +109,44 @@ def _put_text_centered(img, text, y, font_scale=1.0, color=(255, 255, 255),
 
 
 def _draw_banner(display, state, locked, cooldown_remaining):
-    """Top banner — color and text depend on state."""
+    """Top banner — solid colors, plain ASCII, no animation.
+
+    OpenCV's Hershey font is ASCII-only — characters like the em-dash,
+    star, or degree sign render as boxes/question marks. We stick to
+    ASCII so the overlay always reads cleanly regardless of locale or
+    available system fonts.
+    """
     h, w = display.shape[:2]
-    banner_h = 56
-    now = time.monotonic()
+    banner_h = 48
 
     if state == S_DISARMED:
-        bg = (60, 60, 60)
-        text = "DISARMED  —  press A to arm laser"
+        bg = (60, 60, 60)            # dark gray
+        text = "DISARMED  -  press A to arm"
         fg = (220, 220, 220)
-        scale = 0.85
     elif state == S_ARMED:
         if locked:
-            # Pulsing green for "ready to fire"
-            pulse = (math.sin(now * 6.0) + 1) / 2  # 0..1
-            green = int(160 + 80 * pulse)
-            bg = (0, green, 0)
-            text = "★ LOCKED — PRESS F TO FIRE ★"
+            bg = (40, 140, 40)        # solid green, no pulse
+            text = "LOCKED  -  press F to fire"
             fg = (255, 255, 255)
-            scale = 0.95
         else:
-            bg = (0, 165, 220)   # amber-ish
-            text = "ARMED  —  acquiring target..."
-            fg = (0, 0, 0)
-            scale = 0.85
+            bg = (90, 80, 40)         # muted slate-blue
+            text = "ARMED  -  waiting for lock"
+            fg = (230, 230, 230)
     elif state == S_FIRING:
-        # Strobe: alternate between two reds at ~10 Hz
-        strobe = int(now * 10) % 2
-        bg = (0, 0, 220) if strobe else (0, 0, 100)
-        text = "★  FIRING  ★"
+        bg = (40, 40, 160)            # solid dark red, no strobe
+        text = "FIRING"
         fg = (255, 255, 255)
-        scale = 1.05
     elif state == S_COOLDOWN:
-        bg = (140, 90, 30)   # cool blue-teal
+        bg = (95, 80, 55)             # muted teal
         text = f"COOLDOWN  {cooldown_remaining:.1f}s"
-        fg = (255, 255, 255)
-        scale = 0.85
+        fg = (220, 220, 220)
     else:
         bg = (0, 0, 0)
         text = state
         fg = (255, 255, 255)
-        scale = 0.8
 
     cv2.rectangle(display, (0, 0), (w, banner_h), bg, -1)
-    _put_text_centered(display, text, 40, font_scale=scale, color=fg, thickness=2)
+    _put_text_centered(display, text, 33, font_scale=0.8, color=fg, thickness=2)
 
 
 def _draw_aim_and_target(display, target, in_deadband):
@@ -175,34 +168,39 @@ def _draw_aim_and_target(display, target, in_deadband):
                  (target[0], target[1] + 6), target_color, 1)
 
 
-def _draw_info_strip(display, target, result):
-    """Bottom strip with pan/tilt angles, pixel error, key legend."""
+def _draw_info_strip(display, target, result, state):
+    """Bottom strip with pan/tilt angles, pixel error, key legend.
+    All text is plain ASCII so the Hershey font has glyphs for it."""
     h, w = display.shape[:2]
-    strip_h = 60
+    strip_h = 44
     cv2.rectangle(display, (0, h - strip_h), (w, h), (28, 28, 28), -1)
 
     pan = servo.current_pan()
     tilt = servo.current_tilt()
+    angles = f"pan {pan:6.1f}    tilt {tilt:6.1f}"
 
-    if result is not None and result.get("pan_error") is not None:
-        info = (f"pan {pan:6.1f}°    tilt {tilt:6.1f}°    "
-                f"err ({result['pan_error']:+4d}, {result['tilt_error']:+4d}) px")
+    if state == S_FIRING:
+        info = f"{angles}    bracket hold"
+    elif state == S_COOLDOWN:
+        info = f"{angles}    cooling down"
+    elif result is not None and result.get("pan_error") is not None:
+        info = (f"{angles}    err ({result['pan_error']:+4d},"
+                f" {result['tilt_error']:+4d}) px")
     elif result is not None and result.get("coasting"):
-        info = f"pan {pan:6.1f}°    tilt {tilt:6.1f}°    COASTING"
+        info = f"{angles}    coasting"
     elif result is not None and result.get("recentering"):
-        info = f"pan {pan:6.1f}°    tilt {tilt:6.1f}°    RECENTERING"
+        info = f"{angles}    recentering"
+    elif target is None:
+        info = f"{angles}    no target"
     else:
-        if target is None:
-            info = f"pan {pan:6.1f}°    tilt {tilt:6.1f}°    no target"
-        else:
-            info = f"pan {pan:6.1f}°    tilt {tilt:6.1f}°    holding"
+        info = f"{angles}    holding"
 
-    cv2.putText(display, info, (14, h - 35),
+    cv2.putText(display, info, (14, h - 16),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.55, (220, 220, 220), 1, cv2.LINE_AA)
 
-    legend = "[A] arm  /  [F] fire  /  [Q] quit"
+    legend = "[A] arm  [F] fire  [Q] quit"
     (lw, _), _ = cv2.getTextSize(legend, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 1)
-    cv2.putText(display, legend, (w - lw - 14, h - 35),
+    cv2.putText(display, legend, (w - lw - 14, h - 16),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.55, (180, 180, 180), 1, cv2.LINE_AA)
 
 
@@ -244,16 +242,30 @@ def main() -> int:
 
             # -------- Capture + detect + track ----------------
             frame = camera.capture_frame(cam)
-            target = detector.detect(frame)
-            result = tracker.update(pan_pid, tilt_pid, kit, target)
-            locked = result is not None and result.get("in_deadband", False)
+
+            # Pause detection and tracking while the laser is on. The
+            # laser dot lights up a saturated cluster in the frame that
+            # the HSV detector latches onto, and the auto-exposure
+            # response causes pixel jitter — both effects make the
+            # tracker chase phantoms and the bracket "dance" during
+            # the shot. We also hold through cooldown so the camera's
+            # auto-exposure has time to settle before we start moving
+            # again. The bracket stays exactly where it locked.
+            if state in (S_FIRING, S_COOLDOWN):
+                target = None
+                result = None
+                locked = False
+            else:
+                target = detector.detect(frame)
+                result = tracker.update(pan_pid, tilt_pid, kit, target)
+                locked = result is not None and result.get("in_deadband", False)
 
             # -------- Draw everything onto a copy of the frame
             display = frame.copy()
             cooldown_remaining = max(0.0, cooldown_until - now)
             _draw_banner(display, state, locked, cooldown_remaining)
             _draw_aim_and_target(display, target, locked)
-            _draw_info_strip(display, target, result)
+            _draw_info_strip(display, target, result, state)
             cv2.imshow(WINDOW_NAME, display)
 
             # -------- Handle key input ------------------------
