@@ -1,4 +1,20 @@
-# Phase 8 — Final Integration ⏸ FUTURE
+# Phase 8 — Final Integration ✅ COMPLETE 2026-05-27
+
+## Outcome
+
+`main.py` replaces the old placeholder with a real tracking + firing state machine. Launched from a big green "▶ RUN FULL DEMO" button in `control_panel.py`. The flow:
+
+```
+camera.capture_frame → detector.detect → tracker.update → servo.move_*
+                                                        ↓
+                                              [optional] laser.fire
+```
+
+State machine: DISARMED (gray) → ARMED (slate) → ARMED+LOCKED (green) → FIRING (red, 2.5 s) → COOLDOWN (teal, 1 s) → ARMED. Keys: `A` toggles arm, `F` fires (gated on armed+locked+not-cooling), `Q` quits.
+
+Confirmed working end-to-end on the actual hardware. See `latest-changesV1.md` for the full session log including the two follow-up bugfixes (gpiozero GPIO contention in subprocess hand-off, camera auto-exposure causing bracket dance during fire).
+
+The rest of this file is the original planning document — preserved as a reference, but the work is done.
 
 ## Prerequisites
 

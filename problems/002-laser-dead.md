@@ -1,4 +1,23 @@
-# Problem 002 — Bare laser diode is dead
+# Problem 002 — Bare laser diode is dead  ✅ RESOLVED 2026-05-27
+
+## Resolution summary
+
+The bare 5 mW diode was discarded and replaced with a **3 V self-contained laser module** (small brass cylinder with internal driver electronics + internal current limiter). The replacement is wired direct-GPIO — no MOSFET, no external current-limit resistor:
+
+```
+Pi pin 12 (GPIO18) ─→ laser red wire (anode +)
+Pi pin 9  (GND)    ─→ laser black wire (cathode −)
+```
+
+That's the entire circuit. The IRLZ44N MOSFET, 220 Ω gate resistor, 100 kΩ pulldown, and 100 Ω current limiter are all removed. The module accepts 3 V (the Pi's GPIO HIGH level is 3.3 V — within spec), has its own current limiter inside the brass body, and draws ~10–15 mA which is well within the GPIO pin's safe sourcing limit.
+
+`laser.py` was already designed around `gpiozero.LED(18)` so it worked unchanged. `test_laser.py` runs cleanly, control panel "Fire 1 second" button works, full demo `main.py` fires the laser at locked targets. Phase 6 complete.
+
+The detailed diagnostic log below is preserved as a historical record — keep it for the project book and for future reference if a similar failure ever happens again.
+
+---
+
+# Original problem (preserved for the record)
 
 ## What went wrong
 

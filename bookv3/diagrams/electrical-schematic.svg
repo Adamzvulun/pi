@@ -115,41 +115,28 @@
   <text class="pin"   x="1104" y="312">USB</text>
 
   <!-- =================================================== -->
-  <!-- EMITTER: MOSFET driver + laser                       -->
+  <!-- EMITTER: 3V laser module direct on GPIO18            -->
+  <!-- (MOSFET driver path was abandoned — see problem 002) -->
   <!-- =================================================== -->
 
-  <!-- 220Ω gate resistor (horizontal) -->
-  <rect class="res" x="560" y="580" width="80" height="24"/>
-  <text class="small" x="600" y="596">220 Ω</text>
-
-  <!-- IRLZ44N MOSFET body -->
-  <rect class="block" x="680" y="560" width="140" height="160"/>
-  <text class="label" x="750" y="588">IRLZ44N</text>
-  <text class="small" x="750" y="604">N-MOSFET</text>
-  <text class="small" x="750" y="619">(logic-level)</text>
-  <text class="pin-end" x="675" y="644">G</text>
-  <text class="pin-mid" x="750" y="555">D</text>
-  <text class="pin-mid" x="750" y="738">S</text>
-
-  <!-- 100kΩ pulldown (vertical) -->
-  <rect class="res" x="648" y="660" width="24" height="80"/>
-  <text class="small" x="660" y="704" transform="rotate(-90, 660, 704)">100 kΩ</text>
-
-  <!-- 100Ω current limiter (horizontal) -->
-  <rect class="res" x="880" y="580" width="80" height="24"/>
-  <text class="small" x="920" y="596">100 Ω</text>
-
-  <!-- LASER DIODE (red triangle + cathode bar + emission arrows) -->
+  <!-- LASER MODULE body (brass cylinder) + diode symbol -->
   <g>
-    <polygon points="1000,570 1000,620 1078,595" fill="#fff5f5" stroke="#c0392b" stroke-width="1.5"/>
-    <line x1="1078" y1="568" x2="1078" y2="622" stroke="#c0392b" stroke-width="2"/>
-    <!-- two emission arrows -->
-    <line x1="1028" y1="558" x2="1048" y2="538" stroke="#c0392b" stroke-width="1.2"/>
-    <polygon points="1048,538 1042,540 1046,544" fill="#c0392b"/>
-    <line x1="1048" y1="558" x2="1068" y2="538" stroke="#c0392b" stroke-width="1.2"/>
-    <polygon points="1068,538 1062,540 1066,544" fill="#c0392b"/>
-    <text class="label" x="1040" y="660">LASER 5mW 650nm</text>
-    <text class="small" x="1040" y="676">(anode L · cathode R)</text>
+    <!-- Module body rectangle -->
+    <rect x="700" y="570" width="180" height="60" fill="#fff5f5" stroke="#c0392b" stroke-width="1.5"/>
+    <text class="label" x="790" y="595">3V LASER MODULE</text>
+    <text class="small" x="790" y="612">internal driver +</text>
+    <text class="small" x="790" y="625">current limiter</text>
+
+    <!-- Diode symbol inside small inset on the right side, with emission arrows -->
+    <polygon points="930,580 930,620 970,600" fill="#fff5f5" stroke="#c0392b" stroke-width="1.5"/>
+    <line x1="970" y1="580" x2="970" y2="620" stroke="#c0392b" stroke-width="2"/>
+    <line x1="945" y1="568" x2="965" y2="548" stroke="#c0392b" stroke-width="1.2"/>
+    <polygon points="965,548 959,550 963,554" fill="#c0392b"/>
+    <line x1="965" y1="568" x2="985" y2="548" stroke="#c0392b" stroke-width="1.2"/>
+    <polygon points="985,548 979,550 983,554" fill="#c0392b"/>
+
+    <text class="pin-mid" x="690" y="603">RED (+)</text>
+    <text class="pin" x="980" y="603">BLACK (−)</text>
   </g>
 
   <!-- =================================================== -->
@@ -196,26 +183,12 @@
   <path class="wire" d="M 1100 305 L 1100 244 L 380 244 L 380 270"/>
   <text class="wlabel" x="700" y="238" text-anchor="middle">USB 2.0 (UVC video)</text>
 
-  <!-- W11: Pi Pin 4 (5V) → 100Ω → Laser anode -->
-  <path class="pwr" d="M 500 440 L 545 440 L 545 540 L 880 540 L 880 592"/>
-  <path class="pwr" d="M 960 592 L 1000 595"/>
-  <text class="wlabel" x="720" y="534" text-anchor="middle">5V (laser supply)</text>
+  <!-- W11: Pi Pin 12 (GPIO18) → laser RED (anode +) -->
+  <path class="pwr" d="M 500 480 L 540 480 L 540 600 L 700 600"/>
+  <text class="wlabel" x="600" y="594" text-anchor="middle">GPIO18 (3.3V HIGH = ON)</text>
 
-  <!-- W12: Pi Pin 12 (GPIO18) → 220Ω → MOSFET Gate -->
-  <path class="wire" d="M 500 480 L 522 480 L 522 592 L 560 592"/>
-  <path class="wire" d="M 640 592 L 660 592 L 660 640 L 680 640"/>
-  <text class="wlabel" x="540" y="574" text-anchor="middle">GPIO18</text>
-
-  <!-- W13: MOSFET Drain → Laser cathode -->
-  <path class="pwr" d="M 750 560 L 750 524 L 1078 524 L 1078 568"/>
-  <text class="wlabel" x="900" y="518" text-anchor="middle">drain → cathode</text>
-
-  <!-- W14: MOSFET Source → GND -->
-  <path class="wire" d="M 750 720 L 750 770"/>
-
-  <!-- W15: 100kΩ pulldown branches: junction at gate net → top of pulldown; bottom of pulldown → GND -->
-  <path class="wire" d="M 660 592 L 660 660"/>
-  <path class="wire" d="M 660 740 L 660 770"/>
+  <!-- W12: laser BLACK (cathode −) → GND -->
+  <path class="wire" d="M 970 620 L 970 720"/>
 
   <!-- W16: LM2596 GND → ground symbol -->
   <path class="gnd-wire" d="M 320 130 L 320 158"/>
@@ -229,26 +202,17 @@
   <!-- =================================================== -->
   <!-- JUNCTION DOTS                                        -->
   <!-- =================================================== -->
-
-  <!-- Gate net junction: pulldown branches off here -->
-  <circle class="junction" cx="660" cy="592" r="3.5"/>
+  <!-- (no junctions in the simplified laser circuit) -->
 
   <!-- =================================================== -->
   <!-- GROUND SYMBOLS                                       -->
   <!-- =================================================== -->
 
-  <!-- GND below MOSFET source -->
-  <g class="gnd" transform="translate(750, 770)">
+  <!-- GND below laser BLACK (cathode return to Pi pin 9) -->
+  <g class="gnd" transform="translate(970, 720)">
     <line x1="-16" y1="0"  x2="16" y2="0"/>
     <line x1="-11" y1="6"  x2="11" y2="6"/>
     <line x1="-6"  y1="12" x2="6"  y2="12"/>
-  </g>
-
-  <!-- GND below pulldown -->
-  <g class="gnd" transform="translate(660, 770)">
-    <line x1="-14" y1="0"  x2="14" y2="0"/>
-    <line x1="-10" y1="6"  x2="10" y2="6"/>
-    <line x1="-5"  y1="12" x2="5"  y2="12"/>
   </g>
 
   <!-- GND below LM2596 -->

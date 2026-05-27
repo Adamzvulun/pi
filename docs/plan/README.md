@@ -9,21 +9,15 @@ Each phase has its own file. Click into one for detail.
 | 3 | [Servo control](phase-3-servo-control.md) — `test_servo.py`, `calibrate_servo.py`, `servo.py` | ✅ Complete |
 | 4 | [Camera + detection](phase-4-camera.md) — `camera.py`, `detector.py`, HSV tuning | ✅ Complete |
 | 5 | [PID tracking](phase-5-pid-tracking.md) — `tracker.py`, PID gain tuning | ✅ Complete |
-| 6 | [Laser integration](phase-6-laser.md) — MOSFET driver circuit, `laser.py` | ⏸ Blocked — dead laser diode ([problem 002](../../problems/002-laser-dead.md)) |
-| 7 | [Mounting + boresight](phase-7-mounting.md) — wood base, 3D-printed mounts, alignment | ⏸ Future |
-| 8 | [Final integration](phase-8-integration.md) — `main.py`, end-to-end test | ⏸ Future |
+| 6 | [Laser integration](phase-6-laser.md) — 3 V module direct on GPIO18, `laser.py` | ✅ Complete (MOSFET driver path abandoned — see problem 002) |
+| 7 | [Mounting + boresight](phase-7-mounting.md) — laser physically aligned on camera, boresight tool | ✅ 7B complete / ⏳ 7A skipped |
+| 8 | [Final integration](phase-8-integration.md) — `main.py`, full demo state machine | ✅ Complete |
 
-## Currently working on
+## Status — demo-ready
 
-**Phase 7A** — permanent base + electronics mounting. Independent of the laser; can proceed in parallel with waiting for a replacement laser diode. Cut/sand the wooden base, 3D-print the pan-servo holder and component standoffs, mount Pi + PCA9685 + LM2596 + breadboard, route cables. Full plan in [`phase-7-mounting.md`](phase-7-mounting.md).
+All eight phases functionally complete (7A — permanent mounting — was skipped as cosmetic-only). Full tracking + firing demo runs from the operator GUI. Tested 2026-05-27.
 
-**Phase 6 blocked** — laser diode dead. MOSFET driver and code are both ready and waiting; just need a working laser. See [`problems/002-laser-dead.md`](../../problems/002-laser-dead.md).
-
-**Phase 7B (laser mount + boresight)** still gated on Phase 6.
-
-## Next available work when the current item blocks
-
-- **Phase 7A** (permanent base) is independent of camera/laser progress. Can start anytime in parallel.
+The previous-session handoff is in [`latest-changesV1.md`](../../latest-changesV1.md) — explains the MOSFET drop, the boresight tool's current "unused but available" state, and the AE-disable fix for bracket dance during firing.
 
 ## How to read these files
 

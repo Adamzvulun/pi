@@ -1,14 +1,17 @@
-# Phase 6 — Laser Integration ⏸ BLOCKED — laser diode dead
+# Phase 6 — Laser Integration ✅ COMPLETE 2026-05-27
 
-## Status
+## Outcome
 
-Code is written (`laser.py`, `test_laser.py`) and pushed; software-verified end-to-end (clean init → fire → off → cleanup logs). The MOSFET driver circuit is built on the breadboard with the correct three resistors (220 Ω gate, 100 kΩ pulldown, 100 Ω laser limit), wired to Pi pins 4 (5 V), 12 (GPIO18), 14 (GND). The 100 kΩ pulldown is confirmed working — the laser does not flash at boot, gate is held LOW until the script fires.
+The bare diode was DOA (full diagnosis in [`problems/002-laser-dead.md`](../../problems/002-laser-dead.md)). Replaced with a **3 V self-contained laser module** wired direct-GPIO:
 
-**Blocker:** the bare laser diode itself is dead. It does not emit in any tested configuration, in either polarity, even when the MOSFET is fully removed from the path (laser wired directly across `5 V → 100 Ω → laser → GND`). Full diagnosis recorded in [`problems/002-laser-dead.md`](../../problems/002-laser-dead.md).
+```
+Pi pin 12 (GPIO18) ─→ laser red wire  (anode)
+Pi pin 9  (GND)    ─→ laser black wire (cathode)
+```
 
-**To resolve:** replace the laser diode. When the replacement arrives, attach red → 100 Ω side, black → MOSFET drain side, run `python3 test_laser.py`. No code changes needed.
+No MOSFET, no external resistors. The module has its own driver electronics + current limiter. `laser.py` was already written against `gpiozero.LED(18)` so it worked with zero code changes. `test_laser.py` produces a clean 1-second pulse. The control panel's "Fire 1 second" button works. The full demo `main.py` fires the laser on operator confirmation when the target is locked.
 
-If the next diode also fails to light, the MOSFET path itself becomes suspect — at that point we'd substitute a regular LED + 100 Ω as a known-good test load to verify the gate-driven switching works independently of the laser.
+**The detailed Phase 6 build instructions below are preserved as a historical record** — they describe the original MOSFET-driven path which is no longer in the circuit. If a future iteration ever needs a higher-power laser that exceeds GPIO sourcing limits (>16 mA continuous), this is the playbook to add a MOSFET back in.
 
 ## What's done and what's left
 

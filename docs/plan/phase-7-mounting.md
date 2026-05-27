@@ -1,4 +1,11 @@
-# Phase 7 — Mechanical Mounting + Boresight ⏸ FUTURE
+# Phase 7 — Mechanical Mounting + Boresight
+
+## Status
+
+- **Phase 7B (boresight calibration tool) ✅ COMPLETE 2026-05-27.** `calibrate_boresight.py` written and works from the GUI ("Boresight calibration..." button in the Laser section). Tool fires the laser, captures a frame, auto-detects the dot, lets the operator click to relocate, and writes `BORESIGHT_X_OFFSET` / `BORESIGHT_Y_OFFSET` to `config.py`. The actual measured offsets are currently 0/0 because Adam physically aligned the laser (taped on top of the camera, crosses aligned) so software compensation isn't needed. The infrastructure is there if alignment ever drifts.
+- **Phase 7A (permanent base + electronics mounting) ⏳ NOT DONE.** Electronics still on the temporary breadboard / wood-base layout. Cosmetic only; nothing blocks the demo. Skippable if presentation deadline is tight.
+
+The rest of this file is the original planning document — preserved for reference.
 
 ## Goal
 

@@ -3,9 +3,10 @@
 This file is read by Claude Code at the start of every session. Read it fully before writing any code.
 
 **Also read these companion docs:**
-- **`docs/plan/`** — phase-by-phase build plan, one file per phase. Start at `docs/plan/README.md` for the index, or jump straight to the current phase. Tells you what to build next.
-- **`docs/operating-guide.md`** — practical reference: daily commands, scripts and how to use them, troubleshooting, procedures we developed (bracket reassembly, edge calibration, LM2596 voltage setup, etc.). Read this when something stops working or before re-running anything.
-- **`docs/calibration.md`** — recorded tuned values (servo limits now; HSV/PID/boresight later).
+- **`latest-changesV1.md`** — handoff from the previous session. Captures *why* the current code looks the way it does (MOSFET driver was removed, boresight tool exists but isn't applied, AE was disabled). Read this first if you didn't author the current state.
+- **`docs/plan/`** — phase-by-phase build plan, one file per phase. All phases ✅ now; mostly a historical record at this point.
+- **`docs/operating-guide.md`** — practical reference: daily commands, scripts and how to use them, troubleshooting, procedures we developed.
+- **`docs/calibration.md`** — recorded tuned values (servo limits, HSV, PID, boresight).
 - **`problems/`** — one file per problem encountered, with diagnosis and fix.
 
 CLAUDE.md gives you the hardware and architecture context; the docs above tell you what to build and how to actually run things.
@@ -14,7 +15,11 @@ CLAUDE.md gives you the hardware and architecture context; the docs above tell y
 
 ## What this project is
 
-Autonomous laser tracking system on a Raspberry Pi 4B. Camera detects a target, two servos (pan + tilt) keep it centered via PID control, then a 5mW laser fires on user confirmation.
+Autonomous laser tracking system on a Raspberry Pi 4B. Camera detects a target, two servos (pan + tilt) keep it centered via PID control, then a 3 V laser module fires on user confirmation.
+
+**Status:** Phases 1–8 all complete. The full demo (camera → detect → PID → servos → laser) runs from a "▶ RUN FULL DEMO" button in `control_panel.py` and is demo-ready.
+
+**Read `latest-changesV1.md` for the previous session's deltas before doing anything destructive** — it captures non-obvious decisions like why the MOSFET driver was dropped and why the boresight tool exists but isn't currently applied.
 
 ## Target environment
 
@@ -67,22 +72,29 @@ Code is NEVER edited directly on the Pi.
 | DS3225 neutral | 1500 µs = angle 135° (center of 270° range) |
 | Channel 0 | Pan servo (left-right, bottom of bracket) |
 | Channel 1 | Tilt servo (up-down, top of bracket) |
-| Laser GPIO | GPIO18 (physical pin 12), active HIGH via MOSFET gate |
-| Laser gate resistor | 220Ω between GPIO18 and MOSFET gate |
-| Laser pulldown | 100kΩ gate-to-GND |
+| Laser hardware | 3 V self-contained laser module (small brass cylinder with internal driver electronics + internal current limiter). NOT a bare diode. |
+| Laser drive | GPIO18 (physical pin 12) direct — active HIGH at 3.3 V powers the module; LOW turns it off. No MOSFET, no external current-limit resistor — the module handles its own current limiting. |
+| Laser ground | Pi pin 9 (GND) — laser black wire connects directly here. |
 | Servo supply voltage | 5V regulated from LM2596 buck converter fed by 12V 5A PSU — provides up to ~3A, isolated from Pi rail (see `problems/001-servo-power.md`) |
 | PCA9685 VCC source | Pi GPIO 5V (pin 2) directly — MB102 no longer in the circuit |
+| Camera exposure | **Auto-exposure DISABLED** in `camera.init()`. Fixed exposure value `config.CAMERA_EXPOSURE = 250` (V4L2 manual mode). Required so the laser dot in the frame doesn't shift AE and destabilize the HSV detector during firing. |
 
 ## Operator workflow — use the control panel
 
 `control_panel.py` is the canonical operator GUI for this project. Adam launches it from a desktop shortcut (installed via `scripts/install_desktop_shortcut.sh`) and runs all hardware tests, calibrations, and Pi-system commands through its buttons:
 
-- Tracking test → "Start tracking test…" button (subprocess-launches `test_tracking.py`)
+- **Full demo** → big green "▶ RUN FULL DEMO" button (subprocess-launches `main.py` — tracking + firing state machine)
+- **Boresight calibration** → "Boresight calibration..." button (subprocess-launches `calibrate_boresight.py`) — measures laser-vs-camera pixel offset; currently produces 0/0 because the laser is physically aligned with the camera crosshair
+- Tracking test → "Start tracking test…" button (subprocess-launches `test_tracking.py` — no firing)
 - Laser test → "Initialize hardware" + "Enable laser controls" + "Fire 1 second"
 - Servo recalibration → "Recalibrate limits…" button (subprocess-launches `calibrate_servo.py`)
 - HSV tuning → "Tune HSV detector…" button (subprocess-launches `tune_detector.py`)
 - Pi shutdown/reboot → GUI buttons (not `sudo shutdown`)
 - Emergency stop → big red button at the bottom
+
+**Subprocess GPIO note:** any GUI button that launches a subprocess needing GPIO18 (boresight, full demo) must release the gpiozero pin_factory in the parent before forking. Without that, the inherited chip handle causes `lgpio.error: 'GPIO busy'` in the child. The pattern is `Device.pin_factory.close(); Device.pin_factory = None; time.sleep(0.3)` before `subprocess.Popen`. See `_on_boresight` / `_on_run_demo` for the canonical implementation.
+
+**Subprocess crash logging:** `_launch_script()` redirects child stdout/stderr to `~/pi/last-subprocess.log` (truncated per launch). On non-zero exit, `_tick()` tails the log into the GUI's log pane. So crashes are visible without dropping to a terminal.
 
 When writing instructions, point at the GUI button, not a terminal command. If a feature is missing from the panel, ADD IT TO `control_panel.py` rather than telling the user to use the terminal. Terminal use is reserved for OS-level one-shots (`i2cdetect`, `lsusb`, `git pull`) and first-time setup that runs before the GUI is available.
 
@@ -124,8 +136,13 @@ Each hardware subsystem has exactly one owner module. All other code goes throug
 | `PAN_MIN`, `PAN_MAX` | Task 3.3 | Safe pan angle limits from bracket calibration |
 | `TILT_MIN`, `TILT_MAX` | Task 3.3 | Safe tilt angle limits from bracket calibration |
 | `KP`, `KI`, `KD` | Task 5.4 | PID gains, tuned empirically |
-| `BORESIGHT_X_OFFSET` | Task 7.4 | Pixel offset between camera aim and laser dot (x) |
-| `BORESIGHT_Y_OFFSET` | Task 7.4 | Pixel offset between camera aim and laser dot (y) |
+| `BORESIGHT_X_OFFSET` | Task 7.4 | Pixel offset between camera aim and laser dot (x). Currently 0 — laser physically aligned. Not applied in tracker.py. |
+| `BORESIGHT_Y_OFFSET` | Task 7.4 | Pixel offset between camera aim and laser dot (y). Same situation as X. |
+| `LASER_FIRE_DURATION_S` | Task 8.1 | How long the laser stays on per fire command. Currently 2.5 s. |
+| `LASER_COOLDOWN_S` | Task 8.1 | Lockout after each fire. Currently 1.0 s. |
+| `FIRE_DEADBAND_PX` | Phase 8 fix | Widened deadband available via `tracker.update(deadband_override=...)`. Unused after AE was disabled — kept as a tuning knob. |
+| `CAMERA_DISABLE_AUTO_EXPOSURE` | Phase 8 fix | True = lock the LifeCam to fixed exposure. Required for stable HSV detection during firing. |
+| `CAMERA_EXPOSURE` | Phase 8 fix | V4L2 `exposure_absolute` value when AE is off. Default 250; tune per room lighting. |
 
 ## Confirmed design decisions
 
@@ -151,31 +168,35 @@ Update this section at the end of every session.
 
 - ✅ Phase 1–2: OS, libraries installed
 - ✅ Phase 3 prep: repo skeleton, cron auto-pull, all libraries installed
-- ✅ **Problem 001 resolved**: MB102 removed from circuit. LM2596 buck converter now supplies servo V+ rail at 5V from the 12V PSU. Pi GPIO 5V powers PCA9685 VCC directly. See `problems/001-servo-power.md`.
+- ✅ **Problem 001 resolved**: MB102 removed from circuit. LM2596 buck converter supplies servo V+ rail at 5V from the 12V PSU. Pi GPIO 5V powers PCA9685 VCC directly. See `problems/001-servo-power.md`.
 - ✅ **Pan-tilt bracket reassembled** with both servos held at electrical 135° during mounting → electrical center now corresponds to physical center on both axes.
-- ✅ **Task 3.2 (test_servo.py) verified end-to-end**: I2C → PCA9685 → both DS3225 servos respond, external 5V PSU sustains load.
-- ✅ **Task 3.3 (calibrate_servo.py) edge calibration complete.** Recorded limits: `PAN_MIN=50`, `PAN_MAX=220`, `TILT_MIN=115`, `TILT_MAX=205`. See `docs/calibration.md` for the full record.
-- ✅ **Task 3.4 (servo.py) written.** Owner module for ServoKit/PCA9685 — public API: `init()`, `move_pan(kit, angle)`, `move_tilt(kit, angle)`, `center(kit)`, `cleanup(kit)`, `current_pan()`, `current_tilt()`. All moves clamped to calibrated limits.
-- ✅ **Phase 3 complete.**
-- ✅ **Phase 4 complete** (USB webcam path). Microsoft LifeCam HD-3000 → `camera.py` (`cv2.VideoCapture`) → `detector.py` (HSV thresholding) returns `(x, y)` of a blue target. HSV range `np.array([79, 76, 0])` to `np.array([105, 255, 255])` tuned against a folded 10×20 cm blue plastic bag under overhead ceiling light. Recorded in `config.py` and `docs/calibration.md`.
-- ✅ **Phase 5 complete.** Closed loop runs end-to-end (camera → detector → PID → servos). 3D-printed camera mount holds the LifeCam HD-3000 rigid on the tilt plate. `tracker.py` calls `servo.move_pan/move_tilt` with `ramp=False` to avoid loop-blocking. Final tuned values in `config.py`: `Kp=0.017` (both axes), `Ki=0`, `Kd=0`, `PID_OUTPUT_LIMIT=10°`, `TRACKING_DEADBAND_PX=15`. Recorded in `docs/calibration.md` with full tuning history.
-- ⏸ **Phase 6 blocked — dead laser diode** ([problems/002-laser-dead.md](problems/002-laser-dead.md)). `laser.py` and `test_laser.py` written and software-verified; MOSFET driver circuit built on breadboard with all three resistors (pulldown confirmed working — no flash at boot); Pi pins 4/12/14 wired. But the bare laser diode does not emit in any test, including a direct bypass (`5V → 100Ω → laser → GND`, no MOSFET). Replacement diode required. When it arrives: red → 100Ω side, black → MOSFET drain, run `test_laser.py` — no code changes needed.
-- ⏳ **Phase 7A actionable in the meantime** — permanent base + electronics mounting is independent of the laser. Phase 7B (laser mount + boresight) stays gated on Phase 6.
-- ⏸ Phase 8 (integration) — gated on Phase 6.
+- ✅ **Phase 3 complete.** Servo limits `PAN_MIN=50`, `PAN_MAX=220`, `TILT_MIN=115`, `TILT_MAX=205`. See `docs/calibration.md`.
+- ✅ **Phase 4 complete.** LifeCam HD-3000 → `camera.py` → `detector.py` (HSV) returns `(x, y)` of a blue target. HSV range `[79,76,0]`–`[105,255,255]` tuned against a folded 10×20 cm blue plastic bag.
+- ✅ **Phase 5 complete.** Closed loop end-to-end. `tracker.py` calls `servo.move_*` with `ramp=False`. Tuned: `Kp=0.017`, `Ki=Kd=0`, `PID_OUTPUT_LIMIT=10°`, `TRACKING_DEADBAND_PX=15`.
+- ✅ **Problem 002 resolved**: original bare diode was DOA. Replaced with a 3 V laser module direct-driven from GPIO18. MOSFET driver path abandoned — module's internal driver handles current limiting. See `problems/002-laser-dead.md`.
+- ✅ **Phase 6 complete.** `laser.py` + `test_laser.py` work end-to-end against the new 3 V module. `laser_dev.on()` puts GPIO18 HIGH → module lights. `laser_dev.off()` → dark.
+- ✅ **Phase 7B complete.** `calibrate_boresight.py` written and works from the GUI. Boresight values currently 0/0 in `config.py` because the laser is physically taped on top of the camera with crosses aligned — software compensation not needed. Tool stays for future use if alignment drifts.
+- ⏳ **Phase 7A not done** — electronics still on the temporary breadboard layout. Cosmetic / robustness only; nothing blocks demos. Could be skipped entirely if presentation deadline is tight.
+- ✅ **Phase 8 complete.** `main.py` replaced the placeholder with a real tracking + firing state machine. Big green "▶ RUN FULL DEMO" button in the control panel launches it. Working end-to-end on the actual hardware (Adam confirmed 2026-05-27).
+- ✅ **Camera AE disabled (Phase 8 follow-up):** the laser dot caused the LifeCam's auto-exposure to drop gain, which destabilized the HSV detector during firing → bracket "danced". `camera.init()` now sets `CAP_PROP_AUTO_EXPOSURE = 1` (V4L2 manual) and `CAP_PROP_EXPOSURE = 250`. Side effect: if the room lighting changes substantially, the fixed exposure may need re-tuning via `config.CAMERA_EXPOSURE` and a re-run of `tune_detector.py`.
 
-### Current wiring snapshot (post problem-001 resolution)
+### Current wiring snapshot
 
 ```
-12V 5A PSU ─┬─→ LM2596 buck (set to 5.0V) ─→ PCA9685 V+ (green terminal, servo power)
-            └─→ (LM2596 GND) ─→ shared GND
+                                      ┌─→ DS3225 pan (channel 0)
+                                      │
+12V 5A PSU ─→ LM2596 (5.0V) ─→ PCA9685┤
+            └─→ (LM2596 GND) ─→ GND   └─→ DS3225 tilt (channel 1)
 
-Pi GPIO pin 2  (5V)  ─→ PCA9685 VCC   (logic power)
-Pi GPIO pin 3  (SDA) ─→ PCA9685 SDA   (I2C data)
-Pi GPIO pin 5  (SCL) ─→ PCA9685 SCL   (I2C clock)
-Pi GPIO pin 6  (GND) ─→ PCA9685 GND   (shared with LM2596 GND)
+Pi pin 2 (5V)  ─→ PCA9685 VCC          (logic power)
+Pi pin 3 (SDA) ─→ PCA9685 SDA          (I2C data)
+Pi pin 5 (SCL) ─→ PCA9685 SCL          (I2C clock)
+Pi pin 6 (GND) ─→ PCA9685 GND          (shared with LM2596 GND)
 
-PCA9685 channel 0 ─→ DS3225 pan
-PCA9685 channel 1 ─→ DS3225 tilt
+Pi pin 12 (GPIO18) ─→ laser red wire   (anode +, 3V module driven directly)
+Pi pin 9  (GND)    ─→ laser black wire (cathode −)
+
+USB: LifeCam HD-3000 → any free USB-A port on the Pi
 ```
 
-MB102 and the laser MOSFET circuit are not currently wired (Phase 6 work).
+No MOSFET, no MB102, no external resistors on the laser path. The 3 V module's internal driver handles current limiting.

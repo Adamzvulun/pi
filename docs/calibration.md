@@ -81,6 +81,55 @@ Tuned with `test_tracking.py` on the Pi. Camera (LifeCam HD-3000) 3D-printed-mou
 
 Values live in `config.py`. Any retune updates both files.
 
-## Boresight offset — not yet measured
+## Boresight offset — 2026-05-27
 
-Will be filled in during Task 7.4 (boresight.py).
+| Constant              | Value |
+|-----------------------|-------|
+| `BORESIGHT_X_OFFSET`  | 0     |
+| `BORESIGHT_Y_OFFSET`  | 0     |
+
+**How alignment was achieved:** the laser module is taped on top of the
+camera lens with the laser's emission axis manually aligned to the
+camera's optical axis. With both pointing in the same direction and
+mounted ~1 cm apart vertically, the laser dot lands at the camera's
+frame center on a target ~1.5 m away. No software compensation needed.
+
+**`calibrate_boresight.py` was built but the measured offsets are zero**
+because physical alignment was good enough. The tool is documented in
+`docs/plan/phase-7-mounting.md` and remains available — if the laser
+mount ever drifts or is rebuilt, run it (Boresight calibration… button
+in the control panel) at the operating distance, and the resulting
+offsets will be written to `config.py` automatically.
+
+**`tracker.py` does NOT currently apply the boresight offsets** — the
+addition of `BORESIGHT_X_OFFSET / Y_OFFSET` to the pixel error was
+removed once Adam confirmed physical alignment was tight. The values
+exist in `config.py` as a future hook; re-introducing them is a one-
+line change in `tracker.update()` if compensation is ever needed.
+
+## Camera exposure (locked) — 2026-05-27
+
+| Constant                      | Value |
+|-------------------------------|-------|
+| `CAMERA_DISABLE_AUTO_EXPOSURE`| True  |
+| `CAMERA_EXPOSURE`             | 250   |
+
+The LifeCam HD-3000's auto-exposure was disabled because it caused the
+HSV detector centroid to jitter ~10–30 px between frames whenever the
+laser fired — the AE reduced overall gain in response to the bright
+laser dot, which dimmed the blue target and shifted its detected
+position. The bracket "danced" chasing the phantom motion.
+
+With AE off and exposure locked, the image stays stable during firing,
+the detector centroid is rock-solid, and normal 15 px deadband
+tracking works while the laser is on.
+
+**Value 250** is V4L2's `exposure_absolute` unit (LifeCam range 5–2047).
+Tuned for normal indoor room lighting. If the room is moved or the
+lighting changes substantially:
+- Image too dark → raise to 400–600
+- Image too bright → lower to 100–150
+- After significant change, re-run `tune_detector.py` to re-tune the
+  HSV range against the new exposure.
+
+Values live in `config.py`.

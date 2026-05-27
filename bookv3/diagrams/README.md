@@ -55,7 +55,7 @@ Dagre already routes edges *around* nodes — actual edge-through-block overlaps
 
 ### 6. `full-schematic.mmd` — wiring schematic
 
-- **Data:** ✅ Pi pins all correct (2 = 5V, 3 = SDA, 5 = SCL, 6 = GND, 12 = GPIO18, 4 = 5V for laser). Resistor values (220 Ω gate, 100 kΩ pulldown, 100 Ω current-limit) match. Topology correct. *Minor stylistic*: the pulldown is drawn as `MOSFET -.-> R100k -.-> GND` rather than as a parallel side branch from a dedicated Gate node — that's fine, this is the high-level schematic and the detailed view is in `laser-driver.mmd`.
+- **Data:** ✅ Updated 2026-05-27 to reflect the post-MOSFET state. Pi pins all correct (2 = 5V, 3 = SDA, 5 = SCL, 6 = GND, 12 = GPIO18 → laser RED, 9 = GND ← laser BLACK). MOSFET / 220 Ω / 100 kΩ / 100 Ω resistors removed — replaced by a single 3V laser module block with internal driver.
 - **Place in:** **Chapter 15 — תיעוד הפתרון** (`chapters/15-solution-documentation.md`), **§15.1 שרטוט חשמלי**. Already referenced there.
 - **What it is:** The "wiring drawing" the מחוון requires. Placeholder for it already exists in the chapter.
 
@@ -71,11 +71,11 @@ Dagre already routes edges *around* nodes — actual edge-through-block overlaps
 - **Place in:** **Chapter 12 — תיאור פרוטוקולי תקשורת** (`chapters/12-protocols.md`), in the "I²C — בין ה־Pi לבין PCA9685" section.
 - **What it is:** Minimal 2-wire bus illustration. Pairs with the I²C protocol prose.
 
-### 9. `laser-driver.mmd` — MOSFET driver detail
+### 9. `laser-driver.mmd` — laser drive detail (3V module, direct GPIO)
 
-- **Data:** ✅ Full low-side switch topology: GPIO18 (pin 12) → 220 Ω → Gate; pulldown 100 kΩ Gate ↔ GND; 5V (pin 4) → 100 Ω → Laser+ → Laser− → Drain; Source → GND (pin 14). All consistent with `CLAUDE.md` hardware table.
-- **Place in:** **Chapter 10 — הסבר רכיבים** (`chapters/10-components.md`), inside "מעגל הלייזר: MOSFET IRLZ44N".
-- **What it is:** Component-level zoom on the laser driver — the only schematic in the book that shows the gate / pulldown / source / drain explicitly.
+- **Data:** ✅ Updated 2026-05-27. Shows the *current* circuit: GPIO18 (pin 12) → laser RED (anode +) → 3V module body (internal driver + current limiter) → laser BLACK (cathode −) → Pi GND (pin 9). The previous MOSFET-driver version (IRLZ44N + 220 Ω gate + 100 kΩ pulldown + 100 Ω current limiter) was abandoned when we switched to a self-driven 3V module — see `problems/002-laser-dead.md` for the history.
+- **Place in:** **Chapter 10 — הסבר רכיבים** (`chapters/10-components.md`), inside the "מעגל הלייזר" section.
+- **What it is:** Component-level zoom on the laser drive. Much simpler than the original MOSFET version — three connections total. Pairs naturally with the prose explanation of why a separate driver isn't needed (module has its own).
 
 ### 10. `control-loop.mmd` — closed-loop tracking pipeline
 
@@ -86,10 +86,10 @@ Dagre already routes edges *around* nodes — actual edge-through-block overlaps
 ### 12. `electrical-schematic.svg` — full wiring schematic (SVG, reference-style)
 
 - **Format:** Hand-coded SVG (not Mermaid). Mermaid cannot render electrical symbols (resistors, MOSFET pins, ground glyphs, title block).
-- **Style:** Modelled on a traditional auto-wiring diagram — bordered drawing, orthogonal wires, junction dots, ground symbols, and a bottom title block with cells for *Drawn by / Checked / Date / Scale / Sheet No.*
-- **Data:** ✅ Matches `CLAUDE.md` hardware table. Pi pins shown (2 = 5V, 3 = SDA, 5 = SCL, 6 = GND, 4 = 5V for laser, 12 = GPIO18, 14 = GND); PCA9685 V+/VCC/SDA/SCL/GND on left, Ch 0/Ch 1 on right; DS3225 pan + tilt; LifeCam over USB; 220 Ω gate / 100 kΩ pulldown / 100 Ω current-limit; IRLZ44N MOSFET with G/D/S labels; 5 mW 650 nm laser diode symbol (anode triangle + cathode bar + emission arrows). Multiple GND symbols (one per grounded block) instead of a single bus — standard convention.
-- **Place in:** **Chapter 15 — תיעוד הפתרון** (`chapters/15-solution-documentation.md`), **§15.1 שרטוט חשמלי**, as the *main* wiring drawing. This is the proper reference-style schematic the מחוון asks for. The simpler Mermaid `full-schematic.mmd` can stay as a secondary block-level view, or be retired.
-- **What it is:** The complete electrical schematic of the build, drawn in the conventional style (component blocks + symbols + orthogonal wires + title block) so it reads like the wiring diagrams in the מחוון examples.
+- **Style:** Modelled on a traditional auto-wiring diagram — bordered drawing, orthogonal wires, ground symbols, and a bottom title block with cells for *Drawn by / Checked / Date / Scale / Sheet No.*
+- **Data:** ✅ Updated 2026-05-27 to match the current circuit. Pi pins shown (2 = 5V, 3 = SDA, 5 = SCL, 6 = GND, 12 = GPIO18 → laser RED, 9 = GND ← laser BLACK, 14 = additional GND); PCA9685 V+/VCC/SDA/SCL/GND on left, Ch 0/Ch 1 on right; DS3225 pan + tilt; LifeCam over USB; **3 V laser module** block with internal driver (no MOSFET, no external resistors). Multiple GND symbols (one per grounded block) — standard convention.
+- **Place in:** **Chapter 15 — תיעוד הפתרון** (`chapters/15-solution-documentation.md`), **§15.1 שרטוט חשמלי**, as the *main* wiring drawing. The simpler Mermaid `full-schematic.mmd` is a secondary block-level view.
+- **What it is:** The complete electrical schematic of the build, drawn in the conventional style.
 - **Rendering:** Embed the `.svg` directly in the `.docx` (Pandoc supports SVG via librsvg) or convert to PNG: `magick convert electrical-schematic.svg electrical-schematic.png` or `rsvg-convert -w 1800 -o electrical-schematic.png electrical-schematic.svg`.
 
 ### 11. `control-flow.mmd` — main-loop / FSM

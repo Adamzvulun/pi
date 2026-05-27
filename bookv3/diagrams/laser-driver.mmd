@@ -1,29 +1,16 @@
-%%{init: {'flowchart': {'curve': 'linear', 'nodeSpacing': 45, 'rankSpacing': 70}}}%%
+%%{init: {'flowchart': {'curve': 'linear', 'nodeSpacing': 60, 'rankSpacing': 80}}}%%
 flowchart LR
     classDef pi fill:#c8e6c9,stroke:#2e7d32,color:#000
-    classDef res fill:#fff,stroke:#000,color:#000
-    classDef mos fill:#ffcdd2,stroke:#c62828,color:#000
-    classDef power fill:#ffe0b2,stroke:#e65100,color:#000
+    classDef laser fill:#ffcdd2,stroke:#c62828,color:#000
     classDef gnd fill:#e0e0e0,stroke:#424242,color:#000
 
     Pin12["Pi GPIO18<br/>pin 12"]:::pi
-    R220["220 ohm<br/>gate resistor"]:::res
-    Gate["MOSFET Gate"]:::mos
-    R100k["100k ohm<br/>pulldown"]:::res
-    Drain["MOSFET Drain"]:::mos
-    Source["MOSFET Source"]:::mos
-    R100["100 ohm<br/>current limiter"]:::res
-    Pin4["Pi 5V<br/>pin 4"]:::power
-    LaserPos["Laser red +"]:::power
-    LaserNeg["Laser black -"]:::power
-    GND[("GND rail<br/>Pi pin 14")]:::gnd
+    LaserPos["Laser RED (+)<br/>anode"]:::laser
+    LaserBody["3V laser module<br/>(internal driver +<br/>current limiter)"]:::laser
+    LaserNeg["Laser BLACK (−)<br/>cathode"]:::laser
+    GND[("GND rail<br/>Pi pin 9")]:::gnd
 
-    Pin4 ==>|5V| R100
-    R100 ==> LaserPos
-    LaserPos ==> LaserNeg
-    LaserNeg ==> Drain
-    Source ==> GND
-    Pin12 -->|3.3V control| R220
-    R220 --> Gate
-    Gate -.-> R100k
-    R100k -.-> GND
+    Pin12 ==>|3.3V when HIGH| LaserPos
+    LaserPos --> LaserBody
+    LaserBody --> LaserNeg
+    LaserNeg ==> GND
