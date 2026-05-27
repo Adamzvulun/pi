@@ -256,6 +256,20 @@ class ControlPanel:
         self._laser_widgets.append(btn_boresight)
         self._busy_widgets.append(btn_boresight)
 
+        # DEMO — big launcher for the full integration
+        demo_frame = ttk.LabelFrame(self.root, text="Demo")
+        demo_frame.pack(fill="x", **pad)
+        btn_demo = tk.Button(
+            demo_frame,
+            text="▶  RUN FULL DEMO  (tracking + firing)",
+            bg="#1e8a4c", fg="white",
+            font=("Helvetica", 11, "bold"),
+            height=2,
+            command=self._on_run_demo,
+        )
+        btn_demo.pack(fill="x", padx=6, pady=6)
+        self._busy_widgets.append(btn_demo)
+
         # Tools
         tools = ttk.LabelFrame(self.root, text="Tools")
         tools.pack(fill="x", **pad)
@@ -435,6 +449,64 @@ class ControlPanel:
             laser.off(self.laser_dev)
         except Exception:
             log.exception("Force-off failed")
+
+    def _on_run_demo(self) -> None:
+        """Launch main.py — the full tracking + firing demonstration.
+
+        main.py takes over both the servos AND the laser, so we release
+        BOTH on this side first. Same gpiozero pin_factory tear-down
+        pattern as boresight, plus full hardware-state reset since the
+        subprocess will re-init everything from scratch.
+        """
+        if not messagebox.askyesno(
+            "Run full demo",
+            "Launches main.py — the full tracking + firing demo.\n\n"
+            "Inside the demo window:\n"
+            "  • The system tracks the colored target automatically\n"
+            "  • Press A to ARM the laser (banner turns amber)\n"
+            "  • When the target is LOCKED (banner pulses green),\n"
+            "    press F to fire\n"
+            "  • Press Q to quit cleanly\n\n"
+            "Confirm beam path is safe — laser will fire at the target. "
+            "Stay behind the tracker, no people/pets/mirrors in front.\n\n"
+            "Continue?",
+        ):
+            return
+
+        # Release laser first (most safety-critical), then servos.
+        if self.laser_dev is not None:
+            try:
+                log.info("Releasing laser GPIO for demo subprocess.")
+                laser.cleanup(self.laser_dev)
+            except Exception:
+                log.exception("Pre-launch laser cleanup failed (continuing)")
+            self.laser_dev = None
+
+        if self.kit is not None:
+            try:
+                log.info("Releasing servos for demo subprocess.")
+                servo.cleanup(self.kit)
+            except Exception:
+                log.exception("Pre-launch servo cleanup failed (continuing)")
+            self.kit = None
+            self.lbl_init.config(text="Hardware: not initialized")
+            self.btn_init.config(state="normal")
+
+        # Tear down the gpiozero chip handle so the subprocess gets a
+        # clean kernel view of GPIO18 (same reason as boresight). The
+        # next laser.init() in this process will lazily recreate it.
+        try:
+            from gpiozero import Device
+            if Device.pin_factory is not None:
+                Device.pin_factory.close()
+                Device.pin_factory = None
+                log.info("Closed gpiozero pin_factory.")
+        except Exception:
+            log.exception("Could not close gpiozero pin_factory (continuing)")
+
+        time.sleep(0.3)
+        self.active_subprocess = _launch_script("main.py")
+        self._refresh_widget_states()
 
     def _on_tracking(self) -> None:
         if not messagebox.askyesno(
