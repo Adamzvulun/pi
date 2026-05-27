@@ -139,3 +139,22 @@ RECENTER_AFTER_COAST: bool = True
 # slower return; larger = faster but more visible step motion. 2° at 30 fps
 # gives ~60°/sec recenter speed — full PAN range (170°) recovered in ~3 s.
 RECENTER_STEP_DEG: float = 2.0
+
+# ---- Boresight offsets (Phase 7B) -----------------------------------------
+# Pixel delta between the camera's frame center (320, 240) and the actual
+# point where the laser dot lands. Camera and laser are physically offset
+# on the tilt plate by a few centimeters — at ~1.5m target distance this
+# translates to a pixel offset that the tracker needs to compensate for.
+#
+# Without compensation: target is centered in camera → laser misses by the
+# camera-to-laser offset projected onto the target plane.
+# With compensation: tracker biases the PID setpoint by these values so the
+# laser ends up on the target, not the camera's exact aim.
+#
+# Sign convention: positive dx means the laser dot is RIGHT of the camera
+# center (in pixel space). Positive dy means the laser dot is BELOW center.
+# Measured + written automatically by calibrate_boresight.py. The values
+# below are placeholders (0, 0) — re-run the calibrator after mounting the
+# laser to get the real numbers. Recorded in docs/calibration.md.
+BORESIGHT_X_OFFSET: int = 0
+BORESIGHT_Y_OFFSET: int = 0

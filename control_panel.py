@@ -237,6 +237,13 @@ class ControlPanel:
         btn_force_off.grid(row=1, column=1, padx=6, pady=4)
         self._hw_widgets.append(btn_force_off)  # always-available safety
 
+        btn_boresight = ttk.Button(laser_frame, text="Boresight calibration...",
+                                   command=self._on_boresight)
+        btn_boresight.grid(row=1, column=2, padx=6, pady=4)
+        # Boresight requires laser controls enabled (it fires the laser)
+        self._laser_widgets.append(btn_boresight)
+        self._busy_widgets.append(btn_boresight)
+
         # Tools
         tools = ttk.LabelFrame(self.root, text="Tools")
         tools.pack(fill="x", **pad)
@@ -443,6 +450,41 @@ class ControlPanel:
         self.active_subprocess = _launch_script("tune_detector.py")
         self._refresh_widget_states()
 
+    def _on_boresight(self) -> None:
+        """Launch calibrate_boresight.py to measure camera↔laser pixel offset.
+
+        Needs the laser GPIO (which we currently hold), so release it
+        first; the subprocess will re-claim it. We re-init the laser
+        ourselves once the subprocess exits — see _tick()."""
+        if not messagebox.askyesno(
+            "Boresight calibration",
+            "This launches calibrate_boresight.py in a new window.\n\n"
+            "Before continuing:\n"
+            "  • Aim the bracket at a matte target ~1-2 m away using the\n"
+            "    servo sliders (the cyan crosshair should be on the target)\n"
+            "  • Confirm the beam path is safe — no people, pets, mirrors\n"
+            "    or windows in line with the laser\n\n"
+            "Inside the tool: press 'f' to fire and capture, click the\n"
+            "laser dot if auto-detection missed it, press 's' to save.\n\n"
+            "Continue?",
+        ):
+            return
+
+        # Release the laser GPIO so the subprocess can claim it. We do NOT
+        # release the servos — boresight reads camera only, and we want the
+        # operator to keep aiming via control-panel sliders if needed (after
+        # the subprocess exits).
+        if self.laser_dev is not None:
+            try:
+                log.info("Releasing laser GPIO so boresight subprocess can claim it.")
+                laser.cleanup(self.laser_dev)
+            except Exception:
+                log.exception("Pre-launch laser cleanup failed (continuing)")
+            self.laser_dev = None
+
+        self.active_subprocess = _launch_script("calibrate_boresight.py")
+        self._refresh_widget_states()
+
     def _on_camera_test(self) -> None:
         """Capture one frame and report its shape (proves cam works)."""
         try:
@@ -476,6 +518,8 @@ class ControlPanel:
                  config.PID_OUTPUT_LIMIT, config.TRACKING_DEADBAND_PX)
         log.info("Servo limits (from servo.py): PAN %g-%g TILT %g-%g",
                  servo.PAN_MIN, servo.PAN_MAX, servo.TILT_MIN, servo.TILT_MAX)
+        log.info("Boresight: dx=%+d dy=%+d (run boresight calibration to update)",
+                 config.BORESIGHT_X_OFFSET, config.BORESIGHT_Y_OFFSET)
 
     def _on_shutdown(self) -> None:
         if not messagebox.askyesno("Shutdown Pi",
@@ -565,6 +609,27 @@ class ControlPanel:
                 rc = self.active_subprocess.returncode
                 log.info("Subprocess exited with code %d.", rc)
                 self.active_subprocess = None
+
+                # If we released the laser GPIO for a subprocess (boresight),
+                # re-claim it now so the Fire button works again without
+                # forcing the operator back through "Initialize hardware".
+                # Only attempt this if servos are still up — otherwise we're
+                # in the post-tracking state and need a full re-init anyway.
+                if self.laser_dev is None and self.kit is not None:
+                    try:
+                        self.laser_dev = laser.init()
+                        log.info("Re-claimed laser GPIO after subprocess exit.")
+                    except Exception:
+                        log.exception("Re-init laser failed — click Initialize hardware again.")
+
+                # Reload config so any values the subprocess wrote
+                # (HSV from tuner, boresight from calibrator, etc.) become
+                # visible to this process on the next read.
+                try:
+                    importlib.reload(config)
+                except Exception:
+                    log.exception("Auto-reload of config after subprocess failed (continuing)")
+
                 self._refresh_widget_states()
 
         self.root.after(self.POLL_INTERVAL_MS, self._tick)
