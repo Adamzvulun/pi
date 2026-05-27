@@ -493,11 +493,31 @@ class ControlPanel:
             except Exception:
                 log.exception("Pre-launch laser cleanup failed (continuing)")
             self.laser_dev = None
-            # The lgpio kernel release isn't always visible to a child
-            # process that starts within a few ms. A short pause gives the
-            # release time to propagate before the subprocess calls LED(18).
-            # laser.init() also retries internally for belt-and-braces.
-            time.sleep(0.2)
+
+        # gpiozero's LED.close() releases gpio_free at the lgpio level but
+        # keeps the chip handle (/dev/gpiochip0) open inside the singleton
+        # pin_factory. The subprocess inherits that FD via fork() before
+        # exec(), and even after the inherited FD is closed by close_fds,
+        # the kernel can still see the parent's claim transiently — so
+        # LED(18) in the child fails with 'GPIO busy'. gpiozero also
+        # leaves a stale Python-level reservation on partial-construction
+        # failure, which then cascades into GPIOPinInUse on retry.
+        #
+        # Fully closing the pin_factory in the parent releases the chip
+        # handle entirely. Subprocess starts with a clean kernel view.
+        # When the subprocess exits, our laser.init() lazily creates a
+        # fresh pin_factory automatically.
+        try:
+            from gpiozero import Device
+            if Device.pin_factory is not None:
+                Device.pin_factory.close()
+                Device.pin_factory = None
+                log.info("Closed gpiozero pin_factory to fully release chip handle.")
+        except Exception:
+            log.exception("Could not close gpiozero pin_factory (continuing)")
+
+        # Give the kernel a moment to settle after the chip handle close.
+        time.sleep(0.3)
 
         self.active_subprocess = _launch_script("calibrate_boresight.py")
         self._refresh_widget_states()
