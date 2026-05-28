@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laser Tracker — System Block Diagram</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #1a212b;
+    --panel2: #232c38;
+    --ink: #e6edf3;
+    --muted: #9aa7b8;
+    --accent: #4dd0e1;
+    --accent2: #ffb84d;
+    --good: #66d18a;
+    --border: #2a3441;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 22px 80px; }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px; margin-bottom: 22px;
+  }
+  h1 { margin: 0 0 6px; font-size: 28px; }
+  h2 {
+    margin: 36px 0 10px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    font-size: 22px;
+  }
+  h3 { margin: 22px 0 6px; color: var(--accent2); font-size: 17px; }
+  p, li { font-size: 14.5px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  code { background: #1f2630; padding: 1px 5px; border-radius: 3px; font-family: "JetBrains Mono", Consolas, monospace; font-size: 13px; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 12px 0;
+  }
+  .panel.tip  { border-left: 4px solid var(--accent); }
+  .panel.warn { border-left: 4px solid var(--accent2); }
+  .diagram-box {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 12px;
+    margin: 18px 0;
+    overflow-x: auto;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+  .legend .item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px 12px;
+  }
+  .swatch {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin: 24px 0 0;
+  }
+  .tab {
+    padding: 8px 16px;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 14px;
+    user-select: none;
+  }
+  .tab.active {
+    background: var(--panel);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .tab-content {
+    display: none;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 20px;
+  }
+  .tab-content.active { display: block; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--accent2); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    flowchart: { curve: 'linear', nodeSpacing: 50, rankSpacing: 70 }
+  });
+
+  function showTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector('.tab[data-tab="' + name + '"]').classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+</script>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>System Block Diagram</h1>
+  <p class="muted">
+    The as-built system, rendered in the same style as the original
+    project-proposal block diagram. Two versions provided — the proposal-style
+    high-level view, and a fuller view that adds power distribution and the
+    state machine.
+  </p>
+</header>
+
+<div class="panel tip">
+  <strong>How to read these:</strong> arrows show the direction of <em>commands</em> or signals; the protocol on each link is labelled (I²C, USB, GPIO, PWM). Power lines are dashed.
+  Colours: <strong>green</strong> = CPU/SoC, <strong>blue</strong> = user / GUI, <strong>orange</strong> = peripheral driver chips, <strong>pink</strong> = actuators, <strong>purple</strong> = sensors, <strong>yellow</strong> = power supply.
+</div>
+
+<div class="legend">
+  <span class="item"><span class="swatch" style="background:#c8e6c9; border:1px solid #2e7d32;"></span>CPU / SoC</span>
+  <span class="item"><span class="swatch" style="background:#bbdefb; border:1px solid #1565c0;"></span>User / GUI</span>
+  <span class="item"><span class="swatch" style="background:#fff3e0; border:1px solid #e65100;"></span>Driver chip</span>
+  <span class="item"><span class="swatch" style="background:#f8bbd0; border:1px solid #ad1457;"></span>Actuator</span>
+  <span class="item"><span class="swatch" style="background:#e1bee7; border:1px solid #6a1b9a;"></span>Sensor</span>
+  <span class="item"><span class="swatch" style="background:#fff9c4; border:1px solid #f57f17;"></span>Power</span>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="simple" onclick="showTab('simple')">Proposal-style (simple)</div>
+  <div class="tab" data-tab="full" onclick="showTab('full')">Full diagram (with power)</div>
+  <div class="tab" data-tab="dataflow" onclick="showTab('dataflow')">Data-flow view</div>
+</div>
+
+<!-- ===================== TAB 1: SIMPLE ===================== -->
+<div id="tab-simple" class="tab-content active">
+
+<h3>Proposal-style block diagram — as built</h3>
+<p>Same five-layer structure as the original proposal: user → CPU → driver chips → actuators/sensor. Updated to reflect the current build:</p>
+<ul>
+  <li>Camera is now a <strong>USB LifeCam HD-3000</strong>, not a Pi CSI camera (the v3 was incompatible with the Pi 4 slot).</li>
+  <li>Laser drive path has <strong>no MOSFET</strong> — GPIO18 directly drives the 3 V self-contained module.</li>
+  <li>Labels show the protocol on each link.</li>
+</ul>
+
+<div class="diagram-box">
+<pre class="mermaid">
+%%{init: {'flowchart': {'curve': 'linear', 'nodeSpacing': 50, 'rankSpacing': 70}}}%%
+flowchart TB
+    classDef cpu fill:#c8e6c9,stroke:#2e7d32,color:#000
+    classDef ui fill:#bbdefb,stroke:#1565c0,color:#000
+    classDef driver fill:#fff3e0,stroke:#e65100,color:#000
+    classDef actuator fill:#f8bbd0,stroke:#ad1457,color:#000
+    classDef sensor fill:#e1bee7,stroke:#6a1b9a,color:#000
+
+    GUI["User / Control Panel GUI<br/><i>tkinter, on the Pi via VNC</i>"]:::ui
+    CPU["Raspberry Pi 4B (CPU)<br/><i>OpenCV + PID + state machine</i>"]:::cpu
+
+    PCA["PCA9685<br/><i>16-ch PWM driver</i>"]:::driver
+    GPIO["GPIO18<br/><i>direct digital out, 3.3 V</i>"]:::driver
+    CAM["LifeCam HD-3000<br/><i>USB UVC webcam</i>"]:::sensor
+
+    PAN["Servo PAN<br/><i>DS3225</i>"]:::actuator
+    TILT["Servo TILT<br/><i>DS3225</i>"]:::actuator
+    LASER["Laser Module<br/><i>3 V, self-driven</i>"]:::actuator
+
+    GUI -- "subprocess<br/>launch + log queue" --> CPU
+    CPU -- "I²C bus 1<br/>addr 0x40, 100 kHz" --> PCA
+    CPU -- "BCM GPIO<br/>via gpiozero / lgpio" --> GPIO
+    CAM -- "USB UVC<br/>V4L2 /dev/video0" --> CPU
+    PCA -- "PWM 50 Hz<br/>500–2500 µs" --> PAN
+    PCA -- "PWM 50 Hz<br/>500–2500 µs" --> TILT
+    GPIO -- "HIGH = ON<br/>LOW = OFF" --> LASER
+</pre>
+</div>
+
+</div>
+
+<!-- ===================== TAB 2: FULL ===================== -->
+<div id="tab-full" class="tab-content">
+
+<h3>Full block diagram — including power and the state machine</h3>
+<p>This view adds the two-rail power architecture (the LM2596 buck for servos, Pi's own 5 V for logic) and shows the operator state machine that gates the laser. Dashed arrows are power lines.</p>
+
+<div class="diagram-box">
+<pre class="mermaid">
+%%{init: {'flowchart': {'curve': 'linear', 'nodeSpacing': 50, 'rankSpacing': 70}}}%%
+flowchart TB
+    classDef cpu fill:#c8e6c9,stroke:#2e7d32,color:#000
+    classDef ui fill:#bbdefb,stroke:#1565c0,color:#000
+    classDef driver fill:#fff3e0,stroke:#e65100,color:#000
+    classDef actuator fill:#f8bbd0,stroke:#ad1457,color:#000
+    classDef sensor fill:#e1bee7,stroke:#6a1b9a,color:#000
+    classDef power fill:#fff9c4,stroke:#f57f17,color:#000
+    classDef state fill:#d1c4e9,stroke:#4527a0,color:#000
+
+    subgraph PWR ["⚡ Power subsystem"]
+        direction TB
+        PSU["12 V 5 A PSU"]:::power
+        BUCK["LM2596 Buck<br/>12 V → 5.0 V, 3 A"]:::power
+        PIPSU["Pi USB-C 5 V 3 A"]:::power
+        PSU -.->|"12 V DC"| BUCK
+    end
+
+    GUI["User / Control Panel<br/><i>tkinter</i>"]:::ui
+    CPU["Raspberry Pi 4B<br/><i>BCM2711 SoC</i>"]:::cpu
+
+    SM["State Machine<br/>DISARMED → ARMED →<br/>FIRING → COOLDOWN"]:::state
+
+    PCA["PCA9685<br/><i>I²C 0x40, 16-ch PWM</i>"]:::driver
+    GPIO["GPIO18 push-pull<br/><i>3.3 V CMOS out</i>"]:::driver
+    CAM["LifeCam HD-3000<br/><i>USB UVC</i>"]:::sensor
+
+    PAN["DS3225 PAN<br/><i>ch 0, 50–220°</i>"]:::actuator
+    TILT["DS3225 TILT<br/><i>ch 1, 115–205°</i>"]:::actuator
+    LASER["3 V Laser Module<br/><i>internal driver</i>"]:::actuator
+
+    GUI -->|"buttons<br/>+ log queue"| CPU
+    CPU --- SM
+    SM -->|"gate fire"| GPIO
+
+    CPU -->|"I²C SDA/SCL"| PCA
+    CPU -->|"GPIO out"| GPIO
+    CAM -->|"USB / V4L2"| CPU
+
+    PCA -->|"PWM 50 Hz"| PAN
+    PCA -->|"PWM 50 Hz"| TILT
+    GPIO -->|"3.3 V HIGH/LOW"| LASER
+
+    PIPSU -.->|"5 V logic"| CPU
+    PIPSU -.->|"5 V VCC"| PCA
+    BUCK -.->|"5 V V+ (servo rail)"| PCA
+    CPU -.->|"3.3 V"| LASER
+</pre>
+</div>
+
+<p class="muted">The two power rails are intentionally separated: the Pi USB-C feeds the Pi and the PCA9685's logic supply (~50 mA); the LM2596 feeds the PCA9685's servo power rail (up to 3 A). Common ground across all three. This isolation prevents a servo current spike (up to 2 A at stall) from browning out the Pi.</p>
+
+</div>
+
+<!-- ===================== TAB 3: DATAFLOW ===================== -->
+<div id="tab-dataflow" class="tab-content">
+
+<h3>Data-flow view — what travels through the system</h3>
+<p>This shows the <em>data</em> rather than the components. It's the answer to "trace one frame end to end" — useful for the signal-paths exam question.</p>
+
+<div class="diagram-box">
+<pre class="mermaid">
+%%{init: {'flowchart': {'curve': 'linear', 'nodeSpacing': 40, 'rankSpacing': 55}}}%%
+flowchart TB
+    classDef raw fill:#e1bee7,stroke:#6a1b9a,color:#000
+    classDef proc fill:#c8e6c9,stroke:#2e7d32,color:#000
+    classDef cmd fill:#fff3e0,stroke:#e65100,color:#000
+    classDef phys fill:#f8bbd0,stroke:#ad1457,color:#000
+
+    SCENE["Real-world scene<br/><i>photons</i>"]:::raw
+    SENSOR["CMOS sensor + ISP<br/><i>Bayer → BGR YUV</i>"]:::raw
+    USB["USB UVC stream<br/><i>uvcvideo → V4L2</i>"]:::raw
+    FRAME["numpy BGR ndarray<br/><i>(480, 640, 3) uint8</i>"]:::raw
+
+    HSV["HSV mask<br/><i>blur → BGR2HSV → inRange</i>"]:::proc
+    BLOB["Largest contour + centroid<br/><i>via moments</i>"]:::proc
+    ERR["Pixel error<br/><i>target − frame center</i>"]:::proc
+    CORR["PID correction<br/><i>degrees per axis, ±10°</i>"]:::proc
+
+    ANGLE["Angle command<br/><i>clamped to safe range</i>"]:::cmd
+    I2C["I²C transaction<br/><i>5 bytes @ 100 kHz</i>"]:::cmd
+    PWM["PWM pulse<br/><i>500–2500 µs @ 50 Hz</i>"]:::cmd
+
+    SHAFT["Servo shaft angle<br/><i>closed-loop inside servo</i>"]:::phys
+    AIM["Bracket aim<br/><i>physical rotation</i>"]:::phys
+
+    KEY["Operator keypress<br/><i>cv2.waitKey</i>"]:::raw
+    GATE["Fire gate<br/><i>ARMED + LOCKED + ¬COOLDOWN</i>"]:::proc
+    GPIOOUT["GPIO18 = HIGH<br/><i>3.3 V CMOS</i>"]:::cmd
+    BEAM["Laser beam<br/><i>650 nm visible</i>"]:::phys
+
+    SCENE --> SENSOR --> USB --> FRAME --> HSV --> BLOB --> ERR --> CORR --> ANGLE --> I2C --> PWM --> SHAFT --> AIM
+    AIM -.->|"closes the loop"| SCENE
+
+    KEY --> GATE --> GPIOOUT --> BEAM
+</pre>
+</div>
+
+<p class="muted">The horizontal arrow at the bottom (<em>AIM → SCENE</em>) is the closed loop — moving the bracket changes what the camera sees, which closes the feedback. The right-hand chain is the orthogonal laser-fire path that runs only when the gate conditions are met.</p>
+
+</div>
+
+<!-- ===================== TEXT TABLES BELOW ===================== -->
+
+<h2>What changed since the original proposal</h2>
+<p>For comparison — the differences between the proposal-stage design and what actually got built.</p>
+
+<table>
+<tr><th>Block</th><th>Proposal</th><th>As built</th><th>Reason</th></tr>
+<tr>
+  <td>Camera</td>
+  <td>Pi Camera v3 over CSI ribbon</td>
+  <td>LifeCam HD-3000 over USB</td>
+  <td>The v3 wasn't compatible with the Pi 4's 15-pin CSI slot</td>
+</tr>
+<tr>
+  <td>Laser drive</td>
+  <td>GPIO → IRLZ44N MOSFET → bare 5 mW diode + 100 Ω + 100 kΩ pulldown</td>
+  <td>GPIO18 → 3 V module direct (no MOSFET, no resistor)</td>
+  <td>Replacement laser arrived as an integrated 3 V module with its own driver — MOSFET became redundant</td>
+</tr>
+<tr>
+  <td>Servo power</td>
+  <td>MB102 breadboard PSU</td>
+  <td>LM2596 buck off 12 V PSU</td>
+  <td>MB102 maxes at ~700 mA; DS3225 needs more (problem 001)</td>
+</tr>
+<tr>
+  <td>PCA9685 logic supply</td>
+  <td>MB102</td>
+  <td>Pi GPIO 5 V pin</td>
+  <td>One fewer power module in the chain after MB102 removal</td>
+</tr>
+<tr>
+  <td>Detection</td>
+  <td>HSV thresholding</td>
+  <td>Same — HSV (blue target)</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td>Control</td>
+  <td>PID per axis</td>
+  <td>Same — P-only (Ki = Kd = 0), with coast &amp; recenter extensions</td>
+  <td>Empirical tuning showed integral &amp; derivative weren't useful</td>
+</tr>
+<tr>
+  <td>Operator UI</td>
+  <td>Not in proposal</td>
+  <td>tkinter control panel</td>
+  <td>Added for safety + tooling — replaces ad-hoc terminal commands</td>
+</tr>
+</table>
+
+<h2>Block-by-block legend</h2>
+
+<table>
+<tr><th>Block</th><th>Hardware</th><th>Owner module</th><th>Protocol</th></tr>
+<tr><td>User / GUI</td><td>Mouse + keyboard via VNC</td><td><code>control_panel.py</code></td><td>tkinter event loop + queue.Queue</td></tr>
+<tr><td>CPU</td><td>Raspberry Pi 4B (BCM2711)</td><td><code>main.py</code></td><td>—</td></tr>
+<tr><td>State machine</td><td>—</td><td><code>main.py</code> (lines 86–89, 230–281)</td><td>—</td></tr>
+<tr><td>PCA9685</td><td>NXP 16-ch 12-bit PWM driver</td><td><code>servo.py</code></td><td>I²C @ 0x40, 100 kHz</td></tr>
+<tr><td>GPIO18</td><td>BCM2711 GPIO pin 12 of header</td><td><code>laser.py</code></td><td>Digital 3.3 V CMOS out</td></tr>
+<tr><td>Camera</td><td>LifeCam HD-3000 USB webcam</td><td><code>camera.py</code></td><td>USB UVC → V4L2 /dev/video0</td></tr>
+<tr><td>Pan servo</td><td>DS3225 25 kg digital servo</td><td>via PCA9685 ch 0</td><td>PWM 50 Hz, 500–2500 µs</td></tr>
+<tr><td>Tilt servo</td><td>DS3225 25 kg digital servo</td><td>via PCA9685 ch 1</td><td>PWM 50 Hz, 500–2500 µs</td></tr>
+<tr><td>Laser</td><td>3 V self-contained module</td><td>via GPIO18 direct</td><td>Pin HIGH = ON, LOW = OFF</td></tr>
+<tr><td>LM2596</td><td>Buck converter, 3 A</td><td>—</td><td>12 V → 5.0 V</td></tr>
+<tr><td>Pi USB-C</td><td>5 V 3 A adapter</td><td>—</td><td>USB Power Delivery</td></tr>
+</table>
+
+<div class="panel warn">
+  <strong>If the examiner asks to draw the block diagram on paper:</strong> use the proposal-style version on the first tab. Six boxes plus the user — GUI, CPU, PCA9685, GPIO, camera, then the three actuators. Label each arrow with the protocol. That's the version every block-diagram-on-the-whiteboard question can be answered with in 30 seconds.
+</div>
+
+</div>
+</body>
+</html>
