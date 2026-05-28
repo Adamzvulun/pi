@@ -174,6 +174,15 @@ def main() -> int:
             if key == ord("s"):
                 _print_values(lower, upper)
 
+            # Detect window close (X button). cv2.imshow silently recreates
+            # a window with the same name if it's gone, which made the
+            # windows appear to "pop back up" when the user closed them.
+            # Check all three; if any was closed, quit cleanly.
+            for w in (_CONTROL_WINDOW, _FEED_WINDOW, _MASK_WINDOW):
+                if cv2.getWindowProperty(w, cv2.WND_PROP_VISIBLE) < 1:
+                    log.info("Window '%s' closed — exiting.", w)
+                    return 0
+
         return 0
     finally:
         camera.release(cam)

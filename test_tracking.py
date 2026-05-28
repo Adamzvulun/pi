@@ -177,6 +177,13 @@ def main() -> int:
                 log.info("Quit requested.")
                 break
 
+            # Detect window close via the X button. Without this, cv2.imshow
+            # silently recreates a closed window each frame, making the
+            # window appear to refuse to close.
+            if cv2.getWindowProperty(WINDOW_NAME, cv2.WND_PROP_VISIBLE) < 1:
+                log.info("Window closed — exiting.")
+                break
+
         return 0
     finally:
         # Order: stop sending PID corrections (by exiting the loop),
