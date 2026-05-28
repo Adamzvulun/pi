@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laser Tracker — Presentation Transcript</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #1a212b;
+    --panel2: #232c38;
+    --ink: #e6edf3;
+    --muted: #9aa7b8;
+    --accent: #4dd0e1;
+    --accent2: #ffb84d;
+    --good: #66d18a;
+    --code: #0d1117;
+    --border: #2a3441;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.65;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 28px 22px 80px; }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px; margin-bottom: 22px;
+  }
+  h1 { margin: 0 0 6px; font-size: 28px; }
+  h2 {
+    margin: 36px 0 10px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    font-size: 22px;
+  }
+  h3 { margin: 22px 0 6px; color: var(--accent2); font-size: 16px; }
+  p, li { font-size: 15px; }
+  .muted { color: var(--muted); font-size: 13.5px; }
+  code { background: #1f2630; padding: 1px 5px; border-radius: 3px; font-family: "JetBrains Mono", Consolas, monospace; font-size: 13px; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 14px 0;
+  }
+  .panel.tip  { border-left: 4px solid var(--accent); }
+  .panel.warn { border-left: 4px solid var(--accent2); }
+  .panel.ok   { border-left: 4px solid var(--good); }
+  .stage {
+    color: var(--muted);
+    font-style: italic;
+    background: var(--panel2);
+    border-left: 3px solid var(--accent);
+    padding: 6px 12px;
+    margin: 8px 0;
+    border-radius: 4px;
+    font-size: 13.5px;
+  }
+  .stage::before { content: "▸ "; color: var(--accent); }
+  .you {
+    background: var(--panel);
+    border-left: 3px solid var(--accent2);
+    padding: 10px 16px;
+    margin: 6px 0 14px 0;
+    border-radius: 4px;
+  }
+  .pause {
+    color: var(--muted);
+    font-size: 12.5px;
+    text-align: center;
+    margin: 10px 0;
+    font-style: italic;
+  }
+  .timing {
+    display: inline-block;
+    background: var(--panel2);
+    color: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 1px 10px;
+    font-size: 12px;
+    font-family: monospace;
+    margin-left: 8px;
+  }
+  .toc {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc ul { margin: 6px 0; padding-left: 22px; }
+  .kbd {
+    background: #2a3441; border: 1px solid #3f4d5e;
+    border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 12px;
+  }
+  hr { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
+  .micro {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Presentation Transcript</h1>
+  <p class="muted">
+    Word-for-word what to say during the demo, with stage directions and timing.
+    Total runtime: roughly <strong>8 minutes</strong>. Practice once or twice out loud and the words will flow naturally on the day.
+  </p>
+</header>
+
+<div class="panel tip">
+<strong>How to use this:</strong>
+<ul>
+  <li>The <span class="you" style="display:inline-block; padding:1px 6px; margin:0; border-radius:3px; border-left-width:2px;">orange-bordered blocks</span> are what <em>you say</em>.</li>
+  <li>The <span class="stage" style="display:inline-block; padding:1px 8px; margin:0; border-radius:3px;">grey italic blocks</span> are <em>stage directions</em> — what to do physically while talking.</li>
+  <li>The timings show roughly how long each section should take.</li>
+  <li>Lead with the technical word ("I²C", "PWM", "PID", "HSV", "GPIO") so the examiner immediately knows you have the vocabulary.</li>
+  <li>If you blank, the safe fallback is to point at a wire and say "this is where..." — your hands will lead the words.</li>
+</ul>
+</div>
+
+<h2 id="toc">Outline</h2>
+<div class="toc">
+  <ul>
+    <li><a href="#opening">1. Opening &amp; what the project is</a> <span class="timing">~45 s</span></li>
+    <li><a href="#hardware">2. Hardware tour — point at each part</a> <span class="timing">~2 min</span></li>
+    <li><a href="#software">3. Software architecture — the modules</a> <span class="timing">~1.5 min</span></li>
+    <li><a href="#demo">4. The live demo</a> <span class="timing">~2.5 min</span></li>
+    <li><a href="#paths">5. The two signal paths (volunteer this before they ask)</a> <span class="timing">~1 min</span></li>
+    <li><a href="#close">6. Closing</a> <span class="timing">~15 s</span></li>
+  </ul>
+</div>
+
+<!-- =================== 1. OPENING =================== -->
+<h2 id="opening">1. Opening &amp; what the project is <span class="timing">~45 s</span></h2>
+
+<div class="stage">
+Stand next to the rig. Control panel open on the screen but no demo running yet. Face the examiner, not the rig.
+</div>
+
+<div class="you">
+  <p>"Good morning. My project is an <strong>autonomous laser tracking system</strong> built on a Raspberry Pi 4B. The idea is simple: a camera watches the scene, software finds a target by colour, two servos aim a laser at it, and the laser fires on operator confirmation when the target is locked."</p>
+  <p>"It's a closed-loop control system — the camera sees where the target is, the software computes the error from where we're aiming, and the servos correct in real time. It's the same control pattern you'd find in industrial machine-vision robots that mark, weld, or spray parts on a moving conveyor."</p>
+  <p>"The project combines four kinds of work: image processing in OpenCV, PID control, the I²C bus to a PCA9685 PWM driver chip, and digital GPIO for the laser. Let me walk you through the hardware first, then the software, then run the demo."</p>
+</div>
+
+<div class="pause">[ pause for one breath — let them absorb the agenda ]</div>
+
+<!-- =================== 2. HARDWARE =================== -->
+<h2 id="hardware">2. Hardware tour <span class="timing">~2 min</span></h2>
+
+<div class="stage">
+Move close to the rig. Point at each component physically as you mention it. Speak slowly — give them time to look at what you're pointing at.
+</div>
+
+<h3>The brain</h3>
+<div class="you">
+  <p>"This is the <strong>Raspberry Pi 4B</strong>, 8 gigabytes of RAM. It's our SoC — runs Linux, runs my Python code, hosts the I²C bus to the PCA9685, drives the laser GPIO, and accepts the USB webcam. Everything else here is a peripheral."</p>
+</div>
+
+<h3>The webcam</h3>
+<div class="stage">[ point at the USB cable going into the Pi ]</div>
+<div class="you">
+  <p>"For the camera I'm using a Microsoft LifeCam HD-3000 over USB. It's a UVC-class device — that's USB Video Class — so the Linux kernel handles it with its built-in <code>uvcvideo</code> driver. No vendor driver needed. The kernel exposes it as <code>/dev/video0</code> through the V4L2 API, and OpenCV opens it with <code>cv2.VideoCapture</code> at 640 by 480, 30 frames per second, in BGR colour order."</p>
+</div>
+
+<h3>The servos and PCA9685</h3>
+<div class="stage">[ point at the two servos on the pan-tilt bracket, then at the small green PCA9685 board ]</div>
+<div class="you">
+  <p>"For aiming I'm using two <strong>DS3225 digital servos</strong> — one for pan, one for tilt, on a 3D-printed bracket. The servos need PWM signals — pulse-width modulation — at 50 hertz, with pulse widths between 500 microseconds and 2500 microseconds encoding the angle, 0 to 270 degrees."</p>
+  <p>"The Raspberry Pi has only two hardware PWM channels and they jitter under Linux's scheduler, so I'm using a <strong>PCA9685</strong> chip. It's a 16-channel 12-bit PWM driver controlled over <strong>I²C</strong>. The Pi sends I²C register writes, the PCA9685 generates jitter-free PWM signals to the servos. Two wires for the bus: SDA on pin 3, SCL on pin 5, plus a ground reference. Default I²C address 0x40."</p>
+</div>
+
+<h3>Power</h3>
+<div class="stage">[ point at the LM2596 module and the 12 V brick ]</div>
+<div class="you">
+  <p>"Power is intentionally split into two rails. The <strong>servos</strong> get their 5 volts from this <strong>LM2596 buck converter</strong>, fed by a 12 volt 5 amp PSU. The buck steps 12 V down to 5 V at up to 3 amps, efficiently — no big heat sink needed."</p>
+  <p>"The <strong>PCA9685's logic supply</strong>, which is separate from its servo rail, comes from the <strong>Pi's own 5 volt pin</strong>. Two rails, common ground. The reason for the split: a DS3225 can pull 2 amps at stall — if that current came from the Pi rail, the Pi would brown out and reboot. With the rails separated, servo current spikes can never reach the Pi's logic."</p>
+</div>
+
+<h3>The laser</h3>
+<div class="stage">[ point at the small laser module taped on top of the camera ]</div>
+<div class="you">
+  <p>"The laser is a self-contained 3 volt module. It has its own driver IC and current limiter inside, so I can drive it directly from a GPIO pin — no MOSFET, no resistor. Two wires: red into GPIO18, which is physical pin 12; black into a ground pin. When the GPIO goes HIGH at 3.3 volts, the module lights. When it goes LOW, it goes dark."</p>
+  <p>"In software I use <code>gpiozero.LED(18)</code> to claim the pin and explicitly drive it LOW before anything else — so the laser is guaranteed OFF before any user code runs."</p>
+</div>
+
+<div class="panel warn">
+<strong>If asked here:</strong> "Why no MOSFET?" → "Because the module's internal driver already handles current limiting, and it only draws about 10 to 15 milliamps at 3.3 volts — well inside the GPIO's 16 milliamp limit. A MOSFET is for switching loads that the GPIO can't drive directly. We considered one earlier when we had a bare diode, but the integrated module made it unnecessary."
+</div>
+
+<!-- =================== 3. SOFTWARE =================== -->
+<h2 id="software">3. Software architecture <span class="timing">~1.5 min</span></h2>
+
+<div class="stage">
+Move back to the screen. Open the project folder so files are visible (optional). Speak about the design.
+</div>
+
+<div class="you">
+  <p>"Architecturally, every piece of hardware has one owner module in Python — and only that module imports the underlying library. <strong>servo.py</strong> is the only file that imports adafruit_servokit. <strong>laser.py</strong> is the only one that imports gpiozero for the laser pin. <strong>camera.py</strong> is the only one that calls cv2.VideoCapture. This gives me single points of safety enforcement — the servo angle clamps live in one place, the laser-off guarantee lives in one place — and means if I ever swap the camera or change the I²C address, only one file changes."</p>
+
+  <p>"Then there are three integration modules. <strong>detector.py</strong> runs the OpenCV pipeline — blur, BGR to HSV, threshold, morphology, contour, centroid. <strong>tracker.py</strong> runs two independent PID controllers, one for pan one for tilt, plus coast and recenter behaviours for when the target leaves the field of view. And <strong>main.py</strong> ties it all together with a state machine: DISARMED, ARMED, FIRING, COOLDOWN."</p>
+
+  <p>"There's also <strong>config.py</strong> which holds every tuned constant — HSV ranges, PID gains, the deadband, the fire duration, the camera exposure value. Single source of truth for tuning."</p>
+
+  <p>"And on top of all that I built a <strong>tkinter control panel</strong> — that's the GUI you see here — which initialises the hardware safely, runs each test or the full demo as a subprocess, and routes log messages from every module into a scrolling text widget through a thread-safe queue."</p>
+</div>
+
+<div class="panel tip">
+<strong>If asked:</strong> "Why a queue?" → "Tkinter widgets aren't thread-safe — only the GUI thread can touch them. So background loggers push formatted strings onto a <code>queue.Queue</code>, and a periodic callback scheduled with <code>root.after(200, _tick)</code> drains the queue into the text widget on the GUI thread. That's the asynchronous bridge between background work and the GUI."
+</div>
+
+<!-- =================== 4. DEMO =================== -->
+<h2 id="demo">4. The live demo <span class="timing">~2.5 min</span></h2>
+
+<div class="stage">Start at the control panel.</div>
+
+<div class="you">
+  <p>"Let me run it. I'll narrate as I go."</p>
+</div>
+
+<div class="stage">[ click "Initialize hardware" ]</div>
+<div class="you">
+  <p>"Initialize hardware. The control panel opens the I²C bus to the PCA9685, configures both servos with the DS3225 pulse range, centres them, and claims GPIO18 — driving it LOW so the laser is OFF."</p>
+</div>
+
+<div class="stage">[ tick "Enable laser controls" ]</div>
+<div class="you">
+  <p>"This checkbox is a deliberate safety gate. Until I tick it, every laser-related button stays disabled. The laser cannot fire by accident from this GUI."</p>
+</div>
+
+<div class="stage">[ click the big green "▶ RUN FULL DEMO" button — confirm the dialog ]</div>
+<div class="you">
+  <p>"Run Full Demo. The control panel closes the GPIO pin_factory cleanly — that's a subtle bug fix I'll explain in a moment — then launches <code>main.py</code> as a subprocess. Each tool gets its own OS process so OpenCV's HighGUI and tkinter's event loop don't interfere with each other."</p>
+</div>
+
+<div class="stage">[ the OpenCV window appears — point at the banner ]</div>
+<div class="you">
+  <p>"Here's the live view. The banner at the top is dark grey — DISARMED. Tracking is already running — you can see the bracket following the blue target — but the laser is locked off. I haven't armed it."</p>
+  <p>"Watch the cyan crosshair at frame centre. That's where the laser will fire. And the yellow ring is the detected target's centroid."</p>
+</div>
+
+<div class="stage">[ move the blue target around — show the bracket following ]</div>
+<div class="you">
+  <p>"As I move the target, the detector finds it by HSV colour thresholding. The tracker subtracts frame centre — 320 by 240 — to get a pixel error. Two PID controllers convert that into angle corrections in degrees, clamped to ten degrees per frame so we don't slam the LM2596. Those corrections become I²C writes to the PCA9685, which updates the PWM signals to the servos."</p>
+</div>
+
+<div class="stage">[ press <span class="kbd">A</span> ]</div>
+<div class="you">
+  <p>"A — arm. Banner turns slate blue. ARMED. Still can't fire because the target isn't centred yet."</p>
+</div>
+
+<div class="stage">[ hold the target still in front of the camera — wait for the green LOCKED banner ]</div>
+<div class="you">
+  <p>"When both pan and tilt errors drop below 15 pixels — the deadband — the banner turns solid green: LOCKED. The deadband is what defines 'good enough to fire' — 15 pixels was chosen because the detector centroid jitters about 8 to 12 pixels frame to frame even on a stationary target, so anything tighter would prevent ever locking."</p>
+</div>
+
+<div class="stage">[ press <span class="kbd">F</span> — laser fires for 2.5 seconds ]</div>
+<div class="you">
+  <p>"F — fire. The state machine validates ARMED, LOCKED, not in COOLDOWN, then calls <code>laser.fire</code>, which calls <code>laser_dev.on()</code> from gpiozero. GPIO18 goes HIGH, 3.3 volts, the laser module's internal driver enables the diode."</p>
+</div>
+
+<div class="stage">[ banner turns red, then teal during cooldown ]</div>
+<div class="you">
+  <p>"Banner red — FIRING. 2.5 seconds. Then automatic OFF, cooldown for one second, and back to ARMED ready for the next shot. And notice the bracket is still tracking the target during fire — that's because I disabled the camera's auto-exposure. Without that disable, the laser dot would trigger the AE to drop gain, which would dim the target and make the centroid jitter, and the bracket would dance. Locking exposure stops the whole chain."</p>
+</div>
+
+<div class="stage">[ press <span class="kbd">Q</span> to quit cleanly ]</div>
+<div class="you">
+  <p>"Q to quit. The try/finally pattern in <code>main.py</code> guarantees the laser turns OFF before anything else, servos recentre, camera releases. Demo done."</p>
+</div>
+
+<!-- =================== 5. PATHS =================== -->
+<h2 id="paths">5. The two signal paths <span class="timing">~1 min</span></h2>
+
+<div class="panel ok">
+<strong>Why volunteer this:</strong> the teacher specifically said he'd ask "מסלולים במערכת" — signal paths through the system. Volunteer this proactively at the end of your demo, before they have to ask. It shows you understand the system, not just memorised the words.
+</div>
+
+<div class="you">
+  <p>"Let me trace the two signal paths through the system, because that's the whole story."</p>
+
+  <p><strong>"Path one — photon to servo motion."</strong> A photon hits the webcam's CMOS sensor. Charge accumulates during the exposure window. The on-chip ADC and ISP digitise and process it, the result goes over USB as a UVC stream, the kernel's uvcvideo driver picks it up at <code>/dev/video0</code>, OpenCV reads it as a numpy BGR array, my <code>detector.py</code> blurs it, converts to HSV, thresholds with inRange, opens with erode-dilate, finds the largest contour, computes the centroid via image moments. My <code>tracker.py</code> subtracts frame centre to get pixel error, feeds it through two PID controllers — Kp 0.017, no integral, no derivative — gets corrections in degrees, and calls <code>servo.move_pan</code> and <code>move_tilt</code>. Those clamp to the calibrated mechanical range — that's the single safety enforcement — and write to ServoKit, which goes through adafruit_pca9685, then blinka, then <code>/dev/i2c-1</code>, then the kernel I²C driver, then the bus at 100 kHz, then the PCA9685 registers, then the PWM pulse on the channel pin, then the DS3225's internal controller drives its DC motor through gears, the shaft turns, the bracket aim shifts."</p>
+
+  <p><strong>"Path two — keystroke to laser dot."</strong> The F key event arrives through X11, lands in OpenCV's HighGUI, <code>cv2.waitKey</code> returns the keycode, the state machine in <code>main.py</code> validates three conditions — ARMED, LOCKED, not COOLDOWN — calls <code>laser.fire</code>, which calls <code>laser_dev.on()</code>. That goes through gpiozero's pin_factory, into lgpio, which writes to <code>/dev/gpiochip0</code>, the kernel writes the BCM2711's GPSET register, GPIO18 rises to 3.3 V, the laser module's driver enables the diode, beam comes out."</p>
+
+  <p>"Two paths, ten layers each, and at the boundaries — the kernel APIs, the I²C bus, the GPIO controller — that's where all the interesting engineering questions live."</p>
+</div>
+
+<!-- =================== 6. CLOSE =================== -->
+<h2 id="close">6. Closing <span class="timing">~15 s</span></h2>
+
+<div class="you">
+  <p>"That's the project. Happy to answer questions."</p>
+</div>
+
+<div class="stage">[ Step back from the rig. Hands at your sides. Let them ask. Resist the urge to keep talking. ]</div>
+
+<hr>
+
+<!-- =================== EMERGENCY VERSIONS =================== -->
+<h2>Emergency 90-second version</h2>
+<p class="muted">If they cut you off at one minute and say "skip ahead," use this:</p>
+
+<div class="you">
+  <p>"Autonomous laser tracker on a Raspberry Pi 4B. USB webcam captures BGR frames. OpenCV finds a blue target by HSV thresholding — blur, HSV convert, inRange, morphology, contour, centroid. Two PID controllers convert pixel error into pan and tilt corrections. Those go over I²C at 100 kHz to a PCA9685 PWM driver chip at address 0x40, which generates 50 Hz PWM signals between 500 and 2500 microseconds for the two DS3225 servos. A 3 volt laser module on GPIO18 fires on operator confirmation when the target's pixel error is inside a 15 pixel deadband. State machine with DISARMED, ARMED, FIRING, COOLDOWN gates the laser. tkinter control panel launches everything as subprocesses with a queue-based async log handler. Let me run it."</p>
+</div>
+
+<div class="stage">[ Then go straight to "Run Full Demo" and let the demo speak for itself. ]</div>
+
+<hr>
+
+<!-- =================== PRACTICAL NOTES =================== -->
+<h2>Practical notes for the day</h2>
+
+<div class="micro">
+<h3>Before you start</h3>
+<ul>
+  <li>Power on the Pi 10 minutes ahead so it's settled and the cron pull has happened.</li>
+  <li>Run <code>i2cdetect -y 1</code> in a terminal — confirm <code>40</code> appears. If not, fix the wiring before the examiner arrives.</li>
+  <li>Open the control panel from the desktop shortcut. Don't initialise yet — let the examiner see the "before" state.</li>
+  <li>Have the blue target object in your hand, easy to grab.</li>
+  <li>Open this transcript on a phone behind the rig if you want a safety net. <em>Do not read from it during the demo.</em></li>
+</ul>
+
+<h3>If something fails mid-demo</h3>
+<ul>
+  <li><strong>I²C error / "OSError" at init</strong> → re-seat the PCA9685 ribbon, run <code>i2cdetect</code>, try again. Stay calm — talk through what you're checking.</li>
+  <li><strong>Camera won't open</strong> → unplug and re-plug the USB. The kernel re-enumerates it.</li>
+  <li><strong>Servos don't move</strong> → check the LM2596's green LED. If dark, check the 12 V barrel jack.</li>
+  <li><strong>Laser won't fire</strong> → did you tick "Enable laser controls"? Then check state — it must be ARMED + LOCKED.</li>
+  <li><strong>Window won't close</strong> → that was the <code>tune_detector.py</code> bug; the fix is in. If you see it, mention it as something you found and fixed.</li>
+</ul>
+
+<h3>Body language</h3>
+<ul>
+  <li>Hands moving — point at parts as you mention them. Don't stand still like a statue.</li>
+  <li>Look at the examiner when speaking, the rig when demonstrating.</li>
+  <li>Pause after each section. Give them a beat to ask if they want to.</li>
+  <li>If you don't know an answer: "I'm not 100% sure of that — my best guess is X because Y" beats inventing something confidently wrong.</li>
+</ul>
+
+<h3>Hebrew vs English</h3>
+<ul>
+  <li>Greet and close in Hebrew if it feels natural — "בוקר טוב" at the start, "תודה" at the end.</li>
+  <li>Technical terms in English: I²C, PWM, GPIO, HSV, PID, deadband, state machine. These are the international vocabulary and using them shows you're at home in the field.</li>
+</ul>
+
+</div>
+
+<hr>
+
+<p class="muted">Good luck. The hard part isn't the demo — it's not over-explaining. Trust the material, leave space for questions, and let your hands do half the talking.</p>
+
+</div>
+</body>
+</html>
