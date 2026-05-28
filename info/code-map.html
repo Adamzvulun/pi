@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laser Tracker — Code Map / "Where Is X Written?"</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #1a212b;
+    --panel2: #232c38;
+    --ink: #e6edf3;
+    --muted: #9aa7b8;
+    --accent: #4dd0e1;
+    --accent2: #ffb84d;
+    --good: #66d18a;
+    --bad: #ff7676;
+    --code: #0d1117;
+    --border: #2a3441;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 22px 80px; }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px; margin-bottom: 22px;
+  }
+  h1 { margin: 0 0 6px; font-size: 28px; }
+  h2 {
+    margin: 36px 0 10px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    font-size: 22px;
+  }
+  h3 { margin: 22px 0 6px; color: var(--accent2); font-size: 17px; }
+  h4 { margin: 14px 0 4px; color: #cbd6e3; font-size: 14px; }
+  p, li { font-size: 14.5px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  code, pre { font-family: "JetBrains Mono", "Fira Code", Consolas, monospace; }
+  code { background: #1f2630; padding: 1px 5px; border-radius: 3px; font-size: 13px; }
+  pre {
+    background: var(--code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+  pre .ln { color: #5f6a7a; user-select: none; display: inline-block; width: 36px; }
+  pre .hl { background: rgba(255, 184, 77, 0.12); }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 12px 0;
+  }
+  .panel.tip  { border-left: 4px solid var(--accent); }
+  .panel.warn { border-left: 4px solid var(--accent2); }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--accent2); }
+  .toc {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    columns: 2;
+    column-gap: 28px;
+  }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc ul { margin: 0; padding-left: 18px; }
+  .qa {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+  }
+  .qa .q { color: var(--accent2); font-weight: 600; margin: 0 0 6px; }
+  .qa .a { margin: 4px 0 0 0; }
+  .where {
+    display: inline-block;
+    background: var(--code);
+    color: var(--good);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 12.5px;
+    margin: 2px 4px 2px 0;
+  }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+  @media (max-width: 800px) { .toc { columns: 1; } }
+  .small { font-size: 12.5px; }
+  .ascii {
+    background: var(--code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    white-space: pre;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 12.5px;
+    color: #cdd9e5;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Code Map — "Where Is X Written?"</h1>
+  <p class="muted">
+    Third companion to <a href="exam-study-guide.html">exam-study-guide.html</a> and <a href="qa-guide.html">qa-guide.html</a>.
+    This file answers questions of the form "where does the code do X?" with exact <code>file:line</code> references, the
+    actual code excerpt, and a one-line explanation of why it lives there.
+  </p>
+</header>
+
+<div class="panel tip">
+  <strong>How the examiner will use this kind of question:</strong>
+  <ul>
+    <li>They'll point at a behavior ("OK, where do you decide it's safe to fire?") and expect you to navigate to the exact file and line.</li>
+    <li>They might ask "if I wanted to change the laser duration to 5 seconds, what file would I edit?" — that's a config-vs-code-vs-hardware question.</li>
+    <li>They may follow up with "and why is it there and not in <em>this other file</em>?" — that's the one-owner-per-hardware design question.</li>
+  </ul>
+  <strong>How to use this guide:</strong> read the table of contents, then drill the sections in order. Each entry gives the <span class="where">file:line</span> tag, a code excerpt, and a spoken explanation.
+</div>
+
+<h2 id="toc">Contents</h2>
+<div class="toc">
+  <ul>
+    <li><a href="#filemap">A. File map at a glance</a></li>
+    <li><a href="#hardware-init">B. Hardware initialisation</a></li>
+    <li><a href="#i2c-pwm">C. I²C / PWM / servo control</a></li>
+    <li><a href="#safety-clamps">D. Safety clamps &amp; limits</a></li>
+    <li><a href="#laser-control">E. Laser control logic</a></li>
+    <li><a href="#camera-exposure">F. Camera &amp; auto-exposure</a></li>
+    <li><a href="#detection-pipeline">G. Detection pipeline</a></li>
+    <li><a href="#pid-tracker">H. PID, deadband, coast, recenter</a></li>
+    <li><a href="#state-machine">I. State machine &amp; fire trigger</a></li>
+    <li><a href="#config-knobs">J. All tuned constants</a></li>
+    <li><a href="#async-gui">K. Async / GUI / subprocess</a></li>
+    <li><a href="#tracing">L. End-to-end tracing exercise</a></li>
+    <li><a href="#change-where">M. "If I wanted to change X, what file?"</a></li>
+  </ul>
+</div>
+
+<!-- ===================== A. FILE MAP ===================== -->
+<h2 id="filemap">A. File map at a glance</h2>
+
+<table>
+<tr><th>File</th><th>Purpose</th><th>Lines</th><th>Owns</th></tr>
+<tr><td><code>config.py</code></td><td>Every tuned constant — single source of truth for tuning values</td><td>207</td><td>Data only, no logic</td></tr>
+<tr><td><code>servo.py</code></td><td>PCA9685 over I²C, two servos, angle clamping</td><td>266</td><td><code>adafruit_servokit</code>, calibrated limits</td></tr>
+<tr><td><code>camera.py</code></td><td>USB webcam (V4L2), exposure lock</td><td>115</td><td><code>cv2.VideoCapture</code></td></tr>
+<tr><td><code>detector.py</code></td><td>HSV pipeline, centroid extraction</td><td>109</td><td>OpenCV detection logic</td></tr>
+<tr><td><code>tracker.py</code></td><td>PID controllers, coast, recenter</td><td>329</td><td><code>simple_pid</code></td></tr>
+<tr><td><code>laser.py</code></td><td>GPIO18 only</td><td>112</td><td><code>gpiozero.LED</code> for pin 18</td></tr>
+<tr><td><code>main.py</code></td><td>State machine + the full demo loop + overlay</td><td>311</td><td>Integration only — no direct hardware imports beyond what owners expose</td></tr>
+<tr><td><code>control_panel.py</code></td><td>tkinter GUI, subprocess orchestration, log routing</td><td>789</td><td>GUI, subprocess lifecycle, GPIO hand-off</td></tr>
+<tr><td><code>test_servo.py</code></td><td>Standalone servo smoke test</td><td>211</td><td>—</td></tr>
+<tr><td><code>test_laser.py</code></td><td>Standalone laser blink</td><td>73</td><td>—</td></tr>
+<tr><td><code>test_tracking.py</code></td><td>Tracking without firing (debugging)</td><td>191</td><td>—</td></tr>
+<tr><td><code>tune_detector.py</code></td><td>HSV tuner with sliders</td><td>184</td><td>—</td></tr>
+<tr><td><code>calibrate_servo.py</code></td><td>Find safe servo angle limits</td><td>370</td><td>—</td></tr>
+<tr><td><code>calibrate_boresight.py</code></td><td>Measure laser-vs-camera pixel offset</td><td>333</td><td>—</td></tr>
+</table>
+
+<!-- ===================== B. HARDWARE INIT ===================== -->
+<h2 id="hardware-init">B. Hardware initialisation</h2>
+
+<div class="qa">
+<div class="q">Q. Where is the PCA9685 I²C address set?</div>
+<div class="a">
+<span class="where">servo.py:54</span>
+<pre><span class="ln">54 </span><span class="hl">PCA9685_ADDRESS: int = 0x40</span>
+<span class="ln">55 </span>PAN_CHANNEL: int = 0
+<span class="ln">56 </span>TILT_CHANNEL: int = 1</pre>
+<p>Why here: <code>servo.py</code> is the one owner of the PCA9685. Any other file changes its mind about the address by importing this module, not by setting its own constant. The default 0x40 means "no A0–A5 jumpers shorted on the board."</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the PWM pulse range configured?</div>
+<div class="a">
+<span class="where">servo.py:60–62, 81–84</span>
+<pre><span class="ln">60 </span># DS3225 needs 500-2500 µs pulses over a 270° range. ServoKit defaults to
+<span class="ln">61 </span>PULSE_MIN_US: int = 500
+<span class="ln">62 </span>PULSE_MAX_US: int = 2500
+<span class="ln">63 </span>ACTUATION_RANGE_DEG: int = 270
+...
+<span class="ln">81 </span>def _configure_channel(kit: ServoKit, channel: int) -> None:
+<span class="ln">82 </span>    """Apply DS3225-specific pulse range and actuation range to a channel."""
+<span class="ln">83 </span>    <span class="hl">kit.servo[channel].set_pulse_width_range(PULSE_MIN_US, PULSE_MAX_US)</span>
+<span class="ln">84 </span>    <span class="hl">kit.servo[channel].actuation_range = ACTUATION_RANGE_DEG</span></pre>
+<p>Why here: DS3225 isn't a standard hobby servo (180°/1000–2000 µs). If we skipped <code>set_pulse_width_range</code> and <code>actuation_range</code> the library would use defaults and our calibrated 220° pan limit would be unreachable. <code>_configure_channel</code> is called once per servo in <code>init()</code>.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where does the camera get opened?</div>
+<div class="a">
+<span class="where">camera.py:49</span>
+<pre><span class="ln">48 </span>    log.info("Opening webcam at device index %d (%dx%d)", device_index, width, height)
+<span class="ln">49 </span>    <span class="hl">cap = cv2.VideoCapture(device_index)</span>
+<span class="ln">50 </span>
+<span class="ln">51 </span>    if not cap.isOpened():
+<span class="ln">52 </span>        raise RuntimeError(...)</pre>
+<p>Why here: <code>camera.py</code> is the single owner of the V4L2/UVC interface. <code>cv2.VideoCapture</code> goes through GStreamer first then falls back to V4L2 — that's why you see the harmless "Cannot query video position" warning at start-up.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the laser pin claimed and forced LOW?</div>
+<div class="a">
+<span class="where">laser.py:76–79</span>
+<pre><span class="ln">76 </span>    <span class="hl">laser_dev = LED(LASER_PIN)</span>
+<span class="ln">77 </span>    <span class="hl">laser_dev.off()</span>
+<span class="ln">78 </span>    log.info("Laser initialized on GPIO%d (OFF)", LASER_PIN)
+<span class="ln">79 </span>    return laser_dev</pre>
+<p>Why here: <code>gpiozero.LED(18)</code> opens <code>/dev/gpiochip0</code>, claims pin 18 as output, and (by default) drives it LOW. We <em>also</em> call <code>.off()</code> explicitly so the intent is in the code, not relying on the library's default — defensive against future gpiozero changes.</p>
+</div>
+</div>
+
+<!-- ===================== C. I2C / PWM ===================== -->
+<h2 id="i2c-pwm">C. I²C / PWM / servo control</h2>
+
+<div class="qa">
+<div class="q">Q. Where does a Python "set angle" call become an I²C write?</div>
+<div class="a">
+<span class="where">servo.py:189–196</span> (and <code>servo.py:220–223</code> for tilt)
+<pre><span class="ln">189 </span>    if ramp:
+<span class="ln">190 </span>        _pan_current = _ramp(kit, PAN_CHANNEL, _pan_current, clamped)
+<span class="ln">191 </span>    else:
+<span class="ln">195 </span>        <span class="hl">kit.servo[PAN_CHANNEL].angle = clamped</span>
+<span class="ln">196 </span>        _pan_current = clamped</pre>
+<p>That single Python attribute assignment on line 195 is the trigger. ServoKit converts the angle into a pulse width (using our calibrated 500–2500 µs / 270° range), maps it to a 12-bit "OFF" count for the PCA9685, and writes the LED0_ON/OFF or LED1_ON/OFF registers via the <code>adafruit_pca9685</code> driver. That driver in turn calls into adafruit_blinka → Linux <code>/dev/i2c-1</code>, which puts 5 bytes on the I²C wire at 100 kHz.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the channel-to-servo mapping (pan = channel 0, tilt = channel 1)?</div>
+<div class="a">
+<span class="where">servo.py:55–56</span>
+<pre><span class="ln">55 </span><span class="hl">PAN_CHANNEL: int = 0</span>
+<span class="ln">56 </span><span class="hl">TILT_CHANNEL: int = 1</span></pre>
+<p>If we ever swap which servo header the wires go into, only these two constants need updating — the rest of <code>servo.py</code> uses them by name.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the ramping behaviour implemented?</div>
+<div class="a">
+<span class="where">servo.py:87–109</span>
+<pre><span class="ln">87 </span>def _ramp(kit: ServoKit, channel: int, current: float, target: float) -> float:
+<span class="ln">88 </span>    ...
+<span class="ln">102 </span>    direction = 1 if target &gt; current else -1
+<span class="ln">103 </span>    angle = current
+<span class="ln">104 </span>    while abs(target - angle) &gt; RAMP_RESOLUTION_DEG:
+<span class="ln">105 </span>        angle += direction * RAMP_RESOLUTION_DEG
+<span class="ln">106 </span>        kit.servo[channel].angle = angle
+<span class="ln">107 </span>        time.sleep(RAMP_DELAY_S)</pre>
+<p>Steps in 2° / 50 ms increments (constants <code>RAMP_RESOLUTION_DEG = 2.0</code>, <code>RAMP_DELAY_S = 0.05</code> on lines 66–67). Used by calibration and centering; <em>not</em> used by tracking — <code>tracker.update</code> always calls <code>move_pan</code> / <code>move_tilt</code> with <code>ramp=False</code> to avoid stalling the per-frame loop.</p>
+</div>
+</div>
+
+<!-- ===================== D. SAFETY CLAMPS ===================== -->
+<h2 id="safety-clamps">D. Safety clamps &amp; limits</h2>
+
+<div class="qa">
+<div class="q">Q. Where are the servo angle clamps enforced? <span class="muted">(the safety-critical line)</span></div>
+<div class="a">
+<span class="where">servo.py:181 (pan)</span> · <span class="where">servo.py:212 (tilt)</span>
+<pre><span class="ln">180 </span>
+<span class="ln">181 </span>    <span class="hl">clamped = max(PAN_MIN, min(PAN_MAX, angle))</span>
+<span class="ln">182 </span>    if clamped != angle:
+<span class="ln">183 </span>        log.warning(
+<span class="ln">184 </span>            "Pan request %.1f° clamped to %.1f° (limits %.1f°-%.1f°)",
+<span class="ln">185 </span>            angle, clamped, PAN_MIN, PAN_MAX,
+<span class="ln">186 </span>        )</pre>
+<p>This is the single line that prevents the bracket from being driven into a hard stop. Every caller — PID, calibration, manual control, anything — funnels through <code>move_pan</code>/<code>move_tilt</code>, so this clamp is the global safety net. The warning log makes clamping visible during demos.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where are the actual limit values stored?</div>
+<div class="a">
+<span class="where">servo.py:40–43</span>
+<pre><span class="ln">40 </span><span class="hl">PAN_MIN: float = 50.0</span>
+<span class="ln">41 </span><span class="hl">PAN_MAX: float = 220.0</span>
+<span class="ln">42 </span><span class="hl">TILT_MIN: float = 115.0</span>
+<span class="ln">43 </span><span class="hl">TILT_MAX: float = 205.0</span></pre>
+<p>Why in <code>servo.py</code> and NOT <code>config.py</code>: these are hardware-safety values, not tuning values. They were measured with <code>calibrate_servo.py</code> against the actual bracket and represent physical reality, not user preference. The centers are <em>computed</em> on lines 47–48, so asymmetric ranges (tilt 115–205, centred at 160 not 135) come out right automatically.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the PID output clamped to ±10°?</div>
+<div class="a">
+<span class="where">tracker.py:96–105</span>
+<pre><span class="ln">96 </span>    pan_pid = PID(
+<span class="ln">97 </span>        config.KP_PAN, config.KI_PAN, config.KD_PAN,
+<span class="ln">98 </span>        setpoint=0,
+<span class="ln">99 </span>        <span class="hl">output_limits=(-config.PID_OUTPUT_LIMIT, config.PID_OUTPUT_LIMIT),</span>
+<span class="ln">100 </span>    )
+<span class="ln">101 </span>    tilt_pid = PID(...same...)</pre>
+<p>simple_pid handles the clamp internally — any correction it produces is already inside ±<code>PID_OUTPUT_LIMIT</code> (<code>config.py:91</code> = 10.0). This caps single-frame swings so a far-corner target doesn't generate a 50° step that slams the LM2596 with current spikes.</p>
+</div>
+</div>
+
+<!-- ===================== E. LASER CONTROL ===================== -->
+<h2 id="laser-control">E. Laser control logic</h2>
+
+<div class="qa">
+<div class="q">Q. Where does GPIO18 actually go HIGH?</div>
+<div class="a">
+<span class="where">laser.py:82–85</span>
+<pre><span class="ln">82 </span>def fire(laser_dev: LED) -> None:
+<span class="ln">83 </span>    """Drive GPIO18 HIGH — laser ON. Caller is responsible for timing."""
+<span class="ln">84 </span>    <span class="hl">laser_dev.on()</span>
+<span class="ln">85 </span>    log.info("Laser ON")</pre>
+<p>One line. <code>laser_dev.on()</code> goes through gpiozero → pin_factory → lgpio → <code>/dev/gpiochip0</code> → BCM2711 GPSET register → physical pin 12 rises to 3.3 V. The caller (<code>main.py</code>) is responsible for the off-timer; this function does nothing else.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the pin number 18 specified?</div>
+<div class="a">
+<span class="where">laser.py:53</span>
+<pre><span class="ln">53 </span><span class="hl">LASER_PIN: int = 18</span></pre>
+<p>BCM 18 = physical header pin 12. Comment on lines 46–52 explains why this pin (it's adjacent to a GND pin so the two-wire run is short, and it was an unallocated GPIO in earlier phases).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where does the laser get forced OFF on exit, even on crash?</div>
+<div class="a">
+<span class="where">main.py:290–297</span>
+<pre><span class="ln">290 </span>    finally:
+<span class="ln">291 </span>        # Order matters: laser off FIRST (most safety-critical), then
+<span class="ln">292 </span>        # release servos (which will re-center), then camera.
+<span class="ln">293 </span>        log.info("Shutting down...")
+<span class="ln">294 </span>        try:
+<span class="ln">295 </span>            <span class="hl">laser.cleanup(laser_dev)</span>
+<span class="ln">296 </span>        except Exception:
+<span class="ln">297 </span>            log.exception("Laser cleanup failed")</pre>
+<p>The <code>try/finally</code> is the safety guarantee. Whether <code>main()</code> exits cleanly, crashes, or gets Ctrl+C'd, this block runs. Laser is cleaned up BEFORE servos and camera because it's the safety-critical resource.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the cleanup function defined?</div>
+<div class="a">
+<span class="where">laser.py:94–112</span>
+<pre><span class="ln">94 </span>def cleanup(laser_dev: LED) -> None:
+<span class="ln">102 </span>    try:
+<span class="ln">103 </span>        <span class="hl">laser_dev.off()</span>
+<span class="ln">104 </span>    except Exception:
+<span class="ln">105 </span>        log.exception("Error driving laser pin LOW during cleanup")
+<span class="ln">106 </span>
+<span class="ln">107 </span>    try:
+<span class="ln">108 </span>        <span class="hl">laser_dev.close()</span>
+<span class="ln">109 </span>    except Exception:
+<span class="ln">110 </span>        log.exception("Error closing laser device during cleanup")</pre>
+<p>Two-step: drive LOW first, then release the GPIO line. Each step is wrapped so a failure in one doesn't prevent the other. Errors are logged but not re-raised — cleanup is called from finally blocks and must not mask the original exception.</p>
+</div>
+</div>
+
+<!-- ===================== F. CAMERA & AE ===================== -->
+<h2 id="camera-exposure">F. Camera &amp; auto-exposure</h2>
+
+<div class="qa">
+<div class="q">Q. Where is auto-exposure disabled?</div>
+<div class="a">
+<span class="where">camera.py:65–73</span>
+<pre><span class="ln">65 </span>    if config.CAMERA_DISABLE_AUTO_EXPOSURE:
+<span class="ln">66 </span>        <span class="hl">ok_ae = cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)</span>
+<span class="ln">67 </span>        <span class="hl">ok_ex = cap.set(cv2.CAP_PROP_EXPOSURE, config.CAMERA_EXPOSURE)</span>
+<span class="ln">68 </span>        actual_ae = cap.get(cv2.CAP_PROP_AUTO_EXPOSURE)
+<span class="ln">69 </span>        actual_ex = cap.get(cv2.CAP_PROP_EXPOSURE)
+<span class="ln">70 </span>        log.info(
+<span class="ln">71 </span>            "Auto-exposure disabled (set_ae=%s set_ex=%s) — AE mode now %g, exposure %g",
+<span class="ln">72 </span>            ok_ae, ok_ex, actual_ae, actual_ex,
+<span class="ln">73 </span>        )</pre>
+<p>Two V4L2 ioctls. <code>CAP_PROP_AUTO_EXPOSURE = 1</code> means manual mode (UVC convention). <code>CAP_PROP_EXPOSURE = 250</code> is the absolute exposure value (default for indoor light). The "actual_*" readback lets you spot driver clamping if you ever pick an unsupported value.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the resolution set?</div>
+<div class="a">
+<span class="where">camera.py:57–58</span>
+<pre><span class="ln">57 </span>    <span class="hl">cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)</span>
+<span class="ln">58 </span>    <span class="hl">cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)</span></pre>
+<p>Defaults 640 × 480 — passed in from the calling code or defaulted in the function signature. The webcam may pick the closest supported mode; the actual values are read back and logged on lines 82–84.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where does the project read a frame?</div>
+<div class="a">
+<span class="where">camera.py:100</span>
+<pre><span class="ln">99 </span>def capture_frame(cap: cv2.VideoCapture) -&gt; np.ndarray:
+<span class="ln">100 </span>    <span class="hl">ret, frame = cap.read()</span>
+<span class="ln">101 </span>    if not ret or frame is None:
+<span class="ln">102 </span>        raise RuntimeError("Failed to read frame from webcam...")</pre>
+<p>The single blocking call. Returns BGR uint8 ndarray of shape (480, 640, 3). Every other module that needs frames calls <code>camera.capture_frame</code> rather than touching <code>cv2.VideoCapture</code> directly — that's the one-owner rule.</p>
+</div>
+</div>
+
+<!-- ===================== G. DETECTION ===================== -->
+<h2 id="detection-pipeline">G. Detection pipeline</h2>
+
+<div class="qa">
+<div class="q">Q. Where does the BGR→HSV conversion happen?</div>
+<div class="a">
+<span class="where">detector.py:62–66</span>
+<pre><span class="ln">62 </span>    <span class="hl">blurred = cv2.GaussianBlur(frame, _BLUR_KERNEL, 0)</span>
+<span class="ln">63 </span>    <span class="hl">hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)</span>
+<span class="ln">64 </span>    <span class="hl">mask = cv2.inRange(hsv, config.HSV_LOWER, config.HSV_UPPER)</span>
+<span class="ln">65 </span>    mask = cv2.erode(mask, _MORPH_KERNEL, iterations=_MORPH_ITERATIONS)
+<span class="ln">66 </span>    mask = cv2.dilate(mask, _MORPH_KERNEL, iterations=_MORPH_ITERATIONS)</pre>
+<p>The five lines of <code>build_mask()</code> are the whole pipeline up to the binary mask. Public so <code>tune_detector.py</code> can preview the same mask the detector sees.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the largest blob picked?</div>
+<div class="a">
+<span class="where">detector.py:86–96</span>
+<pre><span class="ln">86 </span>    contours, _ = cv2.findContours(
+<span class="ln">87 </span>        mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+<span class="ln">88 </span>    )
+<span class="ln">89 </span>    if not contours:
+<span class="ln">90 </span>        return None
+<span class="ln">91 </span>
+<span class="ln">92 </span>    <span class="hl">largest = max(contours, key=cv2.contourArea)</span>
+<span class="ln">93 </span>    area = cv2.contourArea(largest)
+<span class="ln">94 </span>    if area &lt; config.MIN_CONTOUR_AREA:
+<span class="ln">95 </span>        return None</pre>
+<p>Two filters: must exist at all (line 89), must be bigger than 200 px (line 94, <code>config.MIN_CONTOUR_AREA</code>). Below 200 px is noise.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the centroid computed?</div>
+<div class="a">
+<span class="where">detector.py:101–108</span>
+<pre><span class="ln">101 </span>    <span class="hl">moments = cv2.moments(largest)</span>
+<span class="ln">102 </span>    if moments["m00"] == 0:
+<span class="ln">103 </span>        return None
+<span class="ln">104 </span>
+<span class="ln">105 </span>    <span class="hl">cx = int(moments["m10"] / moments["m00"])</span>
+<span class="ln">106 </span>    <span class="hl">cy = int(moments["m01"] / moments["m00"])</span>
+<span class="ln">107 </span>    return cx, cy</pre>
+<p>Image moments give centroid analytically: m00 = area, m10 / m00 = mean x, m01 / m00 = mean y. The <code>m00 == 0</code> guard prevents divide-by-zero on degenerate contours (shouldn't happen after the area check, but defensive).</p>
+</div>
+</div>
+
+<!-- ===================== H. PID / TRACKER ===================== -->
+<h2 id="pid-tracker">H. PID, deadband, coast, recenter</h2>
+
+<div class="qa">
+<div class="q">Q. Where is the pixel error computed?</div>
+<div class="a">
+<span class="where">tracker.py:251–259</span>
+<pre><span class="ln">251 </span>    target_x, target_y = target_pos
+<span class="ln">258 </span>    <span class="hl">pan_error = target_x - config.FRAME_CENTER_X</span>
+<span class="ln">259 </span>    <span class="hl">tilt_error = target_y - config.FRAME_CENTER_Y</span></pre>
+<p>This is where camera coordinates become "how far from centre." <code>FRAME_CENTER_X / Y</code> are 320 and 240, defined in <code>config.py:22–23</code>. Positive pan_error = target right of centre. Positive tilt_error = target BELOW centre (OpenCV y increases downward).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where does the PID actually run?</div>
+<div class="a">
+<span class="where">tracker.py:263–264</span>
+<pre><span class="ln">263 </span>    <span class="hl">pan_correction = pan_pid(pan_error)</span>
+<span class="ln">264 </span>    <span class="hl">tilt_correction = tilt_pid(tilt_error)</span></pre>
+<p>Calling the PID object as a function feeds it the current error and returns a correction (degrees, already clamped by the controller's <code>output_limits</code>). simple_pid manages its own internal time-stepping for the I and D terms.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the deadband checked? <span class="muted">(this is what gates the "LOCKED" state)</span></div>
+<div class="a">
+<span class="where">tracker.py:273–278</span>
+<pre><span class="ln">273 </span>    deadband_px = (deadband_override if deadband_override is not None
+<span class="ln">274 </span>                   else config.TRACKING_DEADBAND_PX)
+<span class="ln">275 </span>    <span class="hl">in_deadband = (</span>
+<span class="ln">276 </span>        <span class="hl">abs(pan_error) &lt; deadband_px</span>
+<span class="ln">277 </span>        <span class="hl">and abs(tilt_error) &lt; deadband_px</span>
+<span class="ln">278 </span>    )</pre>
+<p>Both axes must be within 15 px (the default deadband). The result is returned to <code>main.py</code> as <code>result["in_deadband"]</code>, which is what the state machine reads to know "target locked." Same value gates fire permission.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is "no target → coast" decided?</div>
+<div class="a">
+<span class="where">tracker.py:148–155</span>
+<pre><span class="ln">148 </span>    if target_pos is None:
+<span class="ln">149 </span>        # First try: coast (if the last tracking step gave us a direction).
+<span class="ln">150 </span>        last_was_meaningful = (
+<span class="ln">151 </span>            abs(_last_pan_correction) &gt;= config.COAST_MIN_CORRECTION_DEG
+<span class="ln">152 </span>            or abs(_last_tilt_correction) &gt;= config.COAST_MIN_CORRECTION_DEG
+<span class="ln">153 </span>        )
+<span class="ln">154 </span>        <span class="hl">if _coast_frames_remaining &gt; 0 and last_was_meaningful:</span>
+<span class="ln">155 </span>            ...</pre>
+<p>When the detector returns None, we coast if (a) we still have coast budget left and (b) the last correction was non-trivial (target wasn't sitting still in the deadband when it disappeared). The coast budget is reset to <code>COAST_MAX_FRAMES = 30</code> every successful tracking step (line 312).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where does coast become recenter?</div>
+<div class="a">
+<span class="where">tracker.py:192–205</span> (decision) · <span class="where">tracker.py:207–239</span> (recenter step)
+<pre><span class="ln">192 </span>        if config.RECENTER_AFTER_COAST and not _recentering:
+<span class="ln">196 </span>            current_pan = servo.current_pan()
+<span class="ln">200 </span>            already_centered = (
+<span class="ln">201 </span>                abs(current_pan - servo.PAN_CENTER) &lt; 1.0
+<span class="ln">202 </span>                and abs(current_tilt - servo.TILT_CENTER) &lt; 1.0
+<span class="ln">203 </span>            )
+<span class="ln">204 </span>            if last_was_meaningful and not already_centered:
+<span class="ln">205 </span>                <span class="hl">_recentering = True</span></pre>
+<p>After coast expires without re-acquiring, we set <code>_recentering = True</code> if the bracket isn't already near centre. The actual stepping happens on lines 207–239: 2°/frame toward centre (via <code>RECENTER_STEP_DEG</code>).</p>
+</div>
+</div>
+
+<!-- ===================== I. STATE MACHINE ===================== -->
+<h2 id="state-machine">I. State machine &amp; fire trigger</h2>
+
+<div class="qa">
+<div class="q">Q. Where are the state names defined?</div>
+<div class="a">
+<span class="where">main.py:86–89</span>
+<pre><span class="ln">86 </span>S_DISARMED = "DISARMED"
+<span class="ln">87 </span>S_ARMED    = "ARMED"
+<span class="ln">88 </span>S_FIRING   = "FIRING"
+<span class="ln">89 </span>S_COOLDOWN = "COOLDOWN"</pre>
+<p>Plain strings — no enum needed for four states. Used as the state variable on line 216 (<code>state = S_DISARMED</code>) and compared throughout the loop.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where does the loop transition FIRING → COOLDOWN?</div>
+<div class="a">
+<span class="where">main.py:230–237</span>
+<pre><span class="ln">230 </span>    if state == S_FIRING and now - t_fire_start &gt;= FIRE_DURATION_S:
+<span class="ln">231 </span>        <span class="hl">laser.off(laser_dev)</span>
+<span class="ln">232 </span>        cooldown_until = now + COOLDOWN_S
+<span class="ln">233 </span>        <span class="hl">state = S_COOLDOWN</span>
+<span class="ln">234 </span>        log.info("Fire complete — cooling down for %.1fs.", COOLDOWN_S)
+<span class="ln">235 </span>    elif state == S_COOLDOWN and now &gt;= cooldown_until:
+<span class="ln">236 </span>        <span class="hl">state = S_ARMED</span></pre>
+<p>Time-based, checked at the top of every frame. The fire ON event itself happens elsewhere (the F keypress handler); this block handles the auto-OFF and auto-arm-recovery.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the F key handled?</div>
+<div class="a">
+<span class="where">main.py:272–281</span>
+<pre><span class="ln">272 </span>    elif key == ord('f'):
+<span class="ln">273 </span>        <span class="hl">if state != S_ARMED:</span>
+<span class="ln">274 </span>            log.warning("Fire ignored — state is %s (must be ARMED).", state)
+<span class="ln">275 </span>        <span class="hl">elif not locked:</span>
+<span class="ln">276 </span>            log.warning("Fire ignored — target NOT LOCKED.")
+<span class="ln">277 </span>        else:
+<span class="ln">278 </span>            log.warning("★ FIRE ★ — laser ON for %.2fs", FIRE_DURATION_S)
+<span class="ln">279 </span>            <span class="hl">laser.fire(laser_dev)</span>
+<span class="ln">280 </span>            t_fire_start = now
+<span class="ln">281 </span>            state = S_FIRING</pre>
+<p>Three safety checks before the laser turns on: (1) state must be ARMED — DISARMED can't fire, neither can FIRING/COOLDOWN. (2) <code>locked</code> must be true — set on line 248 from <code>result["in_deadband"]</code>. (3) Implicitly: the key event itself was caught — the user pressed F.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the A (arm/disarm) key handled?</div>
+<div class="a">
+<span class="where">main.py:263–271</span>
+<pre><span class="ln">263 </span>    elif key == ord('a'):
+<span class="ln">264 </span>        if state == S_DISARMED:
+<span class="ln">265 </span>            <span class="hl">state = S_ARMED</span>
+<span class="ln">266 </span>            log.warning("★ LASER ARMED ★")
+<span class="ln">267 </span>        elif state == S_ARMED:
+<span class="ln">268 </span>            <span class="hl">state = S_DISARMED</span>
+<span class="ln">269 </span>            log.info("Laser DISARMED.")
+<span class="ln">270 </span>        else:
+<span class="ln">271 </span>            log.info("Cannot toggle arm during %s.", state)</pre>
+<p>Toggle only legal in DISARMED ⇄ ARMED. You cannot disarm while FIRING (would leave the laser ON without state tracking it) — the auto-transition handles that.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is "is the target locked?" computed each frame?</div>
+<div class="a">
+<span class="where">main.py:247–248</span>
+<pre><span class="ln">247 </span>    result = tracker.update(pan_pid, tilt_pid, kit, target)
+<span class="ln">248 </span>    <span class="hl">locked = result is not None and result.get("in_deadband", False)</span></pre>
+<p>Single line, derived from the tracker's return dict. <code>None</code> result means "no target" (locked = False). Otherwise reads the <code>in_deadband</code> flag, which is set by <code>tracker.py:275–278</code>.</p>
+</div>
+</div>
+
+<!-- ===================== J. CONFIG KNOBS ===================== -->
+<h2 id="config-knobs">J. Where every tuned constant lives</h2>
+
+<table>
+<tr><th>Constant</th><th>File:line</th><th>Value</th><th>Affects</th></tr>
+<tr><td><code>FRAME_WIDTH / HEIGHT</code></td><td>config.py:20–21</td><td>640 / 480</td><td>Camera resolution</td></tr>
+<tr><td><code>FRAME_CENTER_X / Y</code></td><td>config.py:22–23</td><td>320 / 240</td><td>PID setpoint reference</td></tr>
+<tr><td><code>HSV_LOWER / UPPER</code></td><td>config.py:34–35</td><td>[79,76,0] – [105,255,255]</td><td>Blue detection band</td></tr>
+<tr><td><code>MIN_CONTOUR_AREA</code></td><td>config.py:43</td><td>200</td><td>Noise rejection threshold</td></tr>
+<tr><td><code>KP_PAN / KP_TILT</code></td><td>config.py:74, 81</td><td>0.017</td><td>P-gain (px → degrees)</td></tr>
+<tr><td><code>KI_*, KD_*</code></td><td>config.py:75–83</td><td>0.0</td><td>Integral / derivative (unused)</td></tr>
+<tr><td><code>PID_OUTPUT_LIMIT</code></td><td>config.py:91</td><td>10.0</td><td>Max degrees per frame</td></tr>
+<tr><td><code>TRACKING_DEADBAND_PX</code></td><td>config.py:99</td><td>15</td><td>Lock threshold &amp; fire permission</td></tr>
+<tr><td><code>COAST_MAX_FRAMES</code></td><td>config.py:114</td><td>30</td><td>~1 s of coast at 30 fps</td></tr>
+<tr><td><code>COAST_DECAY</code></td><td>config.py:119</td><td>0.95</td><td>Per-frame correction decay</td></tr>
+<tr><td><code>COAST_MIN_CORRECTION_DEG</code></td><td>config.py:124</td><td>0.1</td><td>Min last-correction to trigger coast</td></tr>
+<tr><td><code>RECENTER_AFTER_COAST</code></td><td>config.py:136</td><td>True</td><td>Master enable</td></tr>
+<tr><td><code>RECENTER_STEP_DEG</code></td><td>config.py:141</td><td>2.0</td><td>Recenter speed</td></tr>
+<tr><td><code>LASER_FIRE_DURATION_S</code></td><td>config.py:150</td><td>2.5</td><td>How long laser stays ON per fire</td></tr>
+<tr><td><code>LASER_COOLDOWN_S</code></td><td>config.py:155</td><td>1.0</td><td>Lockout after each fire</td></tr>
+<tr><td><code>FIRE_DEADBAND_PX</code></td><td>config.py:163</td><td>40</td><td>Wide deadband (unused, kept as knob)</td></tr>
+<tr><td><code>CAMERA_DISABLE_AUTO_EXPOSURE</code></td><td>config.py:187</td><td>True</td><td>Master AE switch</td></tr>
+<tr><td><code>CAMERA_EXPOSURE</code></td><td>config.py:188</td><td>250</td><td>V4L2 exposure_absolute</td></tr>
+<tr><td><code>BORESIGHT_X / Y_OFFSET</code></td><td>config.py:206–207</td><td>0 / 0</td><td>Pixel bias (currently unused)</td></tr>
+<tr><td><code>PAN_MIN / MAX</code></td><td><strong>servo.py:40–41</strong></td><td>50 / 220</td><td>Pan safety clamp</td></tr>
+<tr><td><code>TILT_MIN / MAX</code></td><td><strong>servo.py:42–43</strong></td><td>115 / 205</td><td>Tilt safety clamp</td></tr>
+<tr><td><code>PCA9685_ADDRESS</code></td><td><strong>servo.py:54</strong></td><td>0x40</td><td>I²C slave address</td></tr>
+<tr><td><code>PULSE_MIN_US / MAX_US</code></td><td><strong>servo.py:61–62</strong></td><td>500 / 2500</td><td>DS3225 pulse range</td></tr>
+<tr><td><code>ACTUATION_RANGE_DEG</code></td><td><strong>servo.py:63</strong></td><td>270</td><td>Override ServoKit's 180° default</td></tr>
+<tr><td><code>LASER_PIN</code></td><td><strong>laser.py:53</strong></td><td>18</td><td>BCM pin number</td></tr>
+</table>
+
+<div class="panel warn">
+  <strong>Note:</strong> servo limits, the I²C address, the pulse range and the laser pin are <em>NOT</em> in <code>config.py</code>. They're in their owner modules (<code>servo.py</code>, <code>laser.py</code>) because they're hardware-safety values, not tuning values. Expect the examiner to test whether you understand this distinction.
+</div>
+
+<!-- ===================== K. ASYNC / GUI ===================== -->
+<h2 id="async-gui">K. Async / GUI / subprocess</h2>
+
+<div class="qa">
+<div class="q">Q. Where is the custom log handler defined?</div>
+<div class="a">
+<span class="where">control_panel.py:62–82</span>
+<pre><span class="ln">62 </span>_log_queue: "queue.Queue[str]" = queue.Queue()
+<span class="ln">63 </span>
+<span class="ln">65 </span>class _QueueHandler(logging.Handler):
+<span class="ln">66 </span>    """logging.Handler that pushes formatted records into a queue. The
+<span class="ln">67 </span>    GUI's tick loop drains the queue into the scrolling text widget on
+<span class="ln">68 </span>    the main tkinter thread (tk widgets aren't thread-safe)."""
+<span class="ln">69 </span>
+<span class="ln">70 </span>    def emit(self, record: logging.LogRecord) -&gt; None:
+<span class="ln">71 </span>        try:
+<span class="ln">72 </span>            msg = self.format(record)
+<span class="ln">73 </span>        except Exception:
+<span class="ln">74 </span>            msg = record.getMessage()
+<span class="ln">75 </span>        <span class="hl">_log_queue.put(msg)</span>
+<span class="ln">76 </span>
+<span class="ln">78 </span># Wire the queue handler into the root logger.
+<span class="ln">79 </span>_handler = _QueueHandler()
+<span class="ln">80 </span>_handler.setFormatter(...)
+<span class="ln">81 </span>logging.getLogger().addHandler(_handler)
+<span class="ln">82 </span>logging.getLogger().setLevel(logging.INFO)</pre>
+<p>This is the async bridge: any module anywhere in the project calls <code>logging.info("...")</code> and its formatted text lands in this thread-safe queue. The GUI thread drains it on its own schedule via <code>_tick</code> (next section).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where does the GUI drain the queue?</div>
+<div class="a">
+<span class="where">control_panel.py:703–772</span>
+<pre><span class="ln">703 </span>def _tick(self) -&gt; None:
+<span class="ln">704 </span>    # Drain log queue into the text widget.
+<span class="ln">705 </span>    while not _log_queue.empty():
+<span class="ln">706 </span>        try:
+<span class="ln">707 </span>            <span class="hl">msg = _log_queue.get_nowait()</span>
+<span class="ln">708 </span>        except queue.Empty:
+<span class="ln">709 </span>            break
+<span class="ln">710 </span>        self.log_text.config(state="normal")
+<span class="ln">711 </span>        self.log_text.insert("end", msg + "\n")
+<span class="ln">712 </span>        ...
+<span class="ln">728 </span>    if self.active_subprocess is not None:
+<span class="ln">729 </span>        <span class="hl">if self.active_subprocess.poll() is not None:</span>
+<span class="ln">730 </span>            rc = self.active_subprocess.returncode
+<span class="ln">772 </span>    <span class="hl">self.root.after(self.POLL_INTERVAL_MS, self._tick)</span></pre>
+<p><code>_tick</code> drains the log queue (705–713), refreshes status labels (716–725), polls any active subprocess (728), and re-schedules itself (772) — every 200 ms. This is the entire async heart of the GUI. <code>POLL_INTERVAL_MS = 200</code> on line 125.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where does the GUI launch a subprocess?</div>
+<div class="a">
+<span class="where">control_panel.py:94–117</span>
+<pre><span class="ln">94 </span>def _launch_script(filename: str) -&gt; subprocess.Popen:
+<span class="ln">96 </span>    the Popen so the caller can poll for completion.
+<span class="ln">112 </span>    <span class="hl">return subprocess.Popen(</span>
+<span class="ln">113 </span>        [sys.executable, "-u", os.path.join(PROJECT_DIR, filename)],
+<span class="ln">114 </span>        stdout=open(os.path.join(PROJECT_DIR, "last-subprocess.log"), "w"),
+<span class="ln">115 </span>        stderr=subprocess.STDOUT,
+<span class="ln">116 </span>        ...
+<span class="ln">117 </span>    )</pre>
+<p><code>sys.executable</code> reuses the GUI's Python (already in the venv). <code>-u</code> forces unbuffered stdout so the log tail feature works on crash. stdout+stderr are merged into one log file that the GUI tails on non-zero exit (lines 736–746).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. Where is the gpiozero pin_factory closed before forking?</div>
+<div class="a">
+<span class="where">control_panel.py:594–599</span> (in <code>_on_run_demo</code>; similar block in <code>_on_boresight</code> at 511–515)
+<pre><span class="ln">593 </span>        # fresh pin_factory automatically.
+<span class="ln">594 </span>        try:
+<span class="ln">595 </span>            from gpiozero import Device
+<span class="ln">596 </span>            if Device.pin_factory is not None:
+<span class="ln">597 </span>                <span class="hl">Device.pin_factory.close()</span>
+<span class="ln">598 </span>                <span class="hl">Device.pin_factory = None</span>
+<span class="ln">599 </span>                log.info("Closed gpiozero pin_factory to fully release chip handle.")</pre>
+<p>This is the fix for the "GPIO busy" subprocess bug. Closing the singleton pin_factory releases the chip-level FD; setting it to None forces gpiozero to lazily recreate on the next <code>LED()</code> call. The 0.3 s sleep that follows lets kernel-level state settle before <code>Popen</code> forks.</p>
+</div>
+</div>
+
+<!-- ===================== L. END-TO-END TRACE ===================== -->
+<h2 id="tracing">L. End-to-end tracing exercise</h2>
+
+<p>If the examiner says "show me one frame from end to end," walk through these locations in order:</p>
+
+<div class="ascii">  1. <span style="color:#ffb84d">main.py:245</span>          frame = camera.capture_frame(cam)
+  2.   ↳ <span style="color:#ffb84d">camera.py:100</span>      ret, frame = cap.read()                  ← USB / V4L2
+
+  3. <span style="color:#ffb84d">main.py:246</span>          target = detector.detect(frame)
+  4.   ↳ <span style="color:#ffb84d">detector.py:82</span>     mask = build_mask(frame)
+  5.     ↳ <span style="color:#ffb84d">detector.py:62-66</span>  blur → BGR2HSV → inRange → erode → dilate
+  6.   ↳ <span style="color:#ffb84d">detector.py:92</span>     largest = max(contours, key=cv2.contourArea)
+  7.   ↳ <span style="color:#ffb84d">detector.py:105-106</span> cx, cy = m10/m00 , m01/m00
+
+  8. <span style="color:#ffb84d">main.py:247</span>          result = tracker.update(pan_pid, tilt_pid, kit, target)
+  9.   ↳ <span style="color:#ffb84d">tracker.py:258-259</span>  pan_error = target_x - 320 ; tilt_error = target_y - 240
+ 10.   ↳ <span style="color:#ffb84d">tracker.py:263-264</span>  pan_correction = pan_pid(pan_error) ; tilt_correction = ...
+ 11.   ↳ <span style="color:#ffb84d">tracker.py:275-278</span>  in_deadband = abs(pan_error)&lt;15 and abs(tilt_error)&lt;15
+ 12.   ↳ <span style="color:#ffb84d">tracker.py:306-307</span>  servo.move_pan(kit, ..., ramp=False) ; move_tilt(...)
+ 13.     ↳ <span style="color:#ffb84d">servo.py:181</span>      clamped = max(PAN_MIN, min(PAN_MAX, angle))      ← SAFETY
+ 14.     ↳ <span style="color:#ffb84d">servo.py:195</span>      kit.servo[PAN_CHANNEL].angle = clamped          ← I²C WRITE
+
+ 15. <span style="color:#ffb84d">main.py:248</span>          locked = result is not None and result.get("in_deadband", False)
+ 16. <span style="color:#ffb84d">main.py:259</span>          key = cv2.waitKey(1) & 0xFF
+ 17. <span style="color:#ffb84d">main.py:272-281</span>     if key == ord('f') and ARMED and locked → laser.fire(...)
+ 18.   ↳ <span style="color:#ffb84d">laser.py:84</span>       laser_dev.on()                                  ← GPIO HIGH
+</div>
+
+<!-- ===================== M. CHANGE WHERE ===================== -->
+<h2 id="change-where">M. "If I wanted to change X, what file would I edit?"</h2>
+
+<table>
+<tr><th>Change request</th><th>Edit</th><th>Notes</th></tr>
+<tr><td>Make laser fire for 5 s instead of 2.5</td><td><code>config.py:150</code></td><td>Single constant; nothing else changes</td></tr>
+<tr><td>Tighten the deadband from 15 to 10 px</td><td><code>config.py:99</code></td><td>Will probably need re-tuning Kp</td></tr>
+<tr><td>Make the PID more aggressive</td><td><code>config.py:74, 81</code></td><td>Raise Kp; risk of oscillation</td></tr>
+<tr><td>Track green instead of blue</td><td><code>config.py:34–35</code></td><td>Better: run <code>tune_detector.py</code> to find the range</td></tr>
+<tr><td>Use a different USB camera port</td><td>No edit needed</td><td>Pass <code>device_index</code> if multiple cameras; otherwise auto-detected</td></tr>
+<tr><td>Change camera exposure</td><td><code>config.py:188</code></td><td>Will likely require HSV re-tune</td></tr>
+<tr><td>Move the laser to a different GPIO pin</td><td><code>laser.py:53</code></td><td>Physical re-wire + one constant</td></tr>
+<tr><td>Add a 3rd servo on PCA9685 channel 2</td><td><code>servo.py</code> (new functions) + new file maybe</td><td>Follow the same pattern as pan/tilt</td></tr>
+<tr><td>Re-calibrate servo limits</td><td><code>servo.py:40–43</code></td><td>After running <code>calibrate_servo.py</code>; also update <code>docs/calibration.md</code></td></tr>
+<tr><td>Different I²C address (if a second PCA9685 board)</td><td><code>servo.py:54</code></td><td>Solder bridges on A0–A5 pads of the second board</td></tr>
+<tr><td>Different state machine (e.g. add SAFETY_INTERLOCK state)</td><td><code>main.py:86–89</code> + transition logic</td><td>Add to enum and to the transition blocks</td></tr>
+<tr><td>Add a new GUI button</td><td><code>control_panel.py</code> (sections marked by frame comments)</td><td>Hook to a handler; gate visibility per safety</td></tr>
+<tr><td>Log to a file in addition to GUI</td><td><code>control_panel.py</code> after line 82</td><td>Add a <code>FileHandler</code> with the same formatter</td></tr>
+<tr><td>Different camera library (e.g. picamera2)</td><td><code>camera.py</code> only</td><td>Public API stays the same; downstream code unchanged</td></tr>
+</table>
+
+<hr>
+
+<div class="panel tip">
+  <strong>Final exam check:</strong> when the examiner asks "where is the safety enforcement?" — point at <code>servo.py:181 / 212</code> (angle clamps) AND <code>main.py:272–281</code> (fire check) AND <code>main.py:290–306</code> (try/finally cleanup). Three layers. Saying "here, here, and here" with the file:line is the answer.
+</div>
+
+</div>
+</body>
+</html>
