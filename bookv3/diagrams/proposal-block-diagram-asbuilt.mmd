@@ -1,0 +1,26 @@
+%%{init: {'flowchart': {'curve': 'linear', 'nodeSpacing': 50, 'rankSpacing': 70}}}%%
+flowchart TB
+    classDef cpu fill:#c8e6c9,stroke:#2e7d32,color:#000
+    classDef ui fill:#bbdefb,stroke:#1565c0,color:#000
+    classDef driver fill:#fff3e0,stroke:#e65100,color:#000
+    classDef actuator fill:#f8bbd0,stroke:#ad1457,color:#000
+    classDef sensor fill:#e1bee7,stroke:#6a1b9a,color:#000
+
+    GUI["User / Control Panel GUI<br/><i>tkinter, on the Pi via VNC</i>"]:::ui
+    CPU["Raspberry Pi 4B (CPU)<br/><i>OpenCV + PID + state machine</i>"]:::cpu
+
+    PCA["PCA9685<br/><i>16-ch PWM driver</i>"]:::driver
+    GPIO["GPIO18<br/><i>direct digital out, 3.3 V</i>"]:::driver
+    CAM["LifeCam HD-3000<br/><i>USB UVC webcam</i>"]:::sensor
+
+    PAN["Servo PAN<br/><i>DS3225</i>"]:::actuator
+    TILT["Servo TILT<br/><i>DS3225</i>"]:::actuator
+    LASER["Laser Module<br/><i>3 V, self-driven</i>"]:::actuator
+
+    GUI -- "subprocess<br/>launch + log queue" --> CPU
+    CPU -- "I2C bus 1<br/>addr 0x40, 100 kHz" --> PCA
+    CPU -- "BCM GPIO<br/>via gpiozero / lgpio" --> GPIO
+    CAM -- "USB UVC<br/>V4L2 /dev/video0" --> CPU
+    PCA -- "PWM 50 Hz<br/>500-2500 us" --> PAN
+    PCA -- "PWM 50 Hz<br/>500-2500 us" --> TILT
+    GPIO -- "HIGH = ON<br/>LOW = OFF" --> LASER

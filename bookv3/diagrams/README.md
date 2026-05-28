@@ -98,6 +98,24 @@ Dagre already routes edges *around* nodes — actual edge-through-block overlaps
 - **Place in:** **Chapter 15 — תיעוד הפתרון** (`chapters/15-solution-documentation.md`), **§15.4 תרשים זרימה — לולאת המעקב**. The chapter currently has a simpler inline mermaid block there — **replace it with the rendered output of this file** (it is the better, complete version; the inline one omits Init/Cleanup and `waitKey`).
 - **What it is:** Standard מחוון-required flowchart. This is the one to render and embed in §15.4.
 
+### 13. `proposal-block-diagram-asbuilt.mmd` — proposal-style block diagram, as built
+
+- **Data:** ✅ Mirrors the structure of `proposal-block-diagram.mmd` (#2) but updated to reflect the as-built system: USB LifeCam instead of Pi Camera v3, GPIO18 direct drive instead of MOSFET, English labels with the protocol on every arrow (I²C @ 0x40, USB UVC, PWM 50 Hz).
+- **Place in:** **Chapter 11 — תיאור הארכיטקטורה** (`chapters/11-architecture.md`) or as a "what we actually built vs the proposal" comparison figure in **Chapter 8**.
+- **What it is:** The deliverable equivalent of the proposal block diagram — same shape, current reality. Useful for the oral exam: same five-row layout the examiner has already seen in the proposal, so they recognise it instantly, but with the correct components.
+
+### 14. `system-block-full.mmd` — system block diagram with power and state machine
+
+- **Data:** ✅ Extends #13 with: a Power subsystem subgraph (12 V PSU → LM2596 → servo rail; Pi USB-C → logic rail) using dashed power lines, plus the operator state machine block (DISARMED → ARMED → FIRING → COOLDOWN) showing how it gates GPIO18.
+- **Place in:** **Chapter 15 — תיעוד הפתרון** as a fuller block view, or as the headline figure of **Chapter 8** "תיאור החלופה הנבחרת".
+- **What it is:** Full block-level view of the system including power topology. The version to show when the examiner asks "draw the whole system."
+
+### 15. `system-dataflow.mmd` — data-flow view (closed loop + fire path)
+
+- **Data:** ✅ Traces *data* (not components) end-to-end: photons → CMOS+ISP → USB UVC → numpy ndarray → HSV mask → centroid → pixel error → PID correction → angle command → I²C → PWM → servo shaft → bracket aim, with a closing dotted arrow `AIM → SCENE` that visualises the closed loop. Right-hand column is the orthogonal fire path: keypress → state-machine gate → GPIO18 HIGH → laser beam.
+- **Place in:** **Chapter 9 — הסבר על הבקר** as the "signal flow" figure, or **Chapter 15 §15.5** alongside the functional diagram.
+- **What it is:** The diagram form of "trace one frame end to end." Specifically useful for answering the teacher's "מסלולים במערכת" question — same content as the textual Path A / Path B but in a single picture.
+
 ## Summary table
 
 | # | File | Place in chapter | Status |
@@ -114,6 +132,9 @@ Dagre already routes edges *around* nodes — actual edge-through-block overlaps
 | 10 | `control-loop.mmd` | ch. 9 (after time budget) | ✅ data correct |
 | 11 | `control-flow.mmd` | ch. 15 §15.4 (replace inline) | ✅ data correct |
 | 12 | `electrical-schematic.svg` | ch. 15 §15.1 (primary wiring) | ✅ hand-drawn SVG, reference-style |
+| 13 | `proposal-block-diagram-asbuilt.mmd` | ch. 11 / ch. 8 (as-built block diagram) | ✅ proposal-style, current hardware |
+| 14 | `system-block-full.mmd` | ch. 8 / ch. 15 (with power + FSM) | ✅ full block view |
+| 15 | `system-dataflow.mmd` | ch. 9 / ch. 15 §15.5 (data-flow) | ✅ closed loop + fire path |
 
 ## How to render
 

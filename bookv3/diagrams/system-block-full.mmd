@@ -1,0 +1,47 @@
+%%{init: {'flowchart': {'curve': 'linear', 'nodeSpacing': 50, 'rankSpacing': 70}}}%%
+flowchart TB
+    classDef cpu fill:#c8e6c9,stroke:#2e7d32,color:#000
+    classDef ui fill:#bbdefb,stroke:#1565c0,color:#000
+    classDef driver fill:#fff3e0,stroke:#e65100,color:#000
+    classDef actuator fill:#f8bbd0,stroke:#ad1457,color:#000
+    classDef sensor fill:#e1bee7,stroke:#6a1b9a,color:#000
+    classDef power fill:#fff9c4,stroke:#f57f17,color:#000
+    classDef state fill:#d1c4e9,stroke:#4527a0,color:#000
+
+    subgraph PWR ["Power subsystem"]
+        direction TB
+        PSU["12 V 5 A PSU"]:::power
+        BUCK["LM2596 Buck<br/>12 V to 5.0 V, 3 A"]:::power
+        PIPSU["Pi USB-C 5 V 3 A"]:::power
+        PSU -.->|"12 V DC"| BUCK
+    end
+
+    GUI["User / Control Panel<br/><i>tkinter</i>"]:::ui
+    CPU["Raspberry Pi 4B<br/><i>BCM2711 SoC</i>"]:::cpu
+
+    SM["State Machine<br/>DISARMED to ARMED to<br/>FIRING to COOLDOWN"]:::state
+
+    PCA["PCA9685<br/><i>I2C 0x40, 16-ch PWM</i>"]:::driver
+    GPIO["GPIO18 push-pull<br/><i>3.3 V CMOS out</i>"]:::driver
+    CAM["LifeCam HD-3000<br/><i>USB UVC</i>"]:::sensor
+
+    PAN["DS3225 PAN<br/><i>ch 0, 50 to 220 deg</i>"]:::actuator
+    TILT["DS3225 TILT<br/><i>ch 1, 115 to 205 deg</i>"]:::actuator
+    LASER["3 V Laser Module<br/><i>internal driver</i>"]:::actuator
+
+    GUI -->|"buttons<br/>+ log queue"| CPU
+    CPU --- SM
+    SM -->|"gate fire"| GPIO
+
+    CPU -->|"I2C SDA/SCL"| PCA
+    CPU -->|"GPIO out"| GPIO
+    CAM -->|"USB / V4L2"| CPU
+
+    PCA -->|"PWM 50 Hz"| PAN
+    PCA -->|"PWM 50 Hz"| TILT
+    GPIO -->|"3.3 V HIGH/LOW"| LASER
+
+    PIPSU -.->|"5 V logic"| CPU
+    PIPSU -.->|"5 V VCC"| PCA
+    BUCK -.->|"5 V V+ (servo rail)"| PCA
+    CPU -.->|"3.3 V"| LASER

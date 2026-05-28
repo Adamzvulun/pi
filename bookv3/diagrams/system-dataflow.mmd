@@ -1,0 +1,33 @@
+%%{init: {'flowchart': {'curve': 'linear', 'nodeSpacing': 40, 'rankSpacing': 55}}}%%
+flowchart TB
+    classDef raw fill:#e1bee7,stroke:#6a1b9a,color:#000
+    classDef proc fill:#c8e6c9,stroke:#2e7d32,color:#000
+    classDef cmd fill:#fff3e0,stroke:#e65100,color:#000
+    classDef phys fill:#f8bbd0,stroke:#ad1457,color:#000
+
+    SCENE["Real-world scene<br/><i>photons</i>"]:::raw
+    SENSOR["CMOS sensor + ISP<br/><i>Bayer to BGR YUV</i>"]:::raw
+    USB["USB UVC stream<br/><i>uvcvideo to V4L2</i>"]:::raw
+    FRAME["numpy BGR ndarray<br/><i>(480, 640, 3) uint8</i>"]:::raw
+
+    HSV["HSV mask<br/><i>blur to BGR2HSV to inRange</i>"]:::proc
+    BLOB["Largest contour + centroid<br/><i>via moments</i>"]:::proc
+    ERR["Pixel error<br/><i>target minus frame center</i>"]:::proc
+    CORR["PID correction<br/><i>degrees per axis, plus/minus 10 deg</i>"]:::proc
+
+    ANGLE["Angle command<br/><i>clamped to safe range</i>"]:::cmd
+    I2C["I2C transaction<br/><i>5 bytes @ 100 kHz</i>"]:::cmd
+    PWM["PWM pulse<br/><i>500-2500 us @ 50 Hz</i>"]:::cmd
+
+    SHAFT["Servo shaft angle<br/><i>closed-loop inside servo</i>"]:::phys
+    AIM["Bracket aim<br/><i>physical rotation</i>"]:::phys
+
+    KEY["Operator keypress<br/><i>cv2.waitKey</i>"]:::raw
+    GATE["Fire gate<br/><i>ARMED + LOCKED + not COOLDOWN</i>"]:::proc
+    GPIOOUT["GPIO18 = HIGH<br/><i>3.3 V CMOS</i>"]:::cmd
+    BEAM["Laser beam<br/><i>650 nm visible</i>"]:::phys
+
+    SCENE --> SENSOR --> USB --> FRAME --> HSV --> BLOB --> ERR --> CORR --> ANGLE --> I2C --> PWM --> SHAFT --> AIM
+    AIM -.->|"closes the loop"| SCENE
+
+    KEY --> GATE --> GPIOOUT --> BEAM
